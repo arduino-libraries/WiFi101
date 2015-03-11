@@ -156,6 +156,9 @@ void nm_bsp_interrupt_ctrl(uint8 u8Enable);
 #include "bsp/include/nm_bsp_samd21.h"
 #endif
 
+#if (defined ARDUINO_ARCH_AVR)
+#include "bsp/include/nm_bsp_avr.h"
+#endif
 
 #ifdef __SAM4S16C__
 #include "bsp/include/nm_bsp_sam4s.h"
