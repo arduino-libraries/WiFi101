@@ -114,6 +114,21 @@ public:
 	char* SSID();
 	int32_t RSSI();
 
+	/*
+	 * Return the Encryption Type associated with the network
+	 *
+	 * return: one value of wl_enc_type enum
+	 */
+	uint8_t encryptionType() { return 0; } // TODO
+
+	/*
+	 * Return the current BSSID associated with the network.
+	 * It is the MAC address of the Access Point
+	 *
+	 * return: pointer to uint8_t array with length WL_MAC_ADDR_LENGTH
+	 */
+	uint8_t* BSSID(uint8_t* bssid) { return NULL; } // TODO
+
 	int8_t scanNetworks();
 	char* SSID(uint8_t pos);
 	int32_t RSSI(uint8_t pos);
