@@ -11,7 +11,7 @@
  modified 31 May 2012
  by Tom Igoe
  */
- #include <WiFi.h>
+ #include <WiFi101.h>
 
 char ssid[] = "yourNetwork";     // the name of your network
 int status = WL_IDLE_STATUS;     // the Wifi radio's status
