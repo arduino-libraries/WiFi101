@@ -48,8 +48,7 @@
 
 static tpfNmBspIsr gpfIsr;
 
-#define CONF_WINC_CHIP_ENABLE_PIN		5
-#define CONF_WINC_RESET_PIN				6
+#define CONF_WINC_RESET_PIN				5
 #define CONF_WINC_INTN_PIN				7
 
 static void chip_isr(void)
@@ -71,10 +70,6 @@ static void init_chip_pins(void)
 	/* Configure RESETN D6 pins as output. */
 	pinMode(CONF_WINC_RESET_PIN, OUTPUT);
 	digitalWrite(CONF_WINC_RESET_PIN, HIGH);
-
-	/* Configure CHIP_EN D5 pins as output. */
-	pinMode(CONF_WINC_CHIP_ENABLE_PIN, OUTPUT);
-	digitalWrite(CONF_WINC_CHIP_ENABLE_PIN, HIGH);
 }
 
 /*
@@ -119,11 +114,8 @@ sint8 nm_bsp_deinit(void)
  */
 void nm_bsp_reset(void)
 {
-	digitalWrite(CONF_WINC_CHIP_ENABLE_PIN, LOW);
 	digitalWrite(CONF_WINC_RESET_PIN, LOW);
 	nm_bsp_sleep(100);
-	digitalWrite(CONF_WINC_CHIP_ENABLE_PIN, HIGH);
-	nm_bsp_sleep(10);
 	digitalWrite(CONF_WINC_RESET_PIN, HIGH);
 	nm_bsp_sleep(100);
 }

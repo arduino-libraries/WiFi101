@@ -19,6 +19,7 @@
 
 extern "C" {
 	#include "socket/include/socket.h"
+	#include "driver/include/m2m_periph.h"
 }
 
 #include "WiFi101.h"
@@ -145,13 +146,21 @@ size_t WiFiClient::write(const uint8_t *buf, size_t size)
 		return 0;
 	}
 
+	// Network led ON.
+	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 0);
+
 	m2m_wifi_handle_events(NULL);
 
 	if (send(_socket, (void *)buf, size, 0) < 0) {
 		setWriteError();
+		// Network led OFF.
+		m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 1);
 		return 0;
 	}
 	
+	// Network led OFF.
+	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 1);
+			
 	return size;
 }
 
@@ -179,6 +188,7 @@ int WiFiClient::read()
 		recv(_socket, _buffer, SOCKET_BUFFER_MTU, 0);
 		m2m_wifi_handle_events(NULL);
 	}
+
 	return b;
 }
 

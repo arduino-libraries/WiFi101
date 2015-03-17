@@ -19,6 +19,7 @@
 
 extern "C" {
 	#include "socket/include/socket.h"
+	#include "driver/include/m2m_periph.h"
 }
 
 #include <string.h>
@@ -148,14 +149,22 @@ size_t WiFiUDP::write(const uint8_t *buffer, size_t size)
 {
 	struct sockaddr_in addr;
 
+	// Network led ON.
+	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 0);
+
 	addr.sin_family = AF_INET;
 	addr.sin_port = _htons(_sndPort);
 	addr.sin_addr.s_addr = _sndIP;
 
 	if (sendto(_socket, (void *)buffer, size, 0,
 			(struct sockaddr *)&addr, sizeof(addr)) < 0) {
+		// Network led OFF.
+		m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 1);
 		return 0;
 	}
+
+	// Network led OFF.
+	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 1);
 
 	return size;
 }

@@ -556,7 +556,7 @@ sint8 chip_deinit(void)
 	return ret;		
 }
 
-#ifdef CONF_PERIPH
+//#ifdef CONF_PERIPH
 
 sint8 set_gpio_dir(uint8 gpio, uint8 dir)
 {
@@ -633,7 +633,7 @@ sint8 pullup_ctrl(uint32 pinmask, uint8 enable)
 _EXIT:
 	return s8Ret;
 }
-#endif /* CONF_PERIPH */
+//#endif /* CONF_PERIPH */
 
 sint8 nmi_get_otp_mac_address(uint8 *pu8MacAddr,  uint8 * pu8IsValid)
 {

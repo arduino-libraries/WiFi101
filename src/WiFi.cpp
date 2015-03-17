@@ -27,6 +27,7 @@ extern "C" {
   #include "bus_wrapper/include/nm_bus_wrapper_samd21.h"
   #include "socket/include/socket_buffer.h"
   #include "driver/source/nmasic.h"
+  #include "driver/include/m2m_periph.h"
 }
 
 static void wifi_cb(uint8_t u8MsgType, void *pvMsg)
@@ -36,16 +37,18 @@ static void wifi_cb(uint8_t u8MsgType, void *pvMsg)
 		{
 			tstrM2mWifiStateChanged *pstrWifiState = (tstrM2mWifiStateChanged *)pvMsg;
 			if (pstrWifiState->u8CurrState == M2M_WIFI_CONNECTED) {
-				//SERIAL_PORT_MONITOR.println("my_wifi_cb: M2M_WIFI_RESP_CON_STATE_CHANGED: CONNECTED");
+				//SERIAL_PORT_MONITOR.println("wifi_cb: M2M_WIFI_RESP_CON_STATE_CHANGED: CONNECTED");
 				if (WiFi._mode == WL_STA_MODE) {
 					WiFi._status = WL_CONNECTED;
 				}
 			} else if (pstrWifiState->u8CurrState == M2M_WIFI_DISCONNECTED) {
-				//SERIAL_PORT_MONITOR.println("my_wifi_cb: M2M_WIFI_RESP_CON_STATE_CHANGED: DISCONNECTED");
+				//SERIAL_PORT_MONITOR.println("wifi_cb: M2M_WIFI_RESP_CON_STATE_CHANGED: DISCONNECTED");
 				if (WiFi._mode == WL_STA_MODE) {
 					WiFi._status = WL_DISCONNECTED;
 					WiFi._localip = 0;
 				}
+				// WiFi led OFF.
+				m2m_periph_gpio_set_val(M2M_PERIPH_GPIO15, 1);
 			}
 		}
 		break;
@@ -54,9 +57,11 @@ static void wifi_cb(uint8_t u8MsgType, void *pvMsg)
 		{
 			if (WiFi._mode == WL_STA_MODE) {
 				WiFi._localip = *((uint32_t *)pvMsg);
+				// WiFi led ON.
+				m2m_periph_gpio_set_val(M2M_PERIPH_GPIO15, 0);
 			}
 			/*uint8_t *pu8IPAddress = (uint8_t *)pvMsg;
-			SERIAL_PORT_MONITOR.print("my_wifi_cb: M2M_WIFI_REQ_DHCP_CONF: IP is ");
+			SERIAL_PORT_MONITOR.print("wifi_cb: M2M_WIFI_REQ_DHCP_CONF: IP is ");
 			SERIAL_PORT_MONITOR.print(pu8IPAddress[0], 10);
 			SERIAL_PORT_MONITOR.print(".");
 			SERIAL_PORT_MONITOR.print(pu8IPAddress[1], 10);
@@ -144,6 +149,9 @@ int WiFiClass::init()
 	param.pfAppWifiCb = wifi_cb;
 	ret = m2m_wifi_init(&param);
 	if (M2M_SUCCESS != ret) {
+		// Error led ON (may not work depending on init failure origin).
+		m2m_periph_gpio_set_val(M2M_PERIPH_GPIO18, 0);
+		m2m_periph_gpio_set_dir(M2M_PERIPH_GPIO18, 1);
 		return ret;
 	}
 
@@ -153,6 +161,14 @@ int WiFiClass::init()
 	registerSocketCallback(socketBufferCb, resolve_cb);
 	_init = 1;
 	_status = WL_IDLE_STATUS;
+
+	// Initialize IO expander (LED control).
+	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO15, 1);
+	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 1);
+	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO18, 1);
+	m2m_periph_gpio_set_dir(M2M_PERIPH_GPIO15, 1);
+	m2m_periph_gpio_set_dir(M2M_PERIPH_GPIO16, 1);
+	m2m_periph_gpio_set_dir(M2M_PERIPH_GPIO18, 1);
 
 	return ret;
 }
@@ -273,6 +289,10 @@ uint8_t WiFiClass::beginAP(char *ssid, uint8_t channel)
 	memset(_ssid, 0, M2M_MAX_SSID_LEN);
 	memcpy(_ssid, ssid, strlen(ssid));
 	_localip = *((uint32_t*)&strM2MAPConfig.au8DHCPServerIP[0]);
+	
+	// WiFi led ON.
+	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO15, 0);
+
 	return _status;
 }
 
@@ -306,6 +326,10 @@ uint8_t WiFiClass::beginProvision(char *ssid, char *url, uint8_t channel)
 	memset(_ssid, 0, M2M_MAX_SSID_LEN);
 	memcpy(_ssid, ssid, strlen(ssid));
 	_localip = *((uint32_t*)&strM2MAPConfig.au8DHCPServerIP[0]);
+	
+	// WiFi led ON.
+	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO15, 0);
+	
 	return _status;
 }
 
@@ -370,6 +394,9 @@ void WiFiClass::config(IPAddress local_ip, IPAddress dns_server, IPAddress gatew
 void WiFiClass::disconnect()
 {
 	m2m_wifi_disconnect();
+	
+	// WiFi led OFF.
+	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO15, 1);
 }
 
 uint8_t *WiFiClass::macAddress(uint8_t *mac)
@@ -504,9 +531,14 @@ uint8_t WiFiClass::status()
 
 int WiFiClass::hostByName(const char* aHostname, IPAddress& aResult)
 {
+	// Network led ON.
+	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 0);
+	
 	// Send DNS request:
 	_resolve = 0;
 	if (gethostbyname((uint8 *)aHostname) < 0) {
+		// Network led OFF.
+		m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 1);
 		return 0;
 	}
 
@@ -515,6 +547,9 @@ int WiFiClass::hostByName(const char* aHostname, IPAddress& aResult)
 	while (_resolve == 0 && millis() - start < 20000) {
 		m2m_wifi_handle_events(NULL);
 	}
+
+	// Network led OFF.
+	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 1);
 
 	if (_resolve == 0) {
 		return 0;
