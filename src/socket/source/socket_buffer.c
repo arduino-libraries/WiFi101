@@ -47,6 +47,7 @@
 #include "driver/source/m2m_hif.h"
 #include "socket/source/socket_internal.h"
 #include "socket/include/socket_buffer.h"
+#include "driver/include/m2m_periph.h"
 
 tstrSocketBuffer gastrSocketBuffer[MAX_SOCKET];
 
@@ -90,6 +91,9 @@ void socketBufferCb(SOCKET sock, uint8 u8Msg, void *pvMsg)
 		/* TCP Data receive. */
 		case SOCKET_MSG_RECV:
 		{
+			// Network led ON.
+			m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 0);
+			
 			tstrSocketRecvMsg *pstrRecv = (tstrSocketRecvMsg *)pvMsg;
 			if (pstrRecv && pstrRecv->s16BufferSize > 0) {
 				/* Data received. */
@@ -109,12 +113,18 @@ void socketBufferCb(SOCKET sock, uint8 u8Msg, void *pvMsg)
 				*(gastrSocketBuffer[sock].flag) &= ~SOCKET_BUFFER_FLAG_CONNECTED;
 				close(sock);
 			}
+			
+			// Network led OFF.
+			m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 1);
 		}
 		break;
 
 		/* UDP Data receive. */
 		case SOCKET_MSG_RECVFROM:
 		{
+			// Network led ON.
+			m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 0);
+			
 			tstrSocketRecvMsg *pstrRecv = (tstrSocketRecvMsg *)pvMsg;
 			if (pstrRecv && pstrRecv->s16BufferSize > 0) {
 				uint32 h = *(gastrSocketBuffer[sock].head);
@@ -146,6 +156,9 @@ void socketBufferCb(SOCKET sock, uint8 u8Msg, void *pvMsg)
 							SOCKET_BUFFER_MTU, 0);
 				}
 			}
+			
+			// Network led OFF.
+			m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 1);
 		}
 		break;
 
