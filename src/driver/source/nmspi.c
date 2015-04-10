@@ -86,7 +86,7 @@
 #define N_FAIL					 0
 #define N_RESET					-1
 #define N_RETRY					-2
-uint8 	gu8Crc_off	=			0;
+
 
 #define DATA_PKT_SZ_256 		256
 #define DATA_PKT_SZ_512			512
@@ -94,6 +94,8 @@ uint8 	gu8Crc_off	=			0;
 #define DATA_PKT_SZ_4K			(4 * 1024)
 #define DATA_PKT_SZ_8K			(8 * 1024)
 #define DATA_PKT_SZ				DATA_PKT_SZ_8K
+
+static uint8 	gu8Crc_off	=   0;
 
 static sint8 nmi_spi_read(uint8* b, uint16 sz)                                 
 {
@@ -761,6 +763,19 @@ sint8 nm_spi_init(void)
 	return M2M_SUCCESS;
 }
 
+/*
+*	@fn		nm_spi_init
+*	@brief	DeInitialize the SPI 
+*	@return	M2M_SUCCESS in case of success and M2M_ERR_BUS_FAIL in case of failure
+*	@author	Samer Sarhan
+*	@date	27 Feb 2015
+*	@version	1.0
+*/ 
+sint8 nm_spi_deinit(void)
+{
+	gu8Crc_off = 0;
+	return M2M_SUCCESS;
+}
 
 /*
 *	@fn		nm_spi_read_reg

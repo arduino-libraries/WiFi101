@@ -192,31 +192,31 @@ static sint8 p_nm_read_block(uint32 u32Addr, uint8 *puBuf, uint16 u16Sz)
 *				Start address
 *	@param [out]	puBuf
 *				Pointer to a buffer used to return the read data
-*	@param [in]	u16Sz
-*				Number of bytes to read. The buffer size must be >= u16Sz
+*	@param [in]	u32Sz
+*				Number of bytes to read. The buffer size must be >= u32Sz
 *	@return	M2M_SUCCESS in case of success and M2M_ERR_BUS_FAIL in case of failure
 *	@author	M. Abdelmawla
 *	@date	11 July 2012
 *	@version	1.0
 */ 
-sint8 nm_read_block(uint32 u32Addr, uint8 *puBuf, uint16 u16Sz)
+sint8 nm_read_block(uint32 u32Addr, uint8 *puBuf, uint32 u32Sz)
 {
 	uint16 u16MaxTrxSz = egstrNmBusCapabilities.u16MaxTrxSz - MAX_TRX_CFG_SZ;
-	uint16 off = 0;
+	uint32 off = 0;
 	sint8 s8Ret = M2M_SUCCESS;
 
 	for(;;)
 	{
-		if(u16Sz <= u16MaxTrxSz)
+		if(u32Sz <= u16MaxTrxSz)
 		{
-			s8Ret += p_nm_read_block(u32Addr, &puBuf[off], u16Sz);	
+			s8Ret += p_nm_read_block(u32Addr, &puBuf[off], (uint16)u32Sz);	
 			break;
 		}
 		else
 		{
-			s8Ret = p_nm_read_block(u32Addr, &puBuf[off], u16MaxTrxSz);
+			s8Ret += p_nm_read_block(u32Addr, &puBuf[off], u16MaxTrxSz);
 			if(M2M_SUCCESS != s8Ret) break;
-			u16Sz -= u16MaxTrxSz;
+			u32Sz -= u16MaxTrxSz;
 			off += u16MaxTrxSz;
 			u32Addr += u16MaxTrxSz;
 		}
@@ -245,31 +245,31 @@ static sint8 p_nm_write_block(uint32 u32Addr, uint8 *puBuf, uint16 u16Sz)
 *				Start address
 *	@param [in]	puBuf
 *				Pointer to the buffer holding the data to be written
-*	@param [in]	u16Sz
-*				Number of bytes to write. The buffer size must be >= u16Sz
+*	@param [in]	u32Sz
+*				Number of bytes to write. The buffer size must be >= u32Sz
 *	@return	M2M_SUCCESS in case of success and M2M_ERR_BUS_FAIL in case of failure
 *	@author	M. Abdelmawla
 *	@date	11 July 2012
 *	@version	1.0
 */ 
-sint8 nm_write_block(uint32 u32Addr, uint8 *puBuf, uint16 u16Sz)
+sint8 nm_write_block(uint32 u32Addr, uint8 *puBuf, uint32 u32Sz)
 {
 	uint16 u16MaxTrxSz = egstrNmBusCapabilities.u16MaxTrxSz - MAX_TRX_CFG_SZ;
-	uint16 off = 0;
+	uint32 off = 0;
 	sint8 s8Ret = M2M_SUCCESS;
 
 	for(;;)
 	{
-		if(u16Sz <= u16MaxTrxSz)
+		if(u32Sz <= u16MaxTrxSz)
 		{
-			s8Ret += p_nm_write_block(u32Addr, &puBuf[off], u16Sz);	
+			s8Ret += p_nm_write_block(u32Addr, &puBuf[off], (uint16)u32Sz);	
 			break;
 		}
 		else
 		{
-			s8Ret = p_nm_write_block(u32Addr, &puBuf[off], u16MaxTrxSz);
+			s8Ret += p_nm_write_block(u32Addr, &puBuf[off], u16MaxTrxSz);
 			if(M2M_SUCCESS != s8Ret) break;
-			u16Sz -= u16MaxTrxSz;
+			u32Sz -= u16MaxTrxSz;
 			off += u16MaxTrxSz;
 			u32Addr += u16MaxTrxSz;
 		}

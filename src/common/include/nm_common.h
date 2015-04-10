@@ -24,7 +24,7 @@
  *    from this software without specific prior written permission.
  *
  * 4. This software may only be redistributed and used in connection with an
- *    Atmel microcontroller product.
+ *    Atmel micro-controller product.
  *
  * THIS SOFTWARE IS PROVIDED BY ATMEL "AS IS" AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -41,13 +41,16 @@
  * \asf_license_stop
  *
  */
-
+ 
 #ifndef _NM_COMMON_H_
 #define _NM_COMMON_H_
 
 #include "bsp/include/nm_bsp.h"
 
-
+/**@defgroup  CommonDefines CommonDefines
+ * @ingroup WlanDefines
+ */
+/**@{*/
 #define M2M_TIME_OUT_DELAY 10000
 
 /*states*/
@@ -66,13 +69,17 @@
 #define M2M_ERR_FAIL		((sint8)-12)
 #define M2M_ERR_FW_VER_MISMATCH         ((sint8)-13)
 #define M2M_ERR_SCAN_IN_PROGRESS         ((sint8)-14)
+/*
+Invalid argument
+*/
+#define M2M_ERR_INVALID_ARG				 ((sint8)-15)	
 
 /*i2c MAASTER ERR*/
 #define I2C_ERR_LARGE_ADDRESS 	  0xE1UL	/*the address exceed the max addressing mode in i2c flash*/
-#define I2C_ERR_TX_ABRT 		  0xE2UL	/*NO ack from slave*/
+#define I2C_ERR_TX_ABRT 		  0xE2UL	/*NO ACK from slave*/
 #define I2C_ERR_OVER_SIZE 		  0xE3UL	/**/
 #define ERR_PREFIX_NMIS		      0xE4UL	/*wrong first four byte in flash NMIS*/
-#define ERR_FIRMEWARE_EXCEED_SIZE 0xE5UL	/*Total size of firmware exxed the max size 256k*/
+#define ERR_FIRMEWARE_EXCEED_SIZE 0xE5UL	/*Total size of firmware exceed the max size 256k*/
 /**/
 #define PROGRAM_START		0x26961735UL
 #define BOOT_SUCCESS		0x10add09eUL
@@ -209,6 +216,7 @@ typedef enum{
 	M2M_REQ_CONFIG_PKT,
 	M2M_REQ_DATA_PKT = NBIT7
 }tenuM2mReqPkt;
+/**@}*/
 #ifdef __cplusplus
      extern "C" {
  #endif

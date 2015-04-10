@@ -200,7 +200,12 @@ uint8 hif_get_sleep_mode(void)
 sint8 hif_chip_sleep(void)
 {
 	sint8 ret = M2M_SUCCESS;
-	gu8ChipSleep--;
+
+	if(gu8ChipSleep >= 1)
+	{
+		gu8ChipSleep--;
+	}
+	
 	if(gu8ChipSleep == 0)
 	{
 		if((gu8ChipMode == M2M_PS_DEEP_AUTOMATIC)||(gu8ChipMode == M2M_PS_MANUAL))
@@ -271,6 +276,17 @@ sint8 hif_deinit(void * arg)
 	}
 #endif
 	ret = hif_chip_wake();
+
+	gu8ChipMode = 0;
+	gu8ChipSleep = 0;
+	gu8HifSizeDone = 0;
+	gu8Interrupt = 0;
+
+	pfWifiCb = NULL;
+	pfIpCb  = NULL;
+	pfOtaCb = NULL;
+	pfHifCb = NULL;
+
 	
 	return ret;
 }
@@ -578,6 +594,21 @@ sint8 hif_receive(uint32 u32Addr, uint8 *pu8Buf, uint16 u16Sz, uint8 isDone)
 	uint32 address, reg;
 	uint16 size;
 	sint8 ret = M2M_SUCCESS;
+
+	if(u32Addr == 0 ||pu8Buf == NULL || u16Sz == 0)
+	{
+		if(isDone)
+		{
+			gu8HifSizeDone = 1;
+			
+			/* set RX done */
+			ret = hif_set_rx_done();
+		}
+			
+		ret = M2M_ERR_FAIL;
+		M2M_ERR(" hif_receive: Invalid argument\n");
+		goto ERR1;
+	}
 
 	ret = nm_read_reg_with_ret(WIFI_HOST_RCV_CTRL_0,&reg);
 	if(ret != M2M_SUCCESS)goto ERR1;	

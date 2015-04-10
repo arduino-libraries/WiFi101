@@ -140,12 +140,11 @@ static void m2m_wifi_cb(uint8 u8OpCode, uint16 u16DataSize, uint32 u32Addr)
 	}
 	else if (u8OpCode == M2M_WIFI_RESP_IP_CONFLICT)
 	{
-		tstrM2MIPConfig strIpConfig;
-		if(hif_receive(u32Addr, (uint8 *)&strIpConfig, sizeof(tstrM2MIPConfig), 0) == M2M_SUCCESS)
+		uint32  u32ConflictedIP;
+		if(hif_receive(u32Addr, (uint8 *)&u32ConflictedIP, sizeof(u32ConflictedIP), 0) == M2M_SUCCESS)
 		{
-			M2M_DBG("Conflicted IP\"%u.%u.%u.%u\"\n", 
-				((uint8 *)&strIpConfig.u32StaticIP)[0], ((uint8 *)&strIpConfig.u32StaticIP)[1],
-				((uint8 *)&strIpConfig.u32StaticIP)[2], ((uint8 *)&strIpConfig.u32StaticIP)[3]);
+			M2M_INFO("Conflicted IP \" %u.%u.%u.%u \" \n", 
+				BYTE_0(u32ConflictedIP),BYTE_1(u32ConflictedIP),BYTE_2(u32ConflictedIP),BYTE_3(u32ConflictedIP));
 			if (gpfAppWifiCb)
 				gpfAppWifiCb(M2M_WIFI_RESP_IP_CONFLICT, NULL);
 
@@ -247,23 +246,27 @@ static void m2m_wifi_cb(uint8 u8OpCode, uint16 u16DataSize, uint32 u32Addr)
 	else if(u8OpCode == M2M_WIFI_RESP_WIFI_RX_PACKET)
 	{
 		tstrM2MWifiRxPacketInfo		strRxPacketInfo;
-		if(hif_receive(u32Addr, (uint8*)&strRxPacketInfo, sizeof(tstrM2MWifiRxPacketInfo), 0) == M2M_SUCCESS)
-		{
-			u16DataSize -= sizeof(tstrM2MWifiRxPacketInfo);
-			if(gstrMgmtCtrl.pu8Buf != NULL)
+		if(u16DataSize >= sizeof(tstrM2MWifiRxPacketInfo)) {
+			if(hif_receive(u32Addr, (uint8*)&strRxPacketInfo, sizeof(tstrM2MWifiRxPacketInfo), 0) == M2M_SUCCESS)
 			{
-				if(u16DataSize > (gstrMgmtCtrl.u16Sz + gstrMgmtCtrl.u16Offset))
+				u16DataSize -= sizeof(tstrM2MWifiRxPacketInfo);
+				if(u16DataSize > 0 && gstrMgmtCtrl.pu8Buf != NULL)
 				{
-					u16DataSize = gstrMgmtCtrl.u16Sz;
+					if(u16DataSize > (gstrMgmtCtrl.u16Sz + gstrMgmtCtrl.u16Offset))
+					{
+						u16DataSize = gstrMgmtCtrl.u16Sz;
+					}
+					u32Addr += sizeof(tstrM2MWifiRxPacketInfo) + gstrMgmtCtrl.u16Offset;
+					if(hif_receive(u32Addr , gstrMgmtCtrl.pu8Buf, u16DataSize, 1) != M2M_SUCCESS)
+					{
+						u16DataSize = 0;
+					}
 				}
-				u32Addr += sizeof(tstrM2MWifiRxPacketInfo) + gstrMgmtCtrl.u16Offset;
-				if(hif_receive(u32Addr , gstrMgmtCtrl.pu8Buf, u16DataSize, 1) != M2M_SUCCESS)
-				{
-					u16DataSize = 0;
-				}
+				if(gpfAppMonCb)
+					gpfAppMonCb(&strRxPacketInfo, gstrMgmtCtrl.pu8Buf,u16DataSize);
 			}
-			if(gpfAppMonCb)
-				gpfAppMonCb(&strRxPacketInfo, gstrMgmtCtrl.pu8Buf,u16DataSize);
+		} else {
+			M2M_ERR("Incorrect mon data size %u\n", u16DataSize);
 		}
 	}
 #endif
@@ -286,6 +289,82 @@ sint8 m2m_wifi_download_mode()
 
 _EXIT0:
 	return ret;
+}
+
+static sint8 m2m_validate_ap_parameters(CONST tstrM2MAPConfig* pstrM2MAPConfig)
+{
+	sint8 s8Ret = M2M_SUCCESS;
+	/* Check for incoming pointer */
+	if(pstrM2MAPConfig == NULL)
+	{
+		M2M_ERR("INVALID POINTER\n");
+		s8Ret = M2M_ERR_FAIL;
+		goto ERR1;
+	}
+	/* Check for SSID */
+	if((m2m_strlen((uint8 *)pstrM2MAPConfig->au8SSID) <= 0) || (m2m_strlen((uint8 *)pstrM2MAPConfig->au8SSID) >= M2M_MAX_SSID_LEN))
+	{
+		M2M_ERR("INVALID SSID\n");
+		s8Ret = M2M_ERR_FAIL;
+		goto ERR1;
+	}
+	/* Check for Channel */
+	if(pstrM2MAPConfig->u8ListenChannel > M2M_WIFI_CH_14 || pstrM2MAPConfig->u8ListenChannel < M2M_WIFI_CH_1)
+	{
+		M2M_ERR("INVALID CH\n");
+		s8Ret = M2M_ERR_FAIL;
+		goto ERR1;
+	}
+	/* Check for DHCP Server IP address */
+	if(!(pstrM2MAPConfig->au8DHCPServerIP[0] || pstrM2MAPConfig->au8DHCPServerIP[1]))
+	{
+		if(!(pstrM2MAPConfig->au8DHCPServerIP[2]))
+		{
+			M2M_ERR("INVALID DHCP SERVER IP\n");
+			s8Ret = M2M_ERR_FAIL;
+			goto ERR1;
+		}
+	}
+	/* Check for Security */
+	if(pstrM2MAPConfig->u8SecType == M2M_WIFI_SEC_OPEN)
+	{
+		goto ERR1;
+	}
+	else if(pstrM2MAPConfig->u8SecType == M2M_WIFI_SEC_WEP)
+	{
+		/* Check for WEP Key index */
+		if((pstrM2MAPConfig->u8KeyIndx <= 0) || (pstrM2MAPConfig->u8KeyIndx > WEP_KEY_MAX_INDEX))
+		{
+			M2M_ERR("INVALID KEY INDEX\n");
+			s8Ret = M2M_ERR_FAIL;
+			goto ERR1;
+		}
+		/* Check for WEP Key size */
+		if(	(pstrM2MAPConfig->u8KeySz != WEP_40_KEY_STRING_SIZE) &&
+			(pstrM2MAPConfig->u8KeySz != WEP_104_KEY_STRING_SIZE)
+		)
+		{
+			M2M_ERR("INVALID KEY SIZE\n");
+			s8Ret = M2M_ERR_FAIL;
+			goto ERR1;
+		}
+		/* Check for WEP Key */
+		if((pstrM2MAPConfig->au8WepKey == NULL) || (m2m_strlen((uint8 *)pstrM2MAPConfig->au8WepKey) <= 0) || (m2m_strlen((uint8 *)pstrM2MAPConfig->au8WepKey) > WEP_104_KEY_STRING_SIZE))
+		{
+			M2M_ERR("INVALID WEP KEY\n");
+			s8Ret = M2M_ERR_FAIL;
+			goto ERR1;
+		}
+	}
+	else
+	{
+		M2M_ERR("INVALID AUTHENTICATION MODE\n");
+		s8Ret = M2M_ERR_FAIL;
+		goto ERR1;
+	}
+	
+ERR1:
+	return s8Ret;
 }
 
 sint8 m2m_wifi_init(tstrWifiInitParam * param)
@@ -336,6 +415,19 @@ extern tstrSocketBuffer gastrSocketBuffer[];
 sint8 m2m_wifi_handle_events(void * arg)
 {
 	uint32 i;
+
+	/* Arduino API LIMITATION: */
+	/* To be compliant with the standard Arduino WiFi API socket must be buffered. */
+	/* WiFi101 shield does not have this ability and automatically pushes incoming */
+	/* data to the Arduino MCU. Function m2m_wifi_handle_events() is taking care of */
+	/* this transfer. Hence by ensuring that all the MCU socket buffers are available */
+	/* we can perform the transfer. */
+	/* However, if one socket buffer is full, we have to delay this transfer by */
+	/* returning an error value, as we have no way of knowing which socket is about */
+	/* to be used. */
+	/* Consequently, the Arduino sketch must NOT block on reading only one socket if */
+	/* several sockets are to be used. Instead, application must carefully read for */
+	/* all sockets, anytime. */
 	for (i = 0; i < MAX_SOCKET; ++i) {
 		if (*(gastrSocketBuffer[i].flag) & SOCKET_BUFFER_FLAG_FULL) {
 			return M2M_ERR_FAIL;
@@ -474,6 +566,26 @@ sint8 m2m_wifi_request_dhcp_server(uint8* addr)
     /*legacy API should be removed */
 	return 0;
 }
+/*!
+@fn			NMI_API sint8 m2m_wifi_set_lsn_int(tstrM2mLsnInt * pstrM2mLsnInt);
+@brief		Set the Wi-Fi listen interval for power save operation. It is represented in units
+			of AP Beacon periods.
+@param [in]	pstrM2mLsnInt
+			Structure holding the listen interval configurations.
+@return		The function SHALL return 0 for success and a negative value otherwise.
+@sa			tstrM2mLsnInt , m2m_wifi_set_sleep_mode
+@pre		m2m_wifi_set_sleep_mode shall be called first
+@warning	The Function called once after initialization. 
+*/
+sint8 m2m_wifi_enable_dhcp(uint8  u8DhcpEn )
+{
+
+	uint8	u8Req;
+	u8Req = u8DhcpEn ? M2M_IP_REQ_ENABLE_DHCP : M2M_IP_REQ_DISABLE_DHCP;
+	return hif_send(M2M_REQ_GRP_IP, u8Req, NULL, 0, NULL, 0, 0);
+
+
+}
 
 sint8 m2m_wifi_set_lsn_int(tstrM2mLsnInt* pstrM2mLsnInt)
 {
@@ -517,26 +629,28 @@ sint8 m2m_wifi_set_scan_region(uint8  ScanRegion)
 }
 sint8 m2m_wifi_request_scan(uint8 ch)
 {
-	sint8	s8Ret = M2M_ERR_SCAN_IN_PROGRESS;
+	sint8	s8Ret = M2M_SUCCESS;
 
 	if(!gu8scanInProgress)
 	{
-		tstrM2MScan strtmp;
-		strtmp.u8ChNum = ch;
-		s8Ret = hif_send(M2M_REQ_GRP_WIFI, M2M_WIFI_REQ_SCAN, (uint8*)&strtmp, sizeof(tstrM2MScan),NULL, 0,0);
-
-		if(s8Ret == M2M_SUCCESS)
+		if(((ch >= M2M_WIFI_CH_1) && (ch <= M2M_WIFI_CH_14)) || (ch == M2M_WIFI_CH_ALL))
 		{
-			gu8scanInProgress = 1;
+			tstrM2MScan strtmp;
+			strtmp.u8ChNum = ch;
+			s8Ret = hif_send(M2M_REQ_GRP_WIFI, M2M_WIFI_REQ_SCAN, (uint8*)&strtmp, sizeof(tstrM2MScan),NULL, 0,0);
+			if(s8Ret == M2M_SUCCESS)
+			{
+				gu8scanInProgress = 1;
+			}
 		}
 		else
 		{
-			M2M_ERR("SCAN Failed Ret = %d\n",s8Ret);
+			s8Ret = M2M_ERR_INVALID_ARG;
 		}
 	}
 	else
 	{
-		M2M_ERR("SCAN In Progress\n");
+		s8Ret = M2M_ERR_SCAN_IN_PROGRESS;
 	}
 	return s8Ret;
 }
@@ -559,6 +673,17 @@ sint8 m2m_wifi_wps_disable(void)
 	ret = hif_send(M2M_REQ_GRP_WIFI, M2M_WIFI_REQ_DISABLE_WPS, NULL,0, NULL, 0, 0);
 	return ret;
 }
+/*!
+@fn			NMI_API sint8 m2m_wifi_req_client_ctrl(uint8 cmd);
+@brief		Send a command to the PS Client (An WINC1500 board running the ps_firmware), 
+			if the PS client send any commands it will be received in wifi_cb M2M_WIFI_RESP_CLIENT_INFO
+@param [in]	cmd
+			Control command sent from PS Server to PS Client (command values defined by the application)
+@return		The function SHALL return M2M_SUCCESE for success and a negative value otherwise.
+@sa			m2m_wifi_req_server_init, M2M_WIFI_RESP_CLIENT_INFO
+@pre		m2m_wifi_req_server_init should be called first
+@warning	
+*/
 sint8 m2m_wifi_req_client_ctrl(uint8 u8Cmd)
 {
 
@@ -572,6 +697,16 @@ sint8 m2m_wifi_req_client_ctrl(uint8 u8Cmd)
 #endif
 	return ret;
 }
+/*!
+@fn			NMI_API sint8 m2m_wifi_req_server_init(uint8 ch);
+@brief		Initialize the PS Server, The WINC1500 support Non secure communication with another WINC1500, 
+			(SERVER/CLIENT) through one byte command (probe request and probe response) without any connection setup
+@param [in]	ch
+			Server listening channel
+@return		The function SHALL return M2M_SUCCESE for success and a negative value otherwise
+@sa			m2m_wifi_req_client_ctrl
+@warning	The server mode can't be used with any other modes (STA/P2P/AP)
+*/
 sint8 m2m_wifi_req_server_init(uint8 ch)
 {
 	sint8 ret = M2M_SUCCESS;
@@ -608,8 +743,11 @@ sint8 m2m_wifi_p2p_disconnect(void)
 }
 sint8 m2m_wifi_enable_ap(CONST tstrM2MAPConfig* pstrM2MAPConfig)
 {
-	sint8 ret = M2M_SUCCESS;
-	ret = hif_send(M2M_REQ_GRP_WIFI, M2M_WIFI_REQ_ENABLE_AP, (uint8 *)pstrM2MAPConfig, sizeof(tstrM2MAPConfig), NULL, 0, 0);
+	sint8 ret = M2M_ERR_FAIL;
+	if(M2M_SUCCESS == m2m_validate_ap_parameters(pstrM2MAPConfig))
+	{
+		ret = hif_send(M2M_REQ_GRP_WIFI, M2M_WIFI_REQ_ENABLE_AP, (uint8 *)pstrM2MAPConfig, sizeof(tstrM2MAPConfig), NULL, 0, 0);	
+	}
 	return ret;
 }
 sint8 m2m_wifi_disable_ap(void)
@@ -618,6 +756,13 @@ sint8 m2m_wifi_disable_ap(void)
 	ret = hif_send(M2M_REQ_GRP_WIFI, M2M_WIFI_REQ_DISABLE_AP, NULL, 0, NULL, 0, 0);
 	return ret;
 }
+/*!
+@fn          NMI_API sint8 m2m_wifi_req_curr_rssi(void);
+@brief       Request the current RSSI for the current connected AP, 
+			 the response received in wifi_cb M2M_WIFI_RESP_CURRENT_RSSI	
+@sa          M2M_WIFI_RESP_CURRENT_RSSI              
+@return      The function shall return M2M_SUCCESS for success and a negative value otherwise.
+*/
 sint8 m2m_wifi_req_curr_rssi(void)
 {
 	sint8 ret = M2M_SUCCESS;
@@ -638,6 +783,19 @@ sint8 m2m_wifi_send_ethernet_pkt(uint8* pu8Packet,uint16 u16PacketSize)
 	}
 	return s8Ret;
 }
+/*!
+@fn          NMI_API sint8 m2m_wifi_get_otp_mac_address(uint8 *pu8MacAddr, uint8 * pu8IsValid);
+@brief       Request the MAC address stored on the OTP (one time programmable) memory of the device.
+			 (the function is Blocking until response received)	
+@param [out] pu8MacAddr
+			 Output MAC address buffer of 6 bytes size. Valid only if *pu8Valid=1.
+@param [out] pu8IsValid
+		     A output boolean value to indicate the validity of pu8MacAddr in OTP. 
+		     Output zero if the OTP memory is not programmed, non-zero otherwise.	
+@return      The function shall return M2M_SUCCESS for success and a negative value otherwise.
+@sa          m2m_wifi_get_mac_address             
+@pre         m2m_wifi_init required to call any WIFI/socket function
+*/
 sint8 m2m_wifi_get_otp_mac_address(uint8 *pu8MacAddr, uint8* pu8IsValid)
 {
 	sint8 ret = M2M_SUCCESS;
@@ -652,7 +810,16 @@ sint8 m2m_wifi_get_otp_mac_address(uint8 *pu8MacAddr, uint8* pu8IsValid)
 	}
 	return ret;
 }
-
+/*!
+@fn          NMI_API sint8 m2m_wifi_get_mac_address(uint8 *pu8MacAddr)
+@brief       Request the current MAC address of the device (the working mac address).
+			 (the function is Blocking until response received)	
+@param [out] pu8MacAddr
+			 Output MAC address buffer of 6 bytes size.	
+@return      The function shall return M2M_SUCCESS for success and a negative value otherwise.
+@sa          m2m_wifi_get_otp_mac_address             
+@pre         m2m_wifi_init required to call any WIFI/socket function
+*/
 sint8 m2m_wifi_get_mac_address(uint8 *pu8MacAddr)
 {
 	sint8 ret = M2M_SUCCESS;
@@ -668,6 +835,22 @@ sint8 m2m_wifi_get_mac_address(uint8 *pu8MacAddr)
 
 	return ret;
 }
+/*!
+@fn          NMI_API sint8 m2m_wifi_req_scan_result(uint8 index);
+@brief       Reads the AP information from the Scan Result list with the given index, 
+			 the response received in wifi_cb M2M_WIFI_RESP_SCAN_RESULT, 
+			 the response pointer should be casted with tstrM2mWifiscanResult structure 	
+@param [in]  index 
+			 Index for the requested result, the index range start from 0 till number of AP's found 
+@sa          tstrM2mWifiscanResult,m2m_wifi_get_num_ap_found,m2m_wifi_request_scan             
+@return      The function shall return M2M_SUCCESE for success and a negative value otherwise
+@pre         m2m_wifi_request_scan need to be called first, then m2m_wifi_get_num_ap_found 
+			 to get the number of AP's found
+@warning     Function used only in STA mode only. the scan result updated only if scan request called,
+			 else it will be cashed in firmware for the host scan request result, 
+			 which mean if large delay occur between the scan request and the scan result request, 
+			 the result will not be up-to-date
+*/
 
 sint8 m2m_wifi_req_scan_result(uint8 index)
 {
@@ -677,14 +860,46 @@ sint8 m2m_wifi_req_scan_result(uint8 index)
 	ret = hif_send(M2M_REQ_GRP_WIFI, M2M_WIFI_REQ_SCAN_RESULT, (uint8*) &strReqScanRlt, sizeof(tstrM2mReqScanResult), NULL, 0, 0);
 	return ret;
 }
+/*!
+@fn          NMI_API uint8 m2m_wifi_get_num_ap_found(void);
+@brief       Reads the number of AP's found in the last Scan Request, 
+			 The function read the number of AP's from global variable which updated in the 
+			 wifi_cb in M2M_WIFI_RESP_SCAN_DONE.			 
+@sa          m2m_wifi_request_scan               
+@return      Return the number of AP's found in the last Scan Request.
+@pre         m2m_wifi_request_scan need to be called first 
+@warning     That function need to be called in the wifi_cb in M2M_WIFI_RESP_SCAN_DONE, 
+			 calling that function in any other place will return undefined/undated numbers.
+			 Function used only in STA mode only.
+*/
 uint8 m2m_wifi_get_num_ap_found(void)
 {
 	return gu8ChNum;
 }
+/*!
+@fn		    NMI_API uint8 m2m_wifi_get_sleep_mode(void);
+@brief	    Get the current Power save mode.
+@return	    The current operating power saving mode.
+@sa		    tenuPowerSaveModes , m2m_wifi_set_sleep_mode
+*/
 uint8 m2m_wifi_get_sleep_mode(void)
 {
 	return hif_get_sleep_mode();
 }
+/*!
+@fn			NMI_API sint8 m2m_wifi_set_sleep_mode(uint8 PsTyp, uint8 BcastEn);
+@brief      Set the power saving mode for the WINC1500. 
+@param [in]	PsTyp
+			Desired power saving mode. Supported types are defined in tenuPowerSaveModes.
+@param [in]	BcastEn
+			Broadcast reception enable flag. 
+			If it is 1, the WINC1500 must be awake each DTIM Beacon for receiving Broadcast traffic.
+			If it is 0, the WINC1500 will not wakeup at the DTIM Beacon, but its wakeup depends only 
+			on the the configured Listen Interval. 
+@return     The function SHALL return 0 for success and a negative value otherwise.
+@sa			tenuPowerSaveModes
+@warning    The function called once after initialization.  
+*/
 sint8 m2m_wifi_set_sleep_mode(uint8 PsTyp, uint8 BcastEn)
 {
 	sint8 ret = M2M_SUCCESS;
@@ -696,6 +911,15 @@ sint8 m2m_wifi_set_sleep_mode(uint8 PsTyp, uint8 BcastEn)
 	hif_set_sleep_mode(PsTyp);
 	return ret;
 }
+/*!
+@fn	        NMI_API sint8 m2m_wifi_request_sleep(void)
+@brief	    Request from WINC1500 device to Sleep for specific time in the M2M_PS_MANUAL Power save mode (only).
+@param [in]	u32SlpReqTime
+			Request Sleep in ms 
+@return     The function SHALL return M2M_SUCCESS for success and a negative value otherwise.
+@sa         tenuPowerSaveModes , m2m_wifi_set_sleep_mode
+@warning	the Function should be called in M2M_PS_MANUAL power save only 
+*/
 sint8 m2m_wifi_request_sleep(uint32 u32SlpReqTime)
 {
 	sint8 ret = M2M_SUCCESS;
@@ -707,9 +931,18 @@ sint8 m2m_wifi_request_sleep(uint32 u32SlpReqTime)
 		strPs.u32SleepTime = u32SlpReqTime;
 		ret = hif_send(M2M_REQ_GRP_WIFI, M2M_WIFI_REQ_DOZE, (uint8*) &strPs,sizeof(tstrM2mSlpReqTime), NULL, 0, 0);
 	}
-	ret = hif_chip_sleep();
 	return ret;
 }
+/*!
+@fn			NMI_API sint8 m2m_wifi_set_device_name(uint8 *pu8DeviceName, uint8 u8DeviceNameLength);
+@brief		Set the WINC1500 device name which is used as P2P device name.
+@param [in]	pu8DeviceName
+			Buffer holding the device name.
+@param [in]	u8DeviceNameLength
+			Length of the device name.
+@return		The function SHALL return M2M_SUCCESS for success and a negative value otherwise.
+@warning	The Function called once after initialization. 
+*/
 sint8 m2m_wifi_set_device_name(uint8 *pu8DeviceName, uint8 u8DeviceNameLength)
 {
 	tstrM2MDeviceNameConfig strDeviceName;
@@ -728,12 +961,12 @@ sint8 m2m_wifi_enable_monitoring_mode(tstrM2MWifiMonitorModeCtrl *pstrMtrCtrl, u
 								   uint16 u16BufferSize, uint16 u16DataOffset)
 {
 	sint8	s8Ret = -1;
-	if((pstrMtrCtrl->u8ChannelID >= 1) && (pstrMtrCtrl->u8ChannelID <= 11))
+	if((pstrMtrCtrl->u8ChannelID >= M2M_WIFI_CH_1) && (pstrMtrCtrl->u8ChannelID <= M2M_WIFI_CH_14))
 	{
 		gstrMgmtCtrl.pu8Buf		= pu8PayloadBuffer;
 		gstrMgmtCtrl.u16Sz		= u16BufferSize;
 		gstrMgmtCtrl.u16Offset	= u16DataOffset;
-		s8Ret = hif_send(M2M_REQ_GRP_WIFI, M2M_WIFI_REQ_ENABLE_MONITORING | M2M_REQ_DATA_PKT,
+		s8Ret = hif_send(M2M_REQ_GRP_WIFI, M2M_WIFI_REQ_ENABLE_MONITORING,
 			(uint8*)pstrMtrCtrl, sizeof(tstrM2MWifiMonitorModeCtrl), NULL, 0,0);
 	}
 	return s8Ret;
@@ -767,16 +1000,29 @@ sint8 m2m_wifi_start_provision_mode(tstrM2MAPConfig *pstrAPConfig, char *pcHttpS
 	if((pstrAPConfig != NULL))
 	{
 		tstrM2MProvisionModeConfig	strProvConfig;
-		m2m_memcpy((uint8*)&strProvConfig.strApConfig, (uint8*)pstrAPConfig, sizeof(tstrM2MAPConfig));
-		m2m_memcpy((uint8*)strProvConfig.acHttpServerDomainName, (uint8*)pcHttpServerDomainName, 64);
-		strProvConfig.u8EnableRedirect = bEnableHttpRedirect;
+		if(M2M_SUCCESS == m2m_validate_ap_parameters(pstrAPConfig))
+		{
+			m2m_memcpy((uint8*)&strProvConfig.strApConfig, (uint8*)pstrAPConfig, sizeof(tstrM2MAPConfig));
+			if((m2m_strlen((uint8 *)pcHttpServerDomainName) <= 0) || (NULL == pcHttpServerDomainName))
+			{
+				M2M_ERR("INVALID DOMAIN NAME\n");
+				goto ERR1;
+			}
+			m2m_memcpy((uint8*)strProvConfig.acHttpServerDomainName, (uint8*)pcHttpServerDomainName, 64);
+			strProvConfig.u8EnableRedirect = bEnableHttpRedirect;
 		
-		/* Stop Scan if it is ongoing.
-		*/
-		gu8scanInProgress = 0;
-		s8Ret = hif_send(M2M_REQ_GRP_WIFI, M2M_WIFI_REQ_START_PROVISION_MODE | M2M_REQ_DATA_PKT, (uint8*)&strProvConfig, sizeof(tstrM2MProvisionModeConfig),
-		NULL, 0, 0);
+			/* Stop Scan if it is ongoing.
+			*/
+			gu8scanInProgress = 0;
+			s8Ret = hif_send(M2M_REQ_GRP_WIFI, M2M_WIFI_REQ_START_PROVISION_MODE | M2M_REQ_DATA_PKT, 
+						(uint8*)&strProvConfig, sizeof(tstrM2MProvisionModeConfig), NULL, 0, 0);
+		}
+		else
+		{
+			/*goto ERR1;*/
+		}
 	}
+ERR1:
 	return s8Ret;
 }
 

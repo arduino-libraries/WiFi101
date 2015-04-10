@@ -1,5 +1,5 @@
 /*
-  WiFi101.h - Library for Arduino Wifi shield.
+  WiFi.h - Library for Arduino Wifi shield.
   Copyright (c) 2011-2014 Arduino.  All right reserved.
 
   This library is free software; you can redistribute it and/or

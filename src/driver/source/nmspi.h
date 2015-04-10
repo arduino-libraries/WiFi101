@@ -58,6 +58,14 @@
 */ 
 sint8 nm_spi_init(void);
 
+
+/**
+*	@fn		nm_spi_deinit
+*	@brief	DeInitialize the SPI 
+*	@return	ZERO in case of success and M2M_ERR_BUS_FAIL in case of failure
+*/ 
+sint8 nm_spi_deinit(void);
+
 /**
 *	@fn		nm_spi_read_reg
 *	@brief	Read register

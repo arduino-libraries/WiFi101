@@ -294,7 +294,7 @@ void restore_pmu_settings_after_global_reset(void)
 	* global reset if PMU toggle is done at 
 	* least once since the last hard reset.
 	*/
-	if(REV(nmi_get_chipid()) >= REV_B0) {
+	if(REV(nmi_get_chipid()) >= REV_2B0) {
 		nm_write_reg(0x1e48, 0xb78469ce);
 	}
 }
@@ -448,7 +448,7 @@ void rom_test()
 }
 #endif /* __ROM_TEST__ */
 
-sint8 wait_for_bootrom(void)
+sint8 wait_for_bootrom(uint8 arg)
 {
 	sint8 ret = M2M_SUCCESS;
 	uint32 reg = 0, cnt = 0;
@@ -481,7 +481,13 @@ sint8 wait_for_bootrom(void)
 			}
 		}
 	}
-
+	
+	if(2 == arg) {
+		nm_write_reg(NMI_REV_REG, M2M_ATE_FW_START_VALUE);
+	} else {
+		/*bypass this step*/
+	}
+	
 	nm_write_reg(BOOTROM_REG,M2M_START_FIRMWARE);
 
 #ifdef __ROM_TEST__
@@ -492,16 +498,25 @@ ERR2:
 	return ret;
 }
 
-sint8 wait_for_firmware_start(void)
+sint8 wait_for_firmware_start(uint8 arg)
 {
 	sint8 ret = M2M_SUCCESS;
-	uint32 reg = 0, cnt = 0;;
+	uint32 reg = 0, cnt = 0;
+	volatile uint32 regAddress = NMI_STATE_REG;
+	volatile uint32 checkValue = M2M_FINISH_INIT_STATE;
 	
-	while (reg != M2M_FINISH_INIT_STATE)
+	if(2 == arg) {
+		regAddress = NMI_REV_REG;
+		checkValue = M2M_ATE_FW_IS_UP_VALUE;
+	} else {
+		/*bypass this step*/
+	}
+	
+	while (checkValue != reg)
 	{
-		nm_bsp_sleep(1); /* TODO: Why bus error if this delay is not here. */
+		nm_bsp_sleep(2); /* TODO: Why bus error if this delay is not here. */
 		M2M_DBG("%x %x %x\n",(unsigned int)nm_read_reg(0x108c),(unsigned int)nm_read_reg(0x108c),(unsigned int)nm_read_reg(0x14A0));
-		reg = nm_read_reg(NMI_STATE_REG);
+		reg = nm_read_reg(regAddress);
 		if(++cnt > TIMEOUT)
 		{
 			M2M_DBG("Time out for wait firmware Run\n");
@@ -509,7 +524,10 @@ sint8 wait_for_firmware_start(void)
 			goto ERR;
 		}
 	}
-	nm_write_reg(NMI_STATE_REG,0);
+	if(M2M_FINISH_INIT_STATE == checkValue)
+	{
+		nm_write_reg(NMI_STATE_REG, 0);
+	}
 ERR:
 	return ret;
 }

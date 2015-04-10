@@ -49,17 +49,24 @@
 #define NMI_PERIPH_REG_BASE     0x1000
 #define NMI_CHIPID	            (NMI_PERIPH_REG_BASE)
 #define rNMI_GP_REG_0			(0x149c)
-
+#define rNMI_GP_REG_1			(0x14A0)
+#define rNMI_GLB_RESET			(0x1400)
+#define rNMI_BOOT_RESET_MUX		(0x1118)
 #define NMI_STATE_REG			(0x108c)
 #define BOOTROM_REG				(0xc000c)
-#define NMI_REV_REG  			(0x207ac)
+#define NMI_REV_REG  			(0x207ac)	/*Also, Used to load ATE firmware from SPI Flash and to ensure that it is running too*/
 #define M2M_WAIT_FOR_HOST_REG 	(0x207bc)
 #define M2M_FINISH_INIT_STATE 	0x02532636UL
 #define M2M_FINISH_BOOT_ROM   	 0x10add09eUL
 #define M2M_START_FIRMWARE   	 0xef522f61UL
 #define M2M_START_PS_FIRMWARE    0x94992610UL
 
-#define REV_B0        (0x2B0)
+#define M2M_ATE_FW_START_VALUE	(0x3C1CD57D)	/*Also, Change this value in boot_firmware if it will be changed here*/
+#define M2M_ATE_FW_IS_UP_VALUE	(0xD75DC1C3)	/*Also, Change this value in ATE (Burst) firmware if it will be changed here*/
+
+#define REV_2B0        (0x2B0)
+#define REV_B0         (0x2B0)
+#define REV_3A0        (0x3A0)
 #define GET_CHIPID()	nmi_get_chipid()
 #define ISNMC1000(id)   (((id & 0xfffff000) == 0x100000) ? 1 : 0)
 #define ISNMC1500(id)   (((id & 0xfffff000) == 0x150000) ? 1 : 0)
@@ -116,9 +123,9 @@ void nmi_set_sys_clk_src_to_xo(void);
 
 sint8 chip_reset(void);
 
-sint8 wait_for_bootrom(void);
+sint8 wait_for_bootrom(uint8);
 
-sint8 wait_for_firmware_start(void);
+sint8 wait_for_firmware_start(uint8);
 
 sint8 chip_deinit(void);
 
