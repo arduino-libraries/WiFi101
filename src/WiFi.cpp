@@ -410,6 +410,16 @@ uint32_t WiFiClass::localIP()
 	return _localip;
 }
 
+uint32_t WiFiClass::subnetMask()
+{
+	return 0; // TODO placeholder to allow examples to compile
+}
+
+uint32_t WiFiClass::gatewayIP()
+{
+	return 0; // TODO placeholder to allow examples to compile
+}
+
 char* WiFiClass::SSID()
 {
 	if (_status == WL_CONNECTED) {

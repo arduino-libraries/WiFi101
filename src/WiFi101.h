@@ -110,7 +110,11 @@ public:
 	void disconnect();
 
 	uint8_t *macAddress(uint8_t *mac);
+
+	
 	uint32_t localIP();
+	uint32_t subnetMask();
+	uint32_t gatewayIP();
 	char* SSID();
 	int32_t RSSI();
 
