@@ -20,11 +20,9 @@
 #include <string.h>
 #include "WiFi101.h"
 #include "Arduino.h"
-#include "SPI.h"
 
 extern "C" {
   #include "bsp/include/nm_bsp.h"
-  #include "bus_wrapper/include/nm_bus_wrapper_samd21.h"
   #include "socket/include/socket_buffer.h"
   #include "driver/source/nmasic.h"
   #include "driver/include/m2m_periph.h"
@@ -573,15 +571,6 @@ void WiFiClass::refresh(void)
 {
 	// Update state machine:
 	m2m_wifi_handle_events(NULL);
-}
-
-void SPI_begin() {
-	SPI.begin();
-	SPI.setClockDivider(4);
-}
-
-uint8 SPI_transfer(uint8 data) {
-	return SPI.transfer(data);
 }
 
 WiFiClass WiFi;

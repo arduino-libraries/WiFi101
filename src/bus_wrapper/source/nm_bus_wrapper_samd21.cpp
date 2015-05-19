@@ -42,11 +42,16 @@
  *
  */
 
+#include <Arduino.h>
+#include <SPI.h>
+
+extern "C" {
+
 #include "bsp/include/nm_bsp.h"
 #include "common/include/nm_common.h"
 #include "bus_wrapper/include/nm_bus_wrapper.h"
-#include "bus_wrapper/include/nm_bus_wrapper_samd21.h"
-#include "Arduino.h"
+
+}
 
 #define CONF_WINC_CS_PIN	10
 
@@ -78,7 +83,7 @@ static sint8 spi_rw(uint8* pu8Mosi, uint8* pu8Miso, uint16 u16Sz)
 	digitalWrite(CONF_WINC_CS_PIN, LOW);
 
 	while (u16Sz) {
-		tmp_data = SPI_transfer(*pu8Mosi);
+		tmp_data = SPI.transfer(*pu8Mosi);
 		*pu8Miso = tmp_data;
 			
 		u16Sz--;
@@ -93,6 +98,8 @@ static sint8 spi_rw(uint8* pu8Mosi, uint8* pu8Miso, uint16 u16Sz)
 	return M2M_SUCCESS;
 }
 
+extern "C" {
+
 /*
 *	@fn		nm_bus_init
 *	@brief	Initialize the bus wrapper
@@ -106,7 +113,8 @@ sint8 nm_bus_init(void *pvInitValue)
 	sint8 result = M2M_SUCCESS;
 
 	/* Configure SPI peripheral. */
-	SPI_begin();
+	SPI.begin();
+	SPI.setClockDivider(4);
 	
 	/* Configure CS PIN. */
 	pinMode(CONF_WINC_CS_PIN, OUTPUT);
@@ -177,4 +185,6 @@ sint8 nm_bus_reinit(void* config)
 {
 	return M2M_SUCCESS;
 }
+
+} // extern "C"
 
