@@ -62,11 +62,12 @@ tstrNmBusCapabilities egstrNmBusCapabilities =
 	NM_BUS_MAX_TRX_SZ
 };
 
+static const SPISettings wifi_SPISettings(12000000L, MSBFIRST, SPI_MODE0);
+
 static sint8 spi_rw(uint8* pu8Mosi, uint8* pu8Miso, uint16 u16Sz)
 {
 	uint8 u8Dummy = 0;
 	uint8 u8SkipMosi = 0, u8SkipMiso = 0;
-	uint16 tmp_data = 0;
 
 	if (!pu8Mosi) {
 		pu8Mosi = &u8Dummy;
@@ -80,11 +81,11 @@ static sint8 spi_rw(uint8* pu8Mosi, uint8* pu8Miso, uint16 u16Sz)
 		return M2M_ERR_BUS_FAIL;
 	}
 
+	SPI.beginTransaction(wifi_SPISettings);
 	digitalWrite(CONF_WINC_CS_PIN, LOW);
 
 	while (u16Sz) {
-		tmp_data = SPI.transfer(*pu8Mosi);
-		*pu8Miso = tmp_data;
+		*pu8Miso = SPI.transfer(*pu8Mosi);
 			
 		u16Sz--;
 		if (!u8SkipMiso)
@@ -94,6 +95,7 @@ static sint8 spi_rw(uint8* pu8Mosi, uint8* pu8Miso, uint16 u16Sz)
 	}
 
 	digitalWrite(CONF_WINC_CS_PIN, HIGH);
+	SPI.endTransaction();
 
 	return M2M_SUCCESS;
 }
@@ -114,7 +116,6 @@ sint8 nm_bus_init(void *pvInitValue)
 
 	/* Configure SPI peripheral. */
 	SPI.begin();
-	SPI.setClockDivider(4);
 	
 	/* Configure CS PIN. */
 	pinMode(CONF_WINC_CS_PIN, OUTPUT);
@@ -168,6 +169,7 @@ sint8 nm_bus_ioctl(uint8 u8Cmd, void* pvParameter)
 */
 sint8 nm_bus_deinit(void)
 {
+	SPI.end();
 	return 0;
 }
 
