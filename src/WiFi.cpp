@@ -17,9 +17,9 @@
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <string.h>
 #include "WiFi101.h"
-#include "Arduino.h"
+#include <string.h>
+#include <Arduino.h>
 
 extern "C" {
   #include "bsp/include/nm_bsp.h"

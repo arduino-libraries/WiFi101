@@ -20,10 +20,9 @@
 #ifndef WIFICLIENT_H
 #define WIFICLIENT_H
 
-#include "Arduino.h"
-#include "Print.h"
-#include "Client.h"
-#include "IPAddress.h"
+#include <Arduino.h>
+#include <Client.h>
+#include <IPAddress.h>
 #include "socket/include/socket_buffer.h"
 
 class WiFiClient : public Client {

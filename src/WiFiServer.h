@@ -20,8 +20,8 @@
 #ifndef WIFISERVER_H
 #define WIFISERVER_H
 
-#include "Arduino.h"
-#include "Server.h"
+#include <Arduino.h>
+#include <Server.h>
 
 class WiFiClient;
 
