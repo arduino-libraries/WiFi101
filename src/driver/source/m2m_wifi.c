@@ -443,6 +443,10 @@ sint8 m2m_wifi_default_connect(void)
 
 sint8 m2m_wifi_connect(char *pcSsid, uint8 u8SsidLen, uint8 u8SecType, void *pvAuthInfo, uint16 u16Ch)
 {
+	return m2m_wifi_connect_sc(pcSsid, u8SsidLen, u8SecType, pvAuthInfo,  u16Ch,0);
+}
+sint8 m2m_wifi_connect_sc(char *pcSsid, uint8 u8SsidLen, uint8 u8SecType, void *pvAuthInfo, uint16 u16Ch, uint8 u8NoSaveCred)
+{
 	sint8				ret = M2M_SUCCESS;
 	tstrM2mWifiConnect	strConnect;
 	tstrM2MWifiSecInfo	*pstrAuthInfo;
@@ -477,7 +481,8 @@ sint8 m2m_wifi_connect(char *pcSsid, uint8 u8SsidLen, uint8 u8SecType, void *pvA
 	m2m_memcpy(strConnect.au8SSID, (uint8*)pcSsid, u8SsidLen);
 	strConnect.au8SSID[u8SsidLen]	= 0;
 	strConnect.u16Ch				= NM_BSP_B_L_16(u16Ch);
-
+	/* Credentials will be Not be saved if u8NoSaveCred is set */ 
+	strConnect.u8NoSaveCred 			= u8NoSaveCred ? 1:0;
 	pstrAuthInfo = &strConnect.strSec;
 	pstrAuthInfo->u8SecType		= u8SecType;
 

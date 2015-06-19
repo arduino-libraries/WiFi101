@@ -4,7 +4,7 @@
  *
  * \brief This module contains NMC1000 SPI protocol bus APIs implementation.
  *
- * Copyright (c) 2014 Atmel Corporation. All rights reserved.
+ * Copyright (c) 2015 Atmel Corporation. All rights reserved.
  *
  * \asf_license_start
  *
@@ -23,9 +23,6 @@
  * 3. The name of Atmel may not be used to endorse or promote products derived
  *    from this software without specific prior written permission.
  *
- * 4. This software may only be redistributed and used in connection with an
- *    Atmel microcontroller product.
- *
  * THIS SOFTWARE IS PROVIDED BY ATMEL "AS IS" AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT ARE
@@ -43,7 +40,7 @@
  */
 #include "common/include/nm_common.h"
 
-#ifdef USE_SPI
+#ifdef CONF_WINC_USE_SPI
 
 #define USE_OLD_SPI_SW
 
@@ -97,7 +94,7 @@
 
 static uint8 	gu8Crc_off	=   0;
 
-static sint8 nmi_spi_read(uint8* b, uint16 sz)                                 
+static sint8 nmi_spi_read(uint8* b, uint16 sz)
 {
 	tstrNmSpiRw spi;
 	spi.pu8InBuf = NULL;
@@ -207,8 +204,8 @@ static sint8 spi_cmd(uint8 cmd, uint32 adr, uint32 u32data, uint32 sz,uint8 cloc
 		bc[2] = (uint8)(adr >> 8);
 		bc[3] = (uint8)adr;
 		len = 5;
-		break; 
-	case CMD_INTERNAL_READ:			/* internal register read */ 
+		break;
+	case CMD_INTERNAL_READ:			/* internal register read */
 		bc[1] = (uint8)(adr >> 8);
 		if(clockless)  bc[1] |= (1 << 7);
 		bc[2] = (uint8)adr;
@@ -276,7 +273,7 @@ static sint8 spi_cmd(uint8 cmd, uint32 adr, uint32 u32data, uint32 sz,uint8 cloc
 		result = N_FAIL;
 		break;
 	}
-	
+
 	if (result) {
 		if (!gu8Crc_off)
 			bc[len-1] = (crc7(0x7f, (const uint8 *)&bc[0], len-1)) << 1;
@@ -308,7 +305,7 @@ static sint8 spi_cmd_rsp(uint8 cmd)
 			result = N_FAIL;
 			goto _fail_;
 		}
-	}	
+	}
 
 	/* wait for response */
 	s8RetryCnt = 10;
@@ -370,7 +367,7 @@ static sint8 spi_data_read(uint8 *b, uint16 sz,uint8 clockless)
 			if (((rsp >> 4) & 0xf) == 0xf)
 				break;
 		} while (retry--);
-		
+
 		if (result == N_FAIL)
 			break;
 
@@ -442,7 +439,7 @@ static sint8 spi_data_write(uint8 *b, uint16 sz)
 			else
 				order = 0x2;
 		}
-		cmd |= order;	
+		cmd |= order;
 		if (M2M_SUCCESS != nmi_spi_write(&cmd, 1)) {
 			M2M_ERR("[nmi spi]: Failed data block cmd write, bus error...\n");
 			result = N_FAIL;
@@ -494,8 +491,8 @@ static sint8 spi_write_reg(uint32 addr, uint32 u32data)
 	sint8 result = N_OK;
 	uint8 cmd = CMD_SINGLE_WRITE;
 	uint8 clockless = 0;
-	if (addr <= 0x30) 
-	{	
+	if (addr <= 0x30)
+	{
 		/**
 		NMC1000 clockless registers.
 		**/
@@ -507,17 +504,17 @@ static sint8 spi_write_reg(uint32 addr, uint32 u32data)
 		cmd = CMD_SINGLE_WRITE;
 		clockless = 0;
 	}
-	
+
 #if defined USE_OLD_SPI_SW
 	result = spi_cmd(cmd, addr, u32data, 4, clockless);
 	if (result != N_OK) {
-		M2M_ERR("[nmi spi]: Failed cmd, write reg (%08x)...\n", (unsigned int)addr);		
+		M2M_ERR("[nmi spi]: Failed cmd, write reg (%08x)...\n", (unsigned int)addr);
 		return N_FAIL;
 	}
-	 
+
 	result = spi_cmd_rsp(cmd);
 	if (result != N_OK) {
-		M2M_ERR("[nmi spi]: Failed cmd response, write reg (%08x)...\n", (unsigned int)addr);		
+		M2M_ERR("[nmi spi]: Failed cmd response, write reg (%08x)...\n", (unsigned int)addr);
 		spi_cmd(CMD_RESET, 0, 0, 0, 0);
 		return N_FAIL;
 	}
@@ -527,11 +524,11 @@ static sint8 spi_write_reg(uint32 addr, uint32 u32data)
 
 	result = spi_cmd_complete(cmd, addr, (uint8*)&u32data, 4, clockless);
 	if (result != N_OK) {
-		M2M_ERR( "[nmi spi]: Failed cmd, write reg (%08x)...\n", addr);		
+		M2M_ERR( "[nmi spi]: Failed cmd, write reg (%08x)...\n", addr);
 	}
 
 	return result;
-	
+
 #endif
 }
 
@@ -540,27 +537,27 @@ static sint8 nm_spi_write(uint32 addr, uint8 *buf, uint16 size)
 	sint8 result;
 	uint8 cmd = CMD_DMA_EXT_WRITE;
 
-	
+
 	/**
-		Command 
+		Command
 	**/
 #if defined USE_OLD_SPI_SW
 	result = spi_cmd(cmd, addr, 0, size,0);
 	if (result != N_OK) {
-		M2M_ERR("[nmi spi]: Failed cmd, write block (%08x)...\n", (unsigned int)addr);		
+		M2M_ERR("[nmi spi]: Failed cmd, write block (%08x)...\n", (unsigned int)addr);
 		return N_FAIL;
 	}
- 
+
 	result = spi_cmd_rsp(cmd);
 	if (result != N_OK) {
 		M2M_ERR("[nmi spi ]: Failed cmd response, write block (%08x)...\n", (unsigned int)addr);
 		spi_cmd(CMD_RESET, 0, 0, 0, 0);
-		return N_FAIL;		
+		return N_FAIL;
 	}
 #else
 	result = spi_cmd_complete(cmd, addr, NULL, size, 0);
 	if (result != N_OK) {
-		M2M_ERR( "[nmi spi]: Failed cmd, write block (%08x)...\n", addr);		
+		M2M_ERR( "[nmi spi]: Failed cmd, write block (%08x)...\n", addr);
 		return N_FAIL;
 	}
 #endif
@@ -573,7 +570,7 @@ static sint8 nm_spi_write(uint32 addr, uint8 *buf, uint16 size)
 		M2M_ERR("[nmi spi]: Failed block data write...\n");
 		spi_cmd(CMD_RESET, 0, 0, 0, 0);
 	}
-		
+
 	return N_OK;
 }
 
@@ -584,8 +581,8 @@ static sint8 spi_read_reg(uint32 addr, uint32 *u32data)
 	uint8 tmp[4];
 	uint8 clockless = 0;
 
-	if (addr <= 0xff) 
-	{	
+	if (addr <= 0xff)
+	{
 		/**
 		NMC1000 clockless registers.
 		**/
@@ -603,8 +600,8 @@ static sint8 spi_read_reg(uint32 addr, uint32 *u32data)
 	if (result != N_OK) {
 		M2M_ERR("[nmi spi]: Failed cmd, read reg (%08x)...\n", (unsigned int)addr);
 		return N_FAIL;
-	} 
-	
+	}
+
 	result = spi_cmd_rsp(cmd);
 	if (result != N_OK) {
 		M2M_ERR("[nmi spi]: Failed cmd response, read reg (%08x)...\n", (unsigned int)addr);
@@ -624,15 +621,15 @@ static sint8 spi_read_reg(uint32 addr, uint32 *u32data)
 	if (result != N_OK) {
 		M2M_ERR( "[nmi spi]: Failed cmd, read reg (%08x)...\n", addr);
 		return N_FAIL;
-	}  
-	
+	}
+
 #endif
 
-	*u32data = tmp[0] | 
+	*u32data = tmp[0] |
 		((uint32)tmp[1] << 8) |
 		((uint32)tmp[2] << 16) |
 		((uint32)tmp[3] << 24);
-	
+
 	return N_OK;
 }
 
@@ -643,15 +640,15 @@ static sint8 nm_spi_read(uint32 addr, uint8 *buf, uint16 size)
 
 
 	/**
-		Command 
+		Command
 	**/
 #if defined USE_OLD_SPI_SW
 	result = spi_cmd(cmd, addr, 0, size,0);
 	if (result != N_OK) {
 		M2M_ERR("[nmi spi]: Failed cmd, read block (%08x)...\n", (unsigned int)addr);
 		return N_FAIL;
-	}  
- 
+	}
+
 	result = spi_cmd_rsp(cmd);
 	if (result != N_OK) {
 		M2M_ERR("[nmi spi]: Failed cmd response, read block (%08x)...\n", (unsigned int)addr);
@@ -673,9 +670,9 @@ static sint8 nm_spi_read(uint32 addr, uint8 *buf, uint16 size)
 		if (result != N_OK) {
 			M2M_ERR("[nmi spi]: Failed cmd, read block (%08x)...\n", addr);
 			return N_FAIL;
-		}  
+		}
 #endif
-		
+
 	return N_OK;
 }
 
@@ -700,33 +697,33 @@ static void spi_init_pkt_sz(void)
 	case 2048: val32 |= (3 << 4); break;
 	case 4096: val32 |= (4 << 4); break;
 	case 8192: val32 |= (5 << 4); break;
-	
+
 	}
 	nm_spi_write_reg(SPI_BASE+0x24, val32);
 }
 
 /*
 *	@fn		nm_spi_init
-*	@brief	Initialize the SPI 
+*	@brief	Initialize the SPI
 *	@return	M2M_SUCCESS in case of success and M2M_ERR_BUS_FAIL in case of failure
 *	@author	M. Abdelmawla
 *	@date	11 July 2012
 *	@version	1.0
-*/ 
+*/
 sint8 nm_spi_init(void)
 {
 	uint32 chipid;
 	uint32 reg =0;
-	
+
 	/**
-		configure protocol 
+		configure protocol
 	**/
 	gu8Crc_off = 0;
 
-	// TODO: We can remove the CRC trials if there is a definite way to reset 
+	// TODO: We can remove the CRC trials if there is a definite way to reset
 	// the SPI to it's initial value.
 	if (!spi_read_reg(NMI_SPI_PROTOCOL_CONFIG, &reg)) {
-		/* Read failed. Try with CRC off. This might happen when module 
+		/* Read failed. Try with CRC off. This might happen when module
 		is removed but chip isn't reset*/
 		gu8Crc_off = 1;
 		M2M_ERR("[nmi spi]: Failed internal read protocol with CRC on, retyring with CRC off...\n");
@@ -765,12 +762,12 @@ sint8 nm_spi_init(void)
 
 /*
 *	@fn		nm_spi_init
-*	@brief	DeInitialize the SPI 
+*	@brief	DeInitialize the SPI
 *	@return	M2M_SUCCESS in case of success and M2M_ERR_BUS_FAIL in case of failure
 *	@author	Samer Sarhan
 *	@date	27 Feb 2015
 *	@version	1.0
-*/ 
+*/
 sint8 nm_spi_deinit(void)
 {
 	gu8Crc_off = 0;
@@ -786,7 +783,7 @@ sint8 nm_spi_deinit(void)
 *	@author	M. Abdelmawla
 *	@date	11 July 2012
 *	@version	1.0
-*/ 
+*/
 uint32 nm_spi_read_reg(uint32 u32Addr)
 {
 	uint32 u32Val;
@@ -807,7 +804,7 @@ uint32 nm_spi_read_reg(uint32 u32Addr)
 *	@author	M. Abdelmawla
 *	@date	11 July 2012
 *	@version	1.0
-*/ 
+*/
 sint8 nm_spi_read_reg_with_ret(uint32 u32Addr, uint32* pu32RetVal)
 {
 	sint8 s8Ret;
@@ -831,7 +828,7 @@ sint8 nm_spi_read_reg_with_ret(uint32 u32Addr, uint32* pu32RetVal)
 *	@author	M. Abdelmawla
 *	@date	11 July 2012
 *	@version	1.0
-*/ 
+*/
 sint8 nm_spi_write_reg(uint32 u32Addr, uint32 u32Val)
 {
 	sint8 s8Ret;
@@ -857,7 +854,7 @@ sint8 nm_spi_write_reg(uint32 u32Addr, uint32 u32Val)
 *	@author	M. Abdelmawla
 *	@date	11 July 2012
 *	@version	1.0
-*/ 
+*/
 sint8 nm_spi_read_block(uint32 u32Addr, uint8 *puBuf, uint16 u16Sz)
 {
 	sint8 s8Ret;
@@ -883,7 +880,7 @@ sint8 nm_spi_read_block(uint32 u32Addr, uint8 *puBuf, uint16 u16Sz)
 *	@author	M. Abdelmawla
 *	@date	11 July 2012
 *	@version	1.0
-*/ 
+*/
 sint8 nm_spi_write_block(uint32 u32Addr, uint8 *puBuf, uint16 u16Sz)
 {
 	sint8 s8Ret;

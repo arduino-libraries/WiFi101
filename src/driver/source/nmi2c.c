@@ -4,7 +4,7 @@
  *
  * \brief This module contains NMC1000 I2C protocol bus APIs implementation.
  *
- * Copyright (c) 2014 Atmel Corporation. All rights reserved.
+ * Copyright (c) 2015 Atmel Corporation. All rights reserved.
  *
  * \asf_license_start
  *
@@ -22,9 +22,6 @@
  *
  * 3. The name of Atmel may not be used to endorse or promote products derived
  *    from this software without specific prior written permission.
- *
- * 4. This software may only be redistributed and used in connection with an
- *    Atmel microcontroller product.
  *
  * THIS SOFTWARE IS PROVIDED BY ATMEL "AS IS" AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -44,7 +41,7 @@
 
 #include "common/include/nm_common.h"
 
-#ifdef USE_I2C 
+#ifdef CONF_WINC_USE_I2C
 
 #include "nmi2c.h"
 #include "bus_wrapper/include/nm_bus_wrapper.h"
@@ -61,7 +58,7 @@
 *	@author	M. Abdelmawla
 *	@date	11 July 2012
 *	@version	1.0
-*/ 
+*/
  sint8 nm_i2c_read_reg_with_ret(uint32 u32Addr, uint32* pu32RetVal)
 {
 	uint8 b[6];
@@ -70,7 +67,7 @@
 	sint8 s8Ret = M2M_SUCCESS;
 
 	if(u32Addr < 0xff) { /* clockless i2c */
-		b[0] = 0x09;		
+		b[0] = 0x09;
 		b[1] = (uint8)(u32Addr);
 		rsz = 1;
 		strI2c.u16Sz = 2;
@@ -119,7 +116,7 @@
 *	@author	M. Abdelmawla
 *	@date	11 July 2012
 *	@version	1.0
-*/ 
+*/
 uint32 nm_i2c_read_reg(uint32 u32Addr)
 {
 	uint32 val;
@@ -138,7 +135,7 @@ uint32 nm_i2c_read_reg(uint32 u32Addr)
 *	@author	M. Abdelmawla
 *	@date	11 July 2012
 *	@version	1.0
-*/ 
+*/
 sint8 nm_i2c_write_reg(uint32 u32Addr, uint32 u32Val)
 {
 	tstrNmI2cDefault strI2c;
@@ -146,7 +143,7 @@ sint8 nm_i2c_write_reg(uint32 u32Addr, uint32 u32Val)
 	sint8 s8Ret = M2M_SUCCESS;
 
 	if(u32Addr < 0xff) { /* clockless i2c */
-		b[0] = 0x19;		
+		b[0] = 0x19;
 		b[1] = (uint8)(u32Addr);
 		b[2] = (uint8)(u32Val);
 		strI2c.u16Sz = 3;
@@ -188,7 +185,7 @@ sint8 nm_i2c_write_reg(uint32 u32Addr, uint32 u32Val)
 *	@author	M. Abdelmawla
 *	@date	11 July 2012
 *	@version	1.0
-*/ 
+*/
 sint8 nm_i2c_read_block(uint32 u32Addr, uint8 *pu8Buf, uint16 u16Sz)
 {
 	tstrNmI2cDefault strI2c;
@@ -239,13 +236,13 @@ sint8 nm_i2c_read_block(uint32 u32Addr, uint8 *pu8Buf, uint16 u16Sz)
 *	@author	M. Abdelmawla
 *	@date	11 July 2012
 *	@version	1.0
-*/ 
+*/
 sint8 nm_i2c_write_block(uint32 u32Addr, uint8 *pu8Buf, uint16 u16Sz)
 {
 	uint8 au8Buf[7];
 	tstrNmI2cSpecial strI2c;
 	sint8 s8Ret = M2M_SUCCESS;
-	
+
 	au8Buf[0] = 0x12;
 	au8Buf[1] = (uint8)(u32Addr >> 24);
 	au8Buf[2] = (uint8)(u32Addr >> 16);

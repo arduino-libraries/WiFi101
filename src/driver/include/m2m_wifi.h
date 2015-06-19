@@ -1,8 +1,10 @@
-/** \defgroup m2m_wifi WLAN
+/**
+ *
+ * \file
  *
  * \brief NMC1500 IoT Application Interface.
  *
- * Copyright (c) 2014 Atmel Corporation. All rights reserved.
+ * Copyright (c) 2015 Atmel Corporation. All rights reserved.
  *
  * \asf_license_start
  *
@@ -20,9 +22,6 @@
  *
  * 3. The name of Atmel may not be used to endorse or promote products derived
  *    from this software without specific prior written permission.
- *
- * 4. This software may only be redistributed and used in connection with an
- *    Atmel microcontroller product.
  *
  * THIS SOFTWARE IS PROVIDED BY ATMEL "AS IS" AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -64,11 +63,11 @@ MACROS
 	tenuWifiFrameType
 
 @brief
-	Enumeration for Wi-Fi MAC frame type codes (2-bit) 
+	Enumeration for Wi-Fi MAC frame type codes (2-bit)
 	The following types are used to identify the type of frame sent or received.
 	Each frame type constitutes a number of frame subtypes as defined in @ref tenuSubTypes to specify the exact type of frame.
 	Values are defined as per the IEEE 802.11 standard.
-	
+
 @remarks
 	The following frame types are useful for advanced user usage when @ref CONF_MGMT is defined
 	and the user application requires to monitor the frame transmission and reception.
@@ -119,8 +118,8 @@ typedef enum {
 	AUTH                  = 0xB0,
 	DEAUTH                = 0xC0,
 	ACTION                = 0xD0,
- 
-/**@{*/ 
+
+/**@{*/
 	/* Sub-Types related to Control */
 	PS_POLL               = 0xA4,
 	RTS                   = 0xB4,
@@ -130,7 +129,7 @@ typedef enum {
 	CFEND_ACK             = 0xF4,
 	BLOCKACK_REQ          = 0x84,
 	BLOCKACK              = 0x94,
-/**@{*/ 
+/**@{*/
 	/* Sub-Types related to Data */
 	DATA                  = 0x08,
 	DATA_ACK              = 0x18,
@@ -160,203 +159,203 @@ typedef enum {
 	Values are defined as per the IEEE 802.11 standard.
 
 @details	Available IDs are:-
-	
+
 	ISSID   :	 Service Set Identifier (SSID)
-	
+
 	ISUPRATES   :	 Supported Rates
-	
+
 	IFHPARMS     :	 FH parameter set
-	
+
 	IDSPARMS      :       DS parameter set
-	
+
 	ICFPARMS      :        CF parameter set
-	
+
 	ITIM            :    	 Traffic Information Map
 
 	IIBPARMS        :    	 IBSS parameter set
-	
+
 	ICOUNTRY        :  	 Country element.
-	
+
 	IEDCAPARAMS     :      EDCA parameter set
-	
+
 	ITSPEC              :  	 Traffic Specification
 
 	ITCLAS             :  	 Traffic Classification
-	
+
 	ISCHED             :     Schedule.
-	
+
 	ICTEXT              :  	 Challenge Text
-	
+
 	IPOWERCONSTRAINT   :   	 Power Constraint.
-	
+
 	IPOWERCAPABILITY    :  	 Power Capability
-	
-	ITPCREQUEST         :   	 TPC Request                    
-	
-	ITPCREPORT          :   	 TPC Report                     
-	
-	ISUPCHANNEL         :   Supported channel list  
-	
-	ICHSWANNOUNC         :  Channel Switch Announcement    
-	
-	IMEASUREMENTREQUEST 	:	 Measurement request            
-	
-	IMEASUREMENTREPORT   :  Measurement report             
-	
-	IQUIET               :  Quiet element Info             
-	
-	IIBSSDFS           :  	 IBSS DFS                       
-	
-	IERPINFO           :  	 ERP Information                
-	
-	ITSDELAY           :    	 TS Delay                       
-	
-	ITCLASPROCESS      :	 TCLAS Processing               
-	
-	IHTCAP               :  	 HT Capabilities                
-	
-	IQOSCAP             :  	 QoS Capability                 
-	
-	IRSNELEMENT         :   RSN Information Element        
-	
-	IEXSUPRATES         :   Extended Supported Rates       
-	
+
+	ITPCREQUEST         :   	 TPC Request
+
+	ITPCREPORT          :   	 TPC Report
+
+	ISUPCHANNEL         :   Supported channel list
+
+	ICHSWANNOUNC         :  Channel Switch Announcement
+
+	IMEASUREMENTREQUEST 	:	 Measurement request
+
+	IMEASUREMENTREPORT   :  Measurement report
+
+	IQUIET               :  Quiet element Info
+
+	IIBSSDFS           :  	 IBSS DFS
+
+	IERPINFO           :  	 ERP Information
+
+	ITSDELAY           :    	 TS Delay
+
+	ITCLASPROCESS      :	 TCLAS Processing
+
+	IHTCAP               :  	 HT Capabilities
+
+	IQOSCAP             :  	 QoS Capability
+
+	IRSNELEMENT         :   RSN Information Element
+
+	IEXSUPRATES         :   Extended Supported Rates
+
 	IEXCHSWANNOUNC      :  Extended Ch Switch Announcement
-	
-	IHTOPERATION        :  	 HT Information                 
-	
-	ISECCHOFF          :   Secondary Channel Offset      
-	
-	I2040COEX           :   Coexistence IE           
-	
+
+	IHTOPERATION        :  	 HT Information
+
+	ISECCHOFF          :   Secondary Channel Offset
+
+	I2040COEX           :   Coexistence IE
+
 	I2040INTOLCHREPORT  :   Intolerant channel report
-	
-	IOBSSSCAN           :  	 OBSS Scan parameters           
-	
-	IEXTCAP             :  	 Extended capability          
-	
-	IWMM                :  	 WMM parameters                 
-	
+
+	IOBSSSCAN           :  	 OBSS Scan parameters
+
+	IEXTCAP             :  	 Extended capability
+
+	IWMM                :  	 WMM parameters
+
 	IWPAELEMENT         :  WPA Information Element
-	
+
 */
 typedef enum {
-	ISSID               = 0,   
+	ISSID               = 0,
 	/*!< Service Set Identifier (SSID)
 	*/
-	ISUPRATES           = 1,   
+	ISUPRATES           = 1,
 	/*!< Supported Rates
 	*/
-	IFHPARMS            = 2,   
+	IFHPARMS            = 2,
 	/*!< FH parameter set
 	*/
-	IDSPARMS            = 3,   
+	IDSPARMS            = 3,
 	/*!< DS parameter set
 	*/
-	ICFPARMS            = 4,   
+	ICFPARMS            = 4,
 	/*!< CF parameter set
 	*/
-	ITIM                = 5,   
+	ITIM                = 5,
 	/*!< Traffic Information Map
 	*/
-	IIBPARMS            = 6,   
+	IIBPARMS            = 6,
 	/*!< IBSS parameter set
 	*/
-	ICOUNTRY            = 7,   
+	ICOUNTRY            = 7,
 	/*!< Country element.
 	*/
-	IEDCAPARAMS         = 12,  
+	IEDCAPARAMS         = 12,
 	/*!< EDCA parameter set
 	*/
-	ITSPEC              = 13,  
+	ITSPEC              = 13,
 	/*!< Traffic Specification
 	*/
-	ITCLAS              = 14,  
+	ITCLAS              = 14,
 	/*!< Traffic Classification
 	*/
-	ISCHED              = 15,  
+	ISCHED              = 15,
 	/*!< Schedule.
 	*/
-	ICTEXT              = 16,  
+	ICTEXT              = 16,
 	/*!< Challenge Text
 	*/
-	IPOWERCONSTRAINT    = 32,  
+	IPOWERCONSTRAINT    = 32,
 	/*!< Power Constraint.
 	*/
-	IPOWERCAPABILITY    = 33,  
+	IPOWERCAPABILITY    = 33,
 	/*!< Power Capability
 	*/
-	ITPCREQUEST         = 34,  
-	/*!< TPC Request                    
+	ITPCREQUEST         = 34,
+	/*!< TPC Request
 	*/
-	ITPCREPORT          = 35,  
-	/*!< TPC Report                     
+	ITPCREPORT          = 35,
+	/*!< TPC Report
 	*/
-	ISUPCHANNEL         = 36, 
-	/*!< Supported channel list  
+	ISUPCHANNEL         = 36,
+	/*!< Supported channel list
 	*/
-	ICHSWANNOUNC        = 37,  
-	/*!< Channel Switch Announcement    
+	ICHSWANNOUNC        = 37,
+	/*!< Channel Switch Announcement
 	*/
-	IMEASUREMENTREQUEST = 38,  
-	/*!< Measurement request            
+	IMEASUREMENTREQUEST = 38,
+	/*!< Measurement request
 	*/
-	IMEASUREMENTREPORT  = 39,  
-	/*!< Measurement report             
+	IMEASUREMENTREPORT  = 39,
+	/*!< Measurement report
 	*/
-	IQUIET              = 40,  
-	/*!< Quiet element Info             
+	IQUIET              = 40,
+	/*!< Quiet element Info
 	*/
-	IIBSSDFS            = 41,  
-	/*!< IBSS DFS                       
+	IIBSSDFS            = 41,
+	/*!< IBSS DFS
 	*/
-	IERPINFO            = 42,  
-	/*!< ERP Information                
+	IERPINFO            = 42,
+	/*!< ERP Information
 	*/
-	ITSDELAY            = 43,  
-	/*!< TS Delay                       
+	ITSDELAY            = 43,
+	/*!< TS Delay
 	*/
-	ITCLASPROCESS       = 44,  
-	/*!< TCLAS Processing               
+	ITCLASPROCESS       = 44,
+	/*!< TCLAS Processing
 	*/
-	IHTCAP              = 45,  
-	/*!< HT Capabilities                
+	IHTCAP              = 45,
+	/*!< HT Capabilities
 	*/
-	IQOSCAP             = 46,  
-	/*!< QoS Capability                 
+	IQOSCAP             = 46,
+	/*!< QoS Capability
 	*/
-	IRSNELEMENT         = 48,  
-	/*!< RSN Information Element        
+	IRSNELEMENT         = 48,
+	/*!< RSN Information Element
 	*/
-	IEXSUPRATES         = 50,  
-	/*!< Extended Supported Rates       
+	IEXSUPRATES         = 50,
+	/*!< Extended Supported Rates
 	*/
-	IEXCHSWANNOUNC      = 60,  
+	IEXCHSWANNOUNC      = 60,
 	/*!< Extended Ch Switch Announcement
 	*/
-	IHTOPERATION        = 61,  
-	/*!< HT Information                 
+	IHTOPERATION        = 61,
+	/*!< HT Information
 	*/
-	ISECCHOFF           = 62,  
-	/*!< Secondary Channel Offset      
+	ISECCHOFF           = 62,
+	/*!< Secondary Channel Offset
 	*/
-	I2040COEX           = 72,  
-	/*!< 20/40 Coexistence IE           
+	I2040COEX           = 72,
+	/*!< 20/40 Coexistence IE
 	*/
-	I2040INTOLCHREPORT  = 73,  
+	I2040INTOLCHREPORT  = 73,
 	/*!< 20/40 Intolerant channel report
 	*/
-	IOBSSSCAN           = 74,  
-	/*!< OBSS Scan parameters           
+	IOBSSSCAN           = 74,
+	/*!< OBSS Scan parameters
 	*/
-	IEXTCAP             = 127, 
-	/*!< Extended capability            
+	IEXTCAP             = 127,
+	/*!< Extended capability
 	*/
-	IWMM                = 221, 
-	/*!< WMM parameters                 
+	IWMM                = 221,
+	/*!< WMM parameters
 	*/
-	IWPAELEMENT         = 221 
-	/*!< WPA Information Element        
+	IWPAELEMENT         = 221
+	/*!< WPA Information Element
 	*/
 }tenuInfoElementId;
  //@}
@@ -366,56 +365,56 @@ typedef enum {
 	tenuWifiCapability
 
 @brief
-	Enumeration for capability Information field bit. 
-	The value of the capability information field from the 802.11 management frames received by the wireless LAN interface. 
+	Enumeration for capability Information field bit.
+	The value of the capability information field from the 802.11 management frames received by the wireless LAN interface.
 	Defining the capabilities of the Wi-Fi system. Values are defined as per the IEEE 802.11 standard.
 
 @details
 	Capabilities:-
-	ESS/IBSS             : Defines whether a frame is coming from an AP or not.              
-	POLLABLE    		: CF Poll-able                  
-	POLLREQ       		: Request to be polled         
-	PRIVACY      		: WEP encryption supported     
-	SHORTPREAMBLE   : Short Preamble is supported  
-	SHORTSLOT           : Short Slot is supported      
-	PBCC       	        :PBCC                         
-	CHANNELAGILITY :Channel Agility              
-	SPECTRUM_MGMT  :Spectrum Management          
-	DSSS_OFDM      : DSSS-OFDM                    
+	ESS/IBSS             : Defines whether a frame is coming from an AP or not.
+	POLLABLE    		: CF Poll-able
+	POLLREQ       		: Request to be polled
+	PRIVACY      		: WEP encryption supported
+	SHORTPREAMBLE   : Short Preamble is supported
+	SHORTSLOT           : Short Slot is supported
+	PBCC       	        :PBCC
+	CHANNELAGILITY :Channel Agility
+	SPECTRUM_MGMT  :Spectrum Management
+	DSSS_OFDM      : DSSS-OFDM
 */
 typedef enum{
-	ESS            = 0x01,   
-	/*!< ESS capability               
+	ESS            = 0x01,
+	/*!< ESS capability
 	*/
-	IBSS           = 0x02,   
-	/*!< IBSS mode                    
+	IBSS           = 0x02,
+	/*!< IBSS mode
 	*/
-	POLLABLE       = 0x04,   
-	/*!< CF Pollable                  
+	POLLABLE       = 0x04,
+	/*!< CF Pollable
 	*/
-	POLLREQ        = 0x08,   
-	/*!< Request to be polled         
+	POLLREQ        = 0x08,
+	/*!< Request to be polled
 	*/
-	PRIVACY        = 0x10,   
-	/*!< WEP encryption supported     
+	PRIVACY        = 0x10,
+	/*!< WEP encryption supported
 	*/
-	SHORTPREAMBLE  = 0x20,   
-	/*!< Short Preamble is supported  
+	SHORTPREAMBLE  = 0x20,
+	/*!< Short Preamble is supported
 	*/
-	SHORTSLOT      = 0x400,  
-	/*!< Short Slot is supported      
+	SHORTSLOT      = 0x400,
+	/*!< Short Slot is supported
 	*/
-	PBCC           = 0x40,   
-	/*!< PBCC                         
+	PBCC           = 0x40,
+	/*!< PBCC
 	*/
-	CHANNELAGILITY = 0x80,   
-	/*!< Channel Agility              
+	CHANNELAGILITY = 0x80,
+	/*!< Channel Agility
 	*/
-	SPECTRUM_MGMT  = 0x100,  
-	/*!< Spectrum Management          
+	SPECTRUM_MGMT  = 0x100,
+	/*!< Spectrum Management
 	*/
-	DSSS_OFDM      = 0x2000  
-	/*!< DSSS-OFDM                    
+	DSSS_OFDM      = 0x2000
+	/*!< DSSS-OFDM
 	*/
 }tenuWifiCapability;
 
@@ -426,10 +425,10 @@ typedef enum{
 @typedef \
 	tpfAppWifiCb
 
-@brief	
-				Wi-Fi's main callback function handler, for handling the M2M_WIFI events received on the Wi-Fi interface. 
+@brief
+				Wi-Fi's main callback function handler, for handling the M2M_WIFI events received on the Wi-Fi interface.
 			       Such notifications are received in response to Wi-Fi/P2P operations such as @ref m2m_wifi_request_scan,
-				@ref m2m_wifi_connect. 
+				@ref m2m_wifi_connect.
 				Wi-Fi/P2P operations are implemented in an asynchronous mode, and all incoming information/status
 				are to be handled through this callback function when the corresponding notification is received.
 				Applications are expected to assign this wi-fi callback function by calling @ref m2m_wifi_init
@@ -439,24 +438,24 @@ typedef enum{
 				/ref M2M_WIFI_RESP_CONN_INFO
 				/ref M2M_WIFI_REQ_DHCP_CONF
 				/ref M2M_WIFI_REQ_WPS
-				/ref M2M_WIFI_RESP_IP_CONFLICT 
+				/ref M2M_WIFI_RESP_IP_CONFLICT
 				/ref M2M_WIFI_RESP_SCAN_DONE
 				/ref M2M_WIFI_RESP_SCAN_RESULT
 				/ref M2M_WIFI_RESP_CURRENT_RSSI
 				/ref M2M_WIFI_RESP_CLIENT_INFO
 				/ref M2M_WIFI_RESP_PROVISION_INFO
 				/ref M2M_WIFI_RESP_DEFAULT_CONNECT
-		
+
 			In case Bypass mode is defined :
 				@ref M2M_WIFI_RESP_ETHERNET_RX_PACKET
-		
+
 			In case Monitoring mode is used:
 				@ref M2M_WIFI_RESP_WIFI_RX_PACKET
-				
+
 @param [in]	pvMsg
 				A pointer to a buffer containing the notification parameters (if any). It should be
 				Casted to the correct data type corresponding to the notification type.
-	
+
 @see
 	tstrM2mWifiStateChanged
 	tstrM2MWPSInfo
@@ -469,9 +468,9 @@ typedef void (*tpfAppWifiCb) (uint8 u8MsgType, void * pvMsg);
 @typedef \
 	tpfAppEthCb
 
-@brief	
+@brief
 	Ethernet (Bypass mode) notification callback function receiving Bypass mode events as defined in
-	the Wi-Fi responses enumeration @ref tenuM2mStaCmd. 
+	the Wi-Fi responses enumeration @ref tenuM2mStaCmd.
 
 @param [in]	u8MsgType
 	Type of notification. Possible types are:
@@ -482,13 +481,13 @@ typedef void (*tpfAppWifiCb) (uint8 u8MsgType, void * pvMsg);
 	casted to the correct data type corresponding to the notification type.
 	For example, it could be a pointer to the buffer holding the received frame in case of @ref M2M_WIFI_RESP_ETHERNET_RX_PACKET
 	event.
-	
+
 @param [in]	pvControlBuf
 	A pointer to control buffer describing the accompanied message.
 	To be casted to @ref tstrM2mIpCtrlBuf in case of @ref M2M_WIFI_RESP_ETHERNET_RX_PACKET event.
 
 @warning
-	Make sure that the bypass mode is defined before using @ref tpfAppEthCb. 
+	Make sure that the bypass mode is defined before using @ref tpfAppEthCb.
 
 @see
 	m2m_wifi_init
@@ -500,7 +499,7 @@ typedef void (*tpfAppEthCb) (uint8 u8MsgType, void * pvMsg,void * pvCtrlBuf);
 @typedef	\
 	tpfAppMonCb
 
-@brief	
+@brief
 	Wi-Fi monitoring mode callback function. This function delivers all received wi-Fi packets through the Wi-Fi interface.
        Applications requiring to operate in the monitoring should call the asynchronous function m2m_wifi_enable_monitoring_mode
        and expect to receive the Wi-Fi packets through this callback function, when the event ....is received.
@@ -515,34 +514,34 @@ typedef void (*tpfAppEthCb) (uint8 u8MsgType, void * pvMsg,void * pvCtrlBuf);
 
 @param [in]	u16PayloadSize
 				The size of the payload in bytes.
-				
+
 @see
-	m2m_wifi_enable_monitoring_mode		
-	
+	m2m_wifi_enable_monitoring_mode
+
 @warning
 	u16PayloadSize should not exceed the buffer size given through m2m_wifi_enable_monitoring_mode.
-	
+
 */
 typedef void (*tpfAppMonCb) (tstrM2MWifiRxPacketInfo *pstrWifiRxPacket, uint8 * pu8Payload, uint16 u16PayloadSize);
 
 /**
 @struct 	\
 	tstrEthInitParam
-	
-@brief		
-	Structure to hold Ethernet interface parameters. 
-	Structure is to be defined and have its attributes set,based on the application's functionality before 
+
+@brief
+	Structure to hold Ethernet interface parameters.
+	Structure is to be defined and have its attributes set,based on the application's functionality before
 	a call is made to the initialize the wi-fi operations by calling the  @ref m2m_wifi_init function.
 	Part of the wi-fi configuration structure @ref tstrWifiInitParam.
 	Applications shouldn't need to define this structure, if the bypass mode is not defined.
-	
+
 @see
 	tpfAppEthCb
 	tpfAppWifiCb
 	m2m_wifi_init
 
 @warning
-	Make sure that bypass mode is defined before using @ref tstrEthInitParam. 
+	Make sure that bypass mode is defined before using @ref tstrEthInitParam.
 
 */
 typedef struct {
@@ -564,22 +563,22 @@ typedef struct {
 	*/
 } tstrEthInitParam;
 /*!
-@struct	\	
+@struct	\
  	tstrM2mIpCtrlBuf
- 	
-@brief		
+
+@brief
  	Structure holding the incoming buffer's data size information, indicating the data size of the buffer and the remaining buffer's data size .
-	The data of the buffer which holds the packet sent to the host when in the bypass mode, is placed in the @ref tstrEthInitParam structure in the 
-	@ref au8ethRcvBuf attribute. This following information is retrieved in the host when an event @ref M2M_WIFI_RESP_ETHERNET_RX_PACKET is received in 
-	the Wi-Fi callback function @ref tpfAppWifiCb. 
+	The data of the buffer which holds the packet sent to the host when in the bypass mode, is placed in the @ref tstrEthInitParam structure in the
+	@ref au8ethRcvBuf attribute. This following information is retrieved in the host when an event @ref M2M_WIFI_RESP_ETHERNET_RX_PACKET is received in
+	the Wi-Fi callback function @ref tpfAppWifiCb.
 
 	The application is expected to use this structure's information to determine if there is still incoming data to be received from the firmware.
 
- 	
+
  @see
 	 tpfAppEthCb
 	 tstrEthInitParam
- 
+
  @warning
 	 Make sure that bypass mode is defined before using @ref tstrM2mIpCtrlBuf
 
@@ -600,14 +599,14 @@ typedef struct{
 @struct		\
 	tstrWifiInitParam
 
-@brief		
+@brief
 	Structure, holding the Wi-fi configuration attributes such as the wi-fi callback , monitoring mode callback and Ethernet parameter initialization structure.
 	Such configuration parameters are required to be set before calling the wi-fi initialization function @ref m2m_wifi_init.
 	@ref pfAppWifiCb attribute must be set to handle the wi-fi callback operations.
 	@ref pfAppMonCb attribute, is optional based on whether the application requires the monitoring mode configuration, and can there not
 	be set before the initialization.
 	@ref strEthInitParam structure, is another optional configuration based on whether the bypass mode is set.
-	
+
 */
 typedef struct {
 	tpfAppWifiCb pfAppWifiCb;
@@ -645,24 +644,24 @@ FUNCTION PROTOTYPES
 @fn	\
 	NMI_API void  m2m_wifi_download_mode(void);
 
-@return		
+@return
 	The function returns @ref M2M_SUCCESS for successful operations  and a negative value otherwise.
 */
 NMI_API sint8  m2m_wifi_download_mode(void);
  /**@}*/
  /** @defgroup WifiInitFn m2m_wifi_init
  *  @ingroup WLANAPI
- *  Synchronous initialization function for the WINC driver. This function initializes the driver by, registering the call back function for M2M_WIFI layer(also the call back function for bypass mode/monitoring mode if defined), 
- *  initializing the host interface layer and the bus interfaces. 
- *  Wi-Fi callback registering is essential to allow the handling of the events received, in response to the asynchronous Wi-Fi operations. 
+ *  Synchronous initialization function for the WINC driver. This function initializes the driver by, registering the call back function for M2M_WIFI layer(also the call back function for bypass mode/monitoring mode if defined),
+ *  initializing the host interface layer and the bus interfaces.
+ *  Wi-Fi callback registering is essential to allow the handling of the events received, in response to the asynchronous Wi-Fi operations.
 
-Following are the possible Wi-Fi events that are expected to be received through the call back function(provided by the application) to the M2M_WIFI layer are : 
+Following are the possible Wi-Fi events that are expected to be received through the call back function(provided by the application) to the M2M_WIFI layer are :
 
 		@ref M2M_WIFI_RESP_CON_STATE_CHANGED \n
 		@ref M2M_WIFI_RESP_CONN_INFO \n
 		@ref M2M_WIFI_REQ_DHCP_CONF \n
 		@ref M2M_WIFI_REQ_WPS \n
-		@ref M2M_WIFI_RESP_IP_CONFLICT \n 
+		@ref M2M_WIFI_RESP_IP_CONFLICT \n
 		@ref M2M_WIFI_RESP_SCAN_DONE \n
 		@ref M2M_WIFI_RESP_SCAN_RESULT \n
 		@ref M2M_WIFI_RESP_CURRENT_RSSI \n
@@ -672,10 +671,10 @@ Following are the possible Wi-Fi events that are expected to be received through
 	Example: \n
 	In case Bypass mode is defined : \n
 		@ref M2M_WIFI_RESP_ETHERNET_RX_PACKET
-		
+
 	In case Monitoring mode is used: \n
 		@ref M2M_WIFI_RESP_WIFI_RX_PACKET
-		
+
 	Any application using the WINC driver must call this function at the start of its main function.
  */
  /**@{*/
@@ -686,35 +685,35 @@ Following are the possible Wi-Fi events that are expected to be received through
 @param [in]	pWifiInitParam
 	This is a pointer to the @ref tstrWifiInitParam structure which holds the pointer to the application WIFI layer call back function,
 	monitoring mode call back and @ref tstrEthInitParam structure containing bypass mode parameters.
-	
-@pre 
+
+@pre
 	Prior to this function call, application users must provide a call back function responsible for receiving all the wi-fi events that are received on the M2M_WIFI layer.
-	
+
 @warning
-	Failure to successfully complete function indicates that the driver couldn't be initialized and a fatal error will prevent the application from proceeding. 
-	
+	Failure to successfully complete function indicates that the driver couldn't be initialized and a fatal error will prevent the application from proceeding.
+
 @see
 	m2m_wifi_deinit
 	tenuM2mStaCmd
 
-@return		
+@return
 	The function returns @ref M2M_SUCCESS for successful operations  and a negative value otherwise.
 */
 NMI_API sint8  m2m_wifi_init(tstrWifiInitParam * pWifiInitParam);
  /**@}*/
  /** @defgroup WifiDeinitFn m2m_wifi_deinit
  *  @ingroup WLANAPI
- *   Synchronous de-initialization function to the WINC1500 driver. De-initializes the host interface and frees any resources used by the M2M_WIFI layer. 
- *   This function must be called in the application closing phase,to ensure that all resources have been correctly released. No arguments are expected to be passed in. 
+ *   Synchronous de-initialization function to the WINC1500 driver. De-initializes the host interface and frees any resources used by the M2M_WIFI layer.
+ *   This function must be called in the application closing phase,to ensure that all resources have been correctly released. No arguments are expected to be passed in.
  */
 /**@{*/
 /*!
 @fn	\
 	NMI_API sint8  m2m_wifi_deinit(void * arg);
-	
+
 @param [in]	arg
 		Generic argument. Not used in current implementation.
-@return		
+@return
 	The function returns @ref M2M_SUCCESS for successful operations and a negative value otherwise.
 */
 NMI_API sint8  m2m_wifi_deinit(void * arg);
@@ -733,23 +732,23 @@ NMI_API sint8  m2m_wifi_deinit(void * arg);
 
 @pre
 	Prior to receiving  wi-fi interrupts, the WINC driver should have been successfully initialized by calling the @ref m2m_wifi_init function.
-	 
+
 @warning
 	Failure to successfully complete this function indicates bus errors and hence a fatal error that will prevent the application from proceeding.
 
-@return		
+@return
 	The function returns @ref M2M_SUCCESS for successful interrupt handling and a negative value otherwise.
 */
 NMI_API sint8 m2m_wifi_handle_events(void * arg);
  /**@}*/
 /** @defgroup WifiDefaultConnectFn m2m_wifi_default_connect
  *  @ingroup WLANAPI
- *   Asynchronous Wi-Fi connection function. An application calling this function will cause the firmware to correspondingly connect to the last successfully connected AP from the cached connections. 
+ *   Asynchronous Wi-Fi connection function. An application calling this function will cause the firmware to correspondingly connect to the last successfully connected AP from the cached connections.
  *   A failure to connect will result in a response of @ref M2M_WIFI_RESP_DEFAULT_CONNECT indicating the connection error as defined in the structure @ref tstrM2MDefaultConnResp.
- *   Possible errors are: 
+ *   Possible errors are:
  *   The connection list is empty @ref M2M_DEFAULT_CONN_EMPTY_LIST or a mismatch for the saved AP name @ref M2M_DEFAULT_CONN_SCAN_MISMATCH.
- *    only difference between this function and @ref m2m_wifi_connect, is the connection parameters. 
- *   Connection using this function is expected to connect to cached connection parameters. 
+ *    only difference between this function and @ref m2m_wifi_connect, is the connection parameters.
+ *   Connection using this function is expected to connect to cached connection parameters.
 
  */
  /**@{*/
@@ -757,18 +756,18 @@ NMI_API sint8 m2m_wifi_handle_events(void * arg);
 @fn	\
 	NMI_API sint8 m2m_wifi_default_connect(void);
 
-@pre 
+@pre
 	Prior to connecting, the WINC driver should have been successfully initialized by calling the @ref m2m_wifi_init function.
-  
+
 @warning
  This function must be called in station mode only.
- It's important to note that successful completion of a call to m2m_wifi_default_connect() does not guarantee success of the WIFI connection, 
+ It's important to note that successful completion of a call to m2m_wifi_default_connect() does not guarantee success of the WIFI connection,
  and a negative return value indicates only locally-detected errors.
-	
+
 @see
 	m2m_wifi_connect
-	
-@return		
+
+@return
 	The function returns @ref M2M_SUCCESS for successful operations and a negative value otherwise.
 
 */
@@ -780,8 +779,8 @@ NMI_API sint8 m2m_wifi_default_connect(void);
  *   the authentication information parameters and the channel number to which the connection will be established.
  *  The connection status is known when a response of @ref M2M_WIFI_RESP_CON_STATE_CHANGED is received based on the states defined in @ref tenuM2mConnState,
  *  successful connection is defined by @ref M2M_WIFI_CONNECTED
-*   
- *   The only difference between this function and @ref m2m_wifi_default_connect, is the connection parameters. 
+*
+ *   The only difference between this function and @ref m2m_wifi_default_connect, is the connection parameters.
  *   Connection using this function is expected to be made to a specific AP and to a specified channel.
  */
  /**@{*/
@@ -791,12 +790,12 @@ NMI_API sint8 m2m_wifi_default_connect(void);
 
 @param [in]	pcSsid
 				A buffer holding the SSID corresponding to the requested AP.
-				
+
 @param [in]	u8SsidLen
 				Length of the given SSID (not including the NULL termination).
-				A length less than ZERO or greater than the maximum defined SSID @ref M2M_MAX_SSID_LEN will result in a negative error 
+				A length less than ZERO or greater than the maximum defined SSID @ref M2M_MAX_SSID_LEN will result in a negative error
 				@ref M2M_ERR_FAIL.
-				
+
 @param [in]	u8SecType
 				Wi-Fi security type security for the network. It can be one of the following types:
 				-@ref M2M_WIFI_SEC_OPEN
@@ -831,6 +830,68 @@ NMI_API sint8 m2m_wifi_default_connect(void);
 	
 */
 NMI_API sint8 m2m_wifi_connect(char *pcSsid, uint8 u8SsidLen, uint8 u8SecType, void *pvAuthInfo, uint16 u16Ch);
+ /**@}*/
+/** @defgroup WifiConnectFn m2m_wifi_connect_sc
+ *   @ingroup WLANAPI
+ *   Asynchronous wi-fi connection function to a specific AP. Prior to a successful connection, the application developers must know the SSID of the AP, the security type,
+ *   the authentication information parameters and the channel number to which the connection will be established.this API allows the user to choose
+ *   whether to
+ *  The connection status is known when a response of @ref M2M_WIFI_RESP_CON_STATE_CHANGED is received based on the states defined in @ref tenuM2mConnState,
+ *  successful connection is defined by @ref M2M_WIFI_CONNECTED
+ *   The only difference between this function and @ref m2m_wifi_connect, is the option to save the acess point info ( SSID, password...etc) or not.
+ *   Connection using this function is expected to be made to a specific AP and to a specified channel.
+ */
+ /**@{*/
+/*!
+@fn	\
+	NMI_API sint8 m2m_wifi_connect_sc(char *pcSsid, uint8 u8SsidLen, uint8 u8SecType, void *pvAuthInfo, uint16 u16Ch,uint8 u8SaveCred);
+
+@param [in]	pcSsid
+				A buffer holding the SSID corresponding to the requested AP.
+				
+@param [in]	u8SsidLen
+				Length of the given SSID (not including the NULL termination).
+				A length less than ZERO or greater than the maximum defined SSID @ref M2M_MAX_SSID_LEN will result in a negative error 
+				@ref M2M_ERR_FAIL.
+				
+@param [in]	u8SecType
+				Wi-Fi security type security for the network. It can be one of the following types:
+				-@ref M2M_WIFI_SEC_OPEN
+				-@ref M2M_WIFI_SEC_WEP
+				-@ref M2M_WIFI_SEC_WPA_PSK
+				-@ref M2M_WIFI_SEC_802_1X
+				A value outside these possible values will result in a negative return error @ref M2M_ERR_FAIL.
+
+@param [in]	pvAuthInfo
+				Authentication parameters required for completing the connection. It is type is based on the Security type.
+				If the authentication parameters are NULL or are greater than the maximum length of the authentication parameters length as defined by
+				@ref M2M_MAX_PSK_LEN a negative error will return @ref M2M_ERR_FAIL(-12) indicating connection failure.
+
+@param [in]	u16Ch
+				Wi-Fi channel number as defined in @ref tenuM2mScanCh enumeration.
+				Channel number greater than @ref M2M_WIFI_CH_14 returns a negative error @ref M2M_ERR_FAIL(-12).
+				Except if the value is M2M_WIFI_CH_ALL(255), since this indicates that the firmware should scan all channels to find the SSID requested to connect to.
+				Failure to find the connection match will return a negative error @ref M2M_DEFAULT_CONN_SCAN_MISMATCH.
+				
+@param [in] u8NoSaveCred
+				Option to store the acess point SSID and password into the WINC flash memory or not.
+				
+@pre
+  		Prior to a successful connection request, the wi-fi driver must have been successfully initialized through the call of the @ref @m2m_wifi_init function
+@see
+	tuniM2MWifiAuth
+	tstr1xAuthCredentials
+	tstrM2mWifiWepParams
+	
+@warning
+	-This function must be called in station mode only.
+	-Successful completion of this function does not guarantee success of the WIFI connection, and
+	a negative return value indicates only locally-detected errors.
+	
+@return	The function returns @ref M2M_SUCCESS for successful operations and a negative value otherwise.
+	
+*/
+ NMI_API sint8 m2m_wifi_connect_sc(char *pcSsid, uint8 u8SsidLen, uint8 u8SecType, void *pvAuthInfo, uint16 u16Ch, uint8 u8SaveCred);
  /**@}*/
 /** @defgroup WifiDisconnectFn m2m_wifi_disconnect
  *   @ingroup WLANAPI
@@ -917,7 +978,7 @@ NMI_API sint8 m2m_wifi_disconnect(void);
 				tstrM2MProvisionInfo	*pstrProvInfo = (tstrM2MProvisionInfo*)pvMsg;
 				if(pstrProvInfo->u8Status == M2M_SUCCESS)
 				{
-					m2m_wifi_connect((char*)pstrProvInfo->au8SSID, (uint8)strlen(pstrProvInfo->au8SSID), pstrProvInfo->u8SecType, 
+					m2m_wifi_connect((char*)pstrProvInfo->au8SSID, (uint8)strlen(pstrProvInfo->au8SSID), pstrProvInfo->u8SecType,
 							pstrProvInfo->au8Password, M2M_WIFI_CH_ALL);
 
 					printf("PROV SSID : %s\n",pstrProvInfo->au8SSID);
@@ -938,18 +999,18 @@ NMI_API sint8 m2m_wifi_disconnect(void);
 	int main()
 	{
 		tstrWifiInitParam 	param;
-		
+
 		param.pfAppWifiCb	= wifi_event_cb;
 		if(!m2m_wifi_init(&param))
 		{
 			tstrM2MAPConfig		apConfig;
 			uint8				bEnableRedirect = 1;
-			
+
 			strcpy(apConfig.au8SSID, "WINC_SSID");
 			apConfig.u8ListenChannel 	= 1;
 			apConfig.u8SecType			= M2M_WIFI_SEC_OPEN;
 			apConfig.u8SsidHide			= 0;
-			
+
 			// IP Address
 			apConfig.au8DHCPServerIP[0]	= 192;
 			apConfig.au8DHCPServerIP[1]	= 168;
@@ -957,14 +1018,14 @@ NMI_API sint8 m2m_wifi_disconnect(void);
 			apConfig.au8DHCPServerIP[0]	= 1;
 
 			m2m_wifi_start_provision_mode(&apConfig, "atmelwincconf.com", bEnableRedirect);
-						
+
 			while(1)
 			{
 				m2m_wifi_handle_events(NULL);
 			}
 		}
 	}
-	
+
 @endcode
 */
 NMI_API sint8 m2m_wifi_start_provision_mode(tstrM2MAPConfig *pstrAPConfig, char *pcHttpServerDomainName, uint8 bEnableHttpRedirect);
@@ -982,7 +1043,7 @@ NMI_API sint8 m2m_wifi_start_provision_mode(tstrM2MAPConfig *pstrAPConfig, char 
 	An active provisioning session must be active before it is terminated through this function.
 @see
 	m2m_wifi_start_provision_mode
-	
+
 @return
 	The function returns ZERO for success and a negative value otherwise.
 */
@@ -997,18 +1058,18 @@ NMI_API sint8 m2m_wifi_stop_provision_mode(void);
 /*!
 @fn	\
 	sint8 m2m_wifi_get_connection_info(void);
-	
+
 @brief
 	Retrieve the current Connection information. The result is passed to the Wi-Fi notification callback
 	with [M2M_WIFI_RESP_CONN_INFO](@ref M2M_WIFI_RESP_CONN_INFO).
-@pre	
+@pre
 	- A Wi-Fi notification callback of type @ref tpfAppWifiCb MUST be implemented and registered at startup. Registering the callback
 	is done through passing it to the initialization @ref m2m_wifi_init function.
 	- The event @ref M2M_WIFI_RESP_CONN_INFO must be handled in the callback to receive the requested connection info.
-	
+
 	Connection Information retrieved:
 
-	
+
 	-Connection Security
 	-Connection RSSI
 	-Remote MAC address
@@ -1038,12 +1099,12 @@ NMI_API sint8 m2m_wifi_stop_provision_mode(void);
 		case M2M_WIFI_RESP_CONN_INFO:
 			{
 				tstrM2MConnInfo		*pstrConnInfo = (tstrM2MConnInfo*)pvMsg;
-				
+
 				printf("CONNECTED AP INFO\n");
 				printf("SSID     			: %s\n",pstrConnInfo->acSSID);
 				printf("SEC TYPE 			: %d\n",pstrConnInfo->u8SecType);
-				printf("Signal Strength		: %d\n", pstrConnInfo->s8RSSI); 
-				printf("Local IP Address	: %d.%d.%d.%d\n", 
+				printf("Signal Strength		: %d\n", pstrConnInfo->s8RSSI);
+				printf("Local IP Address	: %d.%d.%d.%d\n",
 					pstrConnInfo->au8IPAddr[0] , pstrConnInfo->au8IPAddr[1], pstrConnInfo->au8IPAddr[2], pstrConnInfo->au8IPAddr[3]);
 			}
 			break;
@@ -1062,27 +1123,27 @@ NMI_API sint8 m2m_wifi_stop_provision_mode(void);
 	int main()
 	{
 		tstrWifiInitParam 	param;
-		
+
 		param.pfAppWifiCb	= wifi_event_cb;
 		if(!m2m_wifi_init(&param))
 		{
 			// connect to the default AP
 			m2m_wifi_default_connect();
-						
+
 			while(1)
 			{
 				m2m_wifi_handle_events(NULL);
 			}
 		}
 	}
-	
+
 @endcode
 */
 NMI_API sint8 m2m_wifi_get_connection_info(void);
  /**@}*/
 /** @defgroup WifiSetMacAddFn m2m_wifi_set_mac_address
  *   @ingroup WLANAPI
- *  Synchronous MAC address assigning to the NMC1500. It is used for non-production SW. Assign MAC address to the WINC device. 
+ *  Synchronous MAC address assigning to the NMC1500. It is used for non-production SW. Assign MAC address to the WINC device.
  */
  /**@{*/
 /*!
@@ -1094,7 +1155,7 @@ NMI_API sint8 m2m_wifi_get_connection_info(void);
 @param [in]	au8MacAddress
 				MAC Address to be provisioned to the WINC.
 
-@return		
+@return
 	The function returns @ref M2M_SUCCESS for successful operations and a negative value otherwise.
 */
 NMI_API sint8 m2m_wifi_set_mac_address(uint8 au8MacAddress[6]);
@@ -1114,19 +1175,19 @@ NMI_API sint8 m2m_wifi_set_mac_address(uint8 au8MacAddress[6]);
 				WPS Trigger method. Could be:
 				- [WPS_PIN_TRIGGER](@ref WPS_PIN_TRIGGER)   Push button method
 				- [WPS_PBC_TRIGGER](@ref WPS_PBC_TRIGGER)	Pin method
-				
+
 @param [in]	pcPinNumber
 				PIN number for WPS PIN method. It is not used if the trigger type is WPS_PBC_TRIGGER. It must follow the rules
 				stated by the WPS Standard.
 
 @warning
 	This function is not allowed in AP or P2P modes.
-	
-@pre	
+
+@pre
 	- A Wi-Fi notification callback of type (@ref tpfAppWifiCb MUST be implemented and registered at startup. Registering the callback
 	  is done through passing it to the [m2m_wifi_init](@ref m2m_wifi_init).
 	- The event [M2M_WIFI_REQ_WPS](@ref M2M_WIFI_REQ_WPS) must be handled in the callback to receive the WPS status.
-	- The WINC device MUST be in IDLE or STA mode. If AP or P2P mode is active, the WPS will not be performed. 
+	- The WINC device MUST be in IDLE or STA mode. If AP or P2P mode is active, the WPS will not be performed.
 	- The [m2m_wifi_handle_events](@ref m2m_wifi_handle_events) MUST be called to receive the responses in the callback.
 @see
 	tpfAppWifiCb
@@ -1157,7 +1218,7 @@ NMI_API sint8 m2m_wifi_set_mac_address(uint8 au8MacAddress[6]);
 					printf("WPS PSK            : %s\n",pstrWPS->au8PSK);
 					printf("WPS SSID Auth Type : %s\n",pstrWPS->u8AuthType == M2M_WIFI_SEC_OPEN ? "OPEN" : "WPA/WPA2");
 					printf("WPS Channel        : %d\n",pstrWPS->u8Ch + 1);
-					
+
 					// establish Wi-Fi connection
 					m2m_wifi_connect((char*)pstrWPS->au8SSID, (uint8)m2m_strlen(pstrWPS->au8SSID),
 						pstrWPS->u8AuthType, pstrWPS->au8PSK, pstrWPS->u8Ch);
@@ -1168,7 +1229,7 @@ NMI_API sint8 m2m_wifi_set_mac_address(uint8 au8MacAddress[6]);
 				}
 			}
 			break;
-			
+
 		default:
 			break;
 		}
@@ -1177,20 +1238,20 @@ NMI_API sint8 m2m_wifi_set_mac_address(uint8 au8MacAddress[6]);
 	int main()
 	{
 		tstrWifiInitParam 	param;
-		
+
 		param.pfAppWifiCb	= wifi_event_cb;
 		if(!m2m_wifi_init(&param))
 		{
 			// Trigger WPS in Push button mode.
 			m2m_wifi_wps(WPS_PBC_TRIGGER, NULL);
-			
+
 			while(1)
 			{
 				m2m_wifi_handle_events(NULL);
 			}
 		}
 	}
-	
+
 @endcode
 */
 NMI_API sint8 m2m_wifi_wps(uint8 u8TriggerType,const char  *pcPinNumber);
@@ -1216,7 +1277,7 @@ NMI_API sint8 m2m_wifi_wps_disable(void);
 	The WINC supports P2P in device listening mode ONLY (intent is ZERO).
 	The WINC P2P implementation does not support P2P GO (Group Owner) mode.
 	Active P2P devices (e.g. phones) could find the WINC in the search list. When a device is connected to WINC, a Wi-Fi notification event
-	@ref M2M_WIFI_RESP_CON_STATE_CHANGED is triggered. After a short while, the DHCP IP Address is obtained 
+	@ref M2M_WIFI_RESP_CON_STATE_CHANGED is triggered. After a short while, the DHCP IP Address is obtained
 	and an event @ref M2M_WIFI_REQ_DHCP_CONF is triggered. Refer to the code examples for a more illustrative example.
  */
  /**@{*/
@@ -1230,7 +1291,7 @@ NMI_API sint8 m2m_wifi_wps_disable(void);
 @pre
 	- A Wi-Fi notification callback of type @ref tpfAppWifiCb MUST be implemented and registered at initialization. Registering the callback
 	  is done through passing it to the @ref m2m_wifi_init.
-	- The events @ref M2M_WIFI_RESP_CON_STATE_CHANGED and @ref M2M_WIFI_REQ_DHCP_CONF 
+	- The events @ref M2M_WIFI_RESP_CON_STATE_CHANGED and @ref M2M_WIFI_REQ_DHCP_CONF
 	  must be handled in the callback.
 	- The @ref m2m_wifi_handle_events MUST be called to receive the responses in the callback.
 
@@ -1251,7 +1312,7 @@ NMI_API sint8 m2m_wifi_wps_disable(void);
 @code
 	#include "m2m_wifi.h"
 	#include "m2m_types.h"
-	
+
 	void wifi_event_cb(uint8 u8WiFiEvent, void * pvMsg)
 	{
 		switch(u8WiFiEvent)
@@ -1260,11 +1321,11 @@ NMI_API sint8 m2m_wifi_wps_disable(void);
 			{
 				tstrM2mWifiStateChanged *pstrWifiState = (tstrM2mWifiStateChanged*)pvMsg;
 				M2M_INFO("Wifi State :: %s :: ErrCode %d\n", pstrWifiState->u8CurrState? "CONNECTED":"DISCONNECTED",pstrWifiState->u8ErrCode);
-				
+
 				// Do something
 			}
 			break;
-			
+
 		case M2M_WIFI_REQ_DHCP_CONF:
 			{
 				uint8	*pu8IPAddress = (uint8*)pvMsg;
@@ -1272,29 +1333,29 @@ NMI_API sint8 m2m_wifi_wps_disable(void);
 				printf("P2P IP Address \"%u.%u.%u.%u\"\n",pu8IPAddress[0],pu8IPAddress[1],pu8IPAddress[2],pu8IPAddress[3]);
 			}
 			break;
-			
+
 		default:
 			break;
 		}
 	}
-	
+
 	int main()
 	{
 		tstrWifiInitParam 	param;
-		
+
 		param.pfAppWifiCb	= wifi_event_cb;
 		if(!m2m_wifi_init(&param))
 		{
 			// Trigger P2P
 			m2m_wifi_p2p(1);
-			
+
 			while(1)
 			{
 				m2m_wifi_handle_events(NULL);
 			}
 		}
 	}
-	
+
 @endcode
 
 */
@@ -1302,13 +1363,13 @@ NMI_API sint8 m2m_wifi_p2p(uint8 u8Channel);
  /**@}*/
 /** @defgroup WifiP2PDisconnectFn m2m_wifi_p2p_disconnect
  *   @ingroup WLANAPI
- * Disable the NMC1500 device Wi-Fi direct mode (P2P). 
+ * Disable the NMC1500 device Wi-Fi direct mode (P2P).
  */
  /**@{*/
 /*!
 @fn	\
 	NMI_API sint8 m2m_wifi_p2p_disconnect(void);
-@pre 
+@pre
 	The p2p mode must have be enabled and active before a disconnect can be called.
 @see
          m2m_wifi_p2p
@@ -1319,7 +1380,7 @@ NMI_API sint8 m2m_wifi_p2p_disconnect(void);
  /**@}*/
 /** @defgroup WifiEnableApFn m2m_wifi_enable_ap
  *   @ingroup WLANAPI
- * 	Asynchronous wi-fi hot-spot enabling function. 
+ * 	Asynchronous wi-fi hot-spot enabling function.
  *    The WINC supports AP mode operation with the following limitations:
 	- Only 1 STA could be associated at a time.
 	- Open and WEP are the only supported security types
@@ -1334,7 +1395,7 @@ NMI_API sint8 m2m_wifi_p2p_disconnect(void);
 
 @warning
 	This function is not allowed in P2P or STA modes.
-	
+
 @pre
 	- A Wi-Fi notification callback of type @ref tpfAppWifiCb  MUST be implemented and registered at initialization. Registering the callback
 	  is done through passing it to the [m2m_wifi_init](@ref m2m_wifi_init).
@@ -1357,7 +1418,7 @@ NMI_API sint8 m2m_wifi_p2p_disconnect(void);
 @code
 	#include "m2m_wifi.h"
 	#include "m2m_types.h"
-	
+
 	void wifi_event_cb(uint8 u8WiFiEvent, void * pvMsg)
 	{
 		switch(u8WiFiEvent)
@@ -1369,35 +1430,35 @@ NMI_API sint8 m2m_wifi_p2p_disconnect(void);
 				printf("Associated STA has IP Address \"%u.%u.%u.%u\"\n",pu8IPAddress[0],pu8IPAddress[1],pu8IPAddress[2],pu8IPAddress[3]);
 			}
 			break;
-			
+
 		default:
 			break;
 		}
 	}
-	
+
 	int main()
 	{
 		tstrWifiInitParam 	param;
-		
+
 		param.pfAppWifiCb	= wifi_event_cb;
 		if(!m2m_wifi_init(&param))
 		{
 			tstrM2MAPConfig		apConfig;
-			
+
 			strcpy(apConfig.au8SSID, "WINC_SSID");
 			apConfig.u8ListenChannel 	= 1;
 			apConfig.u8SecType			= M2M_WIFI_SEC_OPEN;
 			apConfig.u8SsidHide			= 0;
-			
+
 			// IP Address
 			apConfig.au8DHCPServerIP[0]	= 192;
 			apConfig.au8DHCPServerIP[1]	= 168;
 			apConfig.au8DHCPServerIP[2]	= 1;
 			apConfig.au8DHCPServerIP[0]	= 1;
-			
+
 			// Trigger AP
 			m2m_wifi_enable_ap(&apConfig);
-			
+
 			while(1)
 			{
 				m2m_wifi_handle_events(NULL);
@@ -1428,7 +1489,7 @@ NMI_API sint8 m2m_wifi_disable_ap(void);
  /**@}*/
 /** @defgroup SetStaticIPFn m2m_wifi_set_static_ip
  *   @ingroup WLANAPI
- *   Synchronous static IP Address configuration function. 
+ *   Synchronous static IP Address configuration function.
  */
  /**@{*/
 /*!
@@ -1436,15 +1497,15 @@ NMI_API sint8 m2m_wifi_disable_ap(void);
 	NMI_API sint8 m2m_wifi_set_static_ip(tstrM2MIPConfig * pstrStaticIPConf);
 
 @param [in]	pstrStaticIPConf
-				Pointer to a structure holding the static IP Configurations (IP, 
+				Pointer to a structure holding the static IP Configurations (IP,
 				Gateway, subnet mask and DNS address).
 
 @warning
 	This function should not be used. DHCP configuration is requested automatically after successful Wi-Fi connection is established.
-	
+
 @see
 	tstrM2MIPConfig
-	
+
 @return
 	The function returns @ref M2M_SUCCESS for successful operations and a negative value otherwise.
 */
@@ -1453,13 +1514,13 @@ NMI_API sint8 m2m_wifi_set_static_ip(tstrM2MIPConfig * pstrStaticIPConf);
 /** @defgroup RequestDHCPClientFn m2m_wifi_request_dhcp_client
  *   @ingroup WLANAPI
  * 	Starts the DHCP client operation(DHCP requested by the firmware automatically in STA/AP/P2P mode).
- *    
+ *
  */
  /**@{*/
 /*!
 @fn	\
 	NMI_API sint8 m2m_wifi_request_dhcp_client(void);
-	
+
 @warning
 	This function should not be used. DHCP configuration is requested automatically after successful Wi-Fi connection is established.
 
@@ -1494,11 +1555,11 @@ NMI_API sint8 m2m_wifi_request_dhcp_server(uint8* addr);
 /*!
 @fn	\
 	NMI_API  sint8 m2m_wifi_enable_dhcp(uint8  u8DhcpEn );
-	
+
 @brief
 	Enable/Disable the DHCP client after connection.
 
-@param [in]	 u8DhcpEn 
+@param [in]	 u8DhcpEn
 				Possible values:
 				1: Enable DHCP client after connection.
 				0: Disable DHCP client after connection.
@@ -1506,10 +1567,10 @@ NMI_API sint8 m2m_wifi_request_dhcp_server(uint8* addr);
 	- DHCP client is enabled by default
 	-This Function should be called before using m2m_wifi_set_static_ip()
 
-	
+
 @sa
 	m2m_wifi_set_static_ip()
-	
+
 @return
 	The function SHALL return 0 for success and a negative value otherwise.
 */
@@ -1523,15 +1584,15 @@ NMI_API sint8 m2m_wifi_enable_dhcp(uint8  u8DhcpEn );
 @param [in]	u8NumOfSlot;
 	The minimum number of slots is 2 for every channel,
 	For every slot the SoC will send Probe Request on air, and wait/listen for PROBE RESP/BEACONS for the u8slotTime in ms
-	
+
 @param [in]	 u8SlotTime;
 		The time in ms that the Soc will wait on every channel listening for the frames on air
 		when that time increases the number of APs will increase in the scan results
-		Minimum time is 10 ms and the maximum is 250 ms 
+		Minimum time is 10 ms and the maximum is 250 ms
 @see
 	tenuM2mScanCh
 	m2m_wifi_request_scan
-	
+
 @return
 	The function returns @ref M2M_SUCCESS for successful operations and a negative value otherwise.
 */
@@ -1540,7 +1601,7 @@ NMI_API sint8 m2m_wifi_set_scan_options(uint8 u8NumOfSlot,uint8 u8SlotTime);
 /** @defgroup WifiSetScanRegionFn m2m_wifi_set_scan_region
  *   @ingroup WLANAPI
  *  Synchronous wi-fi scan region setting function.
- *   This function sets the scan region, which will affect the range of possible scan channels. 
+ *   This function sets the scan region, which will affect the range of possible scan channels.
  *   For 2.5GHz supported in the current release, the requested scan region can't exceed the maximum number of channels (14).
  *@{*/
 /*!
@@ -1553,7 +1614,7 @@ NMI_API sint8 m2m_wifi_set_scan_options(uint8 u8NumOfSlot,uint8 u8SlotTime);
 @see
 	tenuM2mScanCh
 	m2m_wifi_request_scan
-	
+
 @return
 	The function returns @ref M2M_SUCCESS for successful operations and a negative value otherwise.
 
@@ -1563,23 +1624,23 @@ NMI_API sint8 m2m_wifi_set_scan_region(uint8  ScanRegion);
 /** @defgroup WifiRequestScanFn m2m_wifi_request_scan
 *   @ingroup WLANAPI
 *    Asynchronous wi-fi scan request on the given channel. The scan status is delivered in the wi-fi event callback and then the application
-*    is to read the scan results sequentially. 
+*    is to read the scan results sequentially.
 *    The number of  APs found (N) is returned in event @ref M2M_WIFI_RESP_SCAN_DONE with the number of found
 *     APs.
 *	The application could read the list of APs by calling the function @ref m2m_wifi_req_scan_result N times.
-* 
+*
 *@{*/
 /*!
 @fn	\
 	NMI_API sint8 m2m_wifi_request_scan(uint8 ch);
 
 @param [in]	ch
-		      RF Channel ID for SCAN operation. It should be set according to tenuM2mScanCh. 
+		      RF Channel ID for SCAN operation. It should be set according to tenuM2mScanCh.
 		      With a value of M2M_WIFI_CH_ALL(255)), means to scan all channels.
 
 @warning
 	This function is not allowed in P2P or AP modes. It works only for STA mode (connected or disconnected).
-				
+
 @pre
 	- A Wi-Fi notification callback of type @ref tpfAppWifiCb MUST be implemented and registered at initialization. Registering the callback
 	  is done through passing it to the @ref m2m_wifi_init.
@@ -1606,17 +1667,17 @@ NMI_API sint8 m2m_wifi_set_scan_region(uint8  ScanRegion);
 
 	#include "m2m_wifi.h"
 	#include "m2m_types.h"
-	
+
 	void wifi_event_cb(uint8 u8WiFiEvent, void * pvMsg)
 	{
 		static uint8	u8ScanResultIdx = 0;
-		
+
 		switch(u8WiFiEvent)
 		{
 		case M2M_WIFI_RESP_SCAN_DONE:
 			{
 				tstrM2mScanDone	*pstrInfo = (tstrM2mScanDone*)pvMsg;
-				
+
 				printf("Num of AP found %d\n",pstrInfo->u8NumofCh);
 				if(pstrInfo->s8ScanState == M2M_SUCCESS)
 				{
@@ -1638,12 +1699,12 @@ NMI_API sint8 m2m_wifi_set_scan_region(uint8  ScanRegion);
 				}
 			}
 			break;
-		
+
 		case M2M_WIFI_RESP_SCAN_RESULT:
 			{
 				tstrM2mWifiscanResult		*pstrScanResult =(tstrM2mWifiscanResult*)pvMsg;
 				uint8						u8NumFoundAPs = m2m_wifi_get_num_ap_found();
-				
+
 				printf(">>%02d RI %d SEC %s CH %02d BSSID %02X:%02X:%02X:%02X:%02X:%02X SSID %s\n",
 					pstrScanResult->u8index,pstrScanResult->s8rssi,
 					pstrScanResult->u8AuthType,
@@ -1651,7 +1712,7 @@ NMI_API sint8 m2m_wifi_set_scan_region(uint8  ScanRegion);
 					pstrScanResult->au8BSSID[0], pstrScanResult->au8BSSID[1], pstrScanResult->au8BSSID[2],
 					pstrScanResult->au8BSSID[3], pstrScanResult->au8BSSID[4], pstrScanResult->au8BSSID[5],
 					pstrScanResult->au8SSID);
-				
+
 				if(u8ScanResultIdx < u8NumFoundAPs)
 				{
 					// Read the next scan result
@@ -1664,24 +1725,24 @@ NMI_API sint8 m2m_wifi_set_scan_region(uint8  ScanRegion);
 			break;
 		}
 	}
-	
+
 	int main()
 	{
 		tstrWifiInitParam 	param;
-		
+
 		param.pfAppWifiCb	= wifi_event_cb;
 		if(!m2m_wifi_init(&param))
 		{
 			// Scan all channels
 			m2m_wifi_request_scan(M2M_WIFI_CH_ALL);
-			
+
 			while(1)
 			{
 				m2m_wifi_handle_events(NULL);
 			}
 		}
 	}
-	
+
 @endcode
 */
 NMI_API sint8 m2m_wifi_request_scan(uint8 ch);
@@ -1689,24 +1750,24 @@ NMI_API sint8 m2m_wifi_request_scan(uint8 ch);
 /** @defgroup WifiGetNumAPFoundFn m2m_wifi_get_num_ap_found
  *   @ingroup WLANAPI
 *  Synchronous function to retrieve the number of AP's found in the last scan request, The function read the number of AP's from global variable which updated in the Wi-Fi callback function through the M2M_WIFI_RESP_SCAN_DONE event.
-*  Function used only in STA mode only. 
+*  Function used only in STA mode only.
  */
  /**@{*/
 /*!
 @fn        NMI_API uint8 m2m_wifi_get_num_ap_found(void);
 
-@see       m2m_wifi_request_scan 
+@see       m2m_wifi_request_scan
 		   M2M_WIFI_RESP_SCAN_DONE
-		   M2M_WIFI_RESP_SCAN_RESULT         
-@pre         m2m_wifi_request_scan need to be called first	
+		   M2M_WIFI_RESP_SCAN_RESULT
+@pre         m2m_wifi_request_scan need to be called first
 		- A Wi-Fi notification callback of type @ref tpfAppWifiCb MUST be implemented and registered at initialization. Registering the callback
 		   is done through passing it to the @ref m2m_wifi_init.
-		- The event @ref M2M_WIFI_RESP_SCAN_DONE must be handled in the callback to receive the requested connection information. 
+		- The event @ref M2M_WIFI_RESP_SCAN_DONE must be handled in the callback to receive the requested connection information.
 @warning   This function must be called only in the wi-fi callback function when the events @ref M2M_WIFI_RESP_SCAN_DONE or @ref M2M_WIFI_RESP_SCAN_RESULT
 		   are received.
 		   Calling this function in any other place will result in undefined/outdated numbers.
 @return    Return the number of AP's found in the last Scan Request.
-		  
+
 \section Example
   The code snippet demonstrates an example of how the scan request is called from the application's main function and the handling of
   the events received in response.
@@ -1714,17 +1775,17 @@ NMI_API sint8 m2m_wifi_request_scan(uint8 ch);
 
 	#include "m2m_wifi.h"
 	#include "m2m_types.h"
-	
+
 	void wifi_event_cb(uint8 u8WiFiEvent, void * pvMsg)
 	{
 		static uint8	u8ScanResultIdx = 0;
-		
+
 		switch(u8WiFiEvent)
 		{
 		case M2M_WIFI_RESP_SCAN_DONE:
 			{
 				tstrM2mScanDone	*pstrInfo = (tstrM2mScanDone*)pvMsg;
-				
+
 				printf("Num of AP found %d\n",pstrInfo->u8NumofCh);
 				if(pstrInfo->s8ScanState == M2M_SUCCESS)
 				{
@@ -1746,12 +1807,12 @@ NMI_API sint8 m2m_wifi_request_scan(uint8 ch);
 				}
 			}
 			break;
-		
+
 		case M2M_WIFI_RESP_SCAN_RESULT:
 			{
 				tstrM2mWifiscanResult		*pstrScanResult =(tstrM2mWifiscanResult*)pvMsg;
 				uint8						u8NumFoundAPs = m2m_wifi_get_num_ap_found();
-				
+
 				printf(">>%02d RI %d SEC %s CH %02d BSSID %02X:%02X:%02X:%02X:%02X:%02X SSID %s\n",
 					pstrScanResult->u8index,pstrScanResult->s8rssi,
 					pstrScanResult->u8AuthType,
@@ -1759,7 +1820,7 @@ NMI_API sint8 m2m_wifi_request_scan(uint8 ch);
 					pstrScanResult->au8BSSID[0], pstrScanResult->au8BSSID[1], pstrScanResult->au8BSSID[2],
 					pstrScanResult->au8BSSID[3], pstrScanResult->au8BSSID[4], pstrScanResult->au8BSSID[5],
 					pstrScanResult->au8SSID);
-				
+
 				if(u8ScanResultIdx < u8NumFoundAPs)
 				{
 					// Read the next scan result
@@ -1772,25 +1833,25 @@ NMI_API sint8 m2m_wifi_request_scan(uint8 ch);
 			break;
 		}
 	}
-	
+
 	int main()
 	{
 		tstrWifiInitParam 	param;
-		
+
 		param.pfAppWifiCb	= wifi_event_cb;
 		if(!m2m_wifi_init(&param))
 		{
 			// Scan all channels
 			m2m_wifi_request_scan(M2M_WIFI_CH_ALL);
-			
+
 			while(1)
 			{
 				m2m_wifi_handle_events(NULL);
 			}
 		}
 	}
-	
-@endcode			 
+
+@endcode
 */
 NMI_API uint8 m2m_wifi_get_num_ap_found(void);
 /**@}*/
@@ -1799,28 +1860,28 @@ NMI_API uint8 m2m_wifi_get_num_ap_found(void);
 *   Synchronous call to read the AP information from the SCAN Result list with the given index.
 *   This function is expected to be called when the response events M2M_WIFI_RESP_SCAN_RESULT or
 *   M2M_WIFI_RESP_SCAN_DONE are received in the wi-fi callback function.
-*   The response information received can be obtained through the casting to the @ref tstrM2mWifiscanResult structure 	
+*   The response information received can be obtained through the casting to the @ref tstrM2mWifiscanResult structure
  */
  /**@{*/
 /*!
 @fn          NMI_API sint8 m2m_wifi_req_scan_result(uint8 index);
-@param [in]  index 
+@param [in]  index
 		      Index for the requested result, the index range start from 0 till number of AP's found
 
 @see          tstrM2mWifiscanResult
 		   m2m_wifi_get_num_ap_found
-		   m2m_wifi_request_scan             
-		   
-@pre         @ref m2m_wifi_request_scan needs to be called first, then m2m_wifi_get_num_ap_found 
-		   to get the number of AP's found	
+		   m2m_wifi_request_scan
+
+@pre         @ref m2m_wifi_request_scan needs to be called first, then m2m_wifi_get_num_ap_found
+		   to get the number of AP's found
 			- A Wi-Fi notification callback of type @ref tpfAppWifiCb MUST be implemented and registered at startup. Registering the callback
 			is done through passing it to the @ref m2m_wifi_init function.
 			- The event @ref M2M_WIFI_RESP_SCAN_RESULT must be handled in the callback to receive the requested connection information.
 @warning     Function used  in STA mode only. the scan results are updated only if the scan request is called.
-		     Calling this function only without a scan request will lead to firmware errors. 
+		     Calling this function only without a scan request will lead to firmware errors.
 		     Refrain from introducing a large delay  between the scan request and the scan result request, to prevent
 		     an errors occurring.
-			 
+
 @return      The function returns @ref M2M_SUCCESS for successful operations and a negative value otherwise.
 \section Example
   The code snippet demonstrates an example of how the scan request is called from the application's main function and the handling of
@@ -1828,17 +1889,17 @@ NMI_API uint8 m2m_wifi_get_num_ap_found(void);
 @code
 	#include "m2m_wifi.h"
 	#include "m2m_types.h"
-	
+
 	void wifi_event_cb(uint8 u8WiFiEvent, void * pvMsg)
 	{
 		static uint8	u8ScanResultIdx = 0;
-		
+
 		switch(u8WiFiEvent)
 		{
 		case M2M_WIFI_RESP_SCAN_DONE:
 			{
 				tstrM2mScanDone	*pstrInfo = (tstrM2mScanDone*)pvMsg;
-				
+
 				printf("Num of AP found %d\n",pstrInfo->u8NumofCh);
 				if(pstrInfo->s8ScanState == M2M_SUCCESS)
 				{
@@ -1860,12 +1921,12 @@ NMI_API uint8 m2m_wifi_get_num_ap_found(void);
 				}
 			}
 			break;
-		
+
 		case M2M_WIFI_RESP_SCAN_RESULT:
 			{
 				tstrM2mWifiscanResult		*pstrScanResult =(tstrM2mWifiscanResult*)pvMsg;
 				uint8						u8NumFoundAPs = m2m_wifi_get_num_ap_found();
-				
+
 				printf(">>%02d RI %d SEC %s CH %02d BSSID %02X:%02X:%02X:%02X:%02X:%02X SSID %s\n",
 					pstrScanResult->u8index,pstrScanResult->s8rssi,
 					pstrScanResult->u8AuthType,
@@ -1873,7 +1934,7 @@ NMI_API uint8 m2m_wifi_get_num_ap_found(void);
 					pstrScanResult->au8BSSID[0], pstrScanResult->au8BSSID[1], pstrScanResult->au8BSSID[2],
 					pstrScanResult->au8BSSID[3], pstrScanResult->au8BSSID[4], pstrScanResult->au8BSSID[5],
 					pstrScanResult->au8SSID);
-				
+
 				if(u8ScanResultIdx < u8NumFoundAPs)
 				{
 					// Read the next scan result
@@ -1886,25 +1947,25 @@ NMI_API uint8 m2m_wifi_get_num_ap_found(void);
 			break;
 		}
 	}
-	
+
 	int main()
 	{
 		tstrWifiInitParam 	param;
-		
+
 		param.pfAppWifiCb	= wifi_event_cb;
 		if(!m2m_wifi_init(&param))
 		{
 			// Scan all channels
 			m2m_wifi_request_scan(M2M_WIFI_CH_ALL);
-			
+
 			while(1)
 			{
 				m2m_wifi_handle_events(NULL);
 			}
 		}
 	}
-	
-@endcode 
+
+@endcode
 */
 NMI_API sint8 m2m_wifi_req_scan_result(uint8 index);
 /**@}*/
@@ -1918,19 +1979,19 @@ NMI_API sint8 m2m_wifi_req_scan_result(uint8 index);
 @fn          NMI_API sint8 m2m_wifi_req_curr_rssi(void);
 @pre	   - A Wi-Fi notification callback of type @ref tpfAppWifiCb MUST be implemented and registered before initialization. Registering the callback
 			is done through passing it to the [m2m_wifi_init](@ref m2m_wifi_init) through the @ref tstrWifiInitParam initialization structure.
-		   - The event @ref M2M_WIFI_RESP_CURRENT_RSSI must be handled in the callback to receive the requested connection information.       
-@return      The function returns @ref M2M_SUCCESS for successful operations and a negative value otherwise.	
+		   - The event @ref M2M_WIFI_RESP_CURRENT_RSSI must be handled in the callback to receive the requested connection information.
+@return      The function returns @ref M2M_SUCCESS for successful operations and a negative value otherwise.
 \section Example
-  The code snippet demonstrates how the RSSI request is called in the application's main function and the handling of event received in the callback. 
+  The code snippet demonstrates how the RSSI request is called in the application's main function and the handling of event received in the callback.
 @code
 
 	#include "m2m_wifi.h"
 	#include "m2m_types.h"
-	
+
 	void wifi_event_cb(uint8 u8WiFiEvent, void * pvMsg)
 	{
 		static uint8	u8ScanResultIdx = 0;
-		
+
 		switch(u8WiFiEvent)
 		{
 		case M2M_WIFI_RESP_CURRENT_RSSI:
@@ -1943,17 +2004,17 @@ NMI_API sint8 m2m_wifi_req_scan_result(uint8 index);
 			break;
 		}
 	}
-	
+
 	int main()
 	{
 		tstrWifiInitParam 	param;
-		
+
 		param.pfAppWifiCb	= wifi_event_cb;
 		if(!m2m_wifi_init(&param))
 		{
 			// Scan all channels
 			m2m_wifi_req_curr_rssi();
-			
+
 			while(1)
 			{
 				m2m_wifi_handle_events(NULL);
@@ -1961,7 +2022,7 @@ NMI_API sint8 m2m_wifi_req_scan_result(uint8 index);
 		}
 	}
 
-@endcode	
+@endcode
 
 */
 NMI_API sint8 m2m_wifi_req_curr_rssi(void);
@@ -1978,10 +2039,10 @@ NMI_API sint8 m2m_wifi_req_curr_rssi(void);
 @param [out] pu8MacAddr
 			 Output MAC address buffer of 6 bytes size. Valid only if *pu8Valid=1.
 @param [out] pu8IsValid
-		     A output boolean value to indicate the validity of pu8MacAddr in OTP. 
+		     A output boolean value to indicate the validity of pu8MacAddr in OTP.
 		     Output zero if the OTP memory is not programmed, non-zero otherwise.
 @pre         m2m_wifi_init required to call any WIFI/socket function
-@see         m2m_wifi_get_mac_address             
+@see         m2m_wifi_get_mac_address
 
 @return      The function returns @ref M2M_SUCCESS for success and a negative value otherwise.
 
@@ -1994,11 +2055,11 @@ NMI_API sint8 m2m_wifi_get_otp_mac_address(uint8 *pu8MacAddr, uint8 * pu8IsValid
 */
 /**@{*/
 /*!
-@fn          NMI_API sint8 m2m_wifi_get_mac_address(uint8 *pu8MacAddr)	
+@fn          NMI_API sint8 m2m_wifi_get_mac_address(uint8 *pu8MacAddr)
 @param [out] pu8MacAddr
-			 Output MAC address buffer of 6 bytes size.	
+			 Output MAC address buffer of 6 bytes size.
 @pre         m2m_wifi_init required to call any WIFI/socket function
-@see         m2m_wifi_get_otp_mac_address             
+@see         m2m_wifi_get_otp_mac_address
 @return      The function returns @ref M2M_SUCCESS for successful operations and a negative value otherwise.
 
 */
@@ -2006,7 +2067,7 @@ NMI_API sint8 m2m_wifi_get_mac_address(uint8 *pu8MacAddr);
 /**@}*/
 /** @defgroup SetSleepModeFn m2m_wifi_set_sleep_mode
  *   @ingroup WLANAPI
- *  Synchronous power-save mode setting function for the NMC1500. 
+ *  Synchronous power-save mode setting function for the NMC1500.
  */
  /**@{*/
 /*!
@@ -2014,10 +2075,10 @@ NMI_API sint8 m2m_wifi_get_mac_address(uint8 *pu8MacAddr);
 @param [in]	PsTyp
 			Desired power saving mode. Supported types are defined in @ref tenuPowerSaveModes.
 @param [in]	BcastEn
-			Broadcast reception enable flag. 
+			Broadcast reception enable flag.
 			If it is 1, the WINC1500 must be awake each DTIM beacon for receiving broadcast traffic.
-			If it is 0, the WINC1500 will not wakeup at the DTIM beacon, but its wakeup depends only 
-			on the the configured Listen Interval. 
+			If it is 0, the WINC1500 will not wakeup at the DTIM beacon, but its wakeup depends only
+			on the the configured Listen Interval.
 
 @warning    The function called once after initialization.
 
@@ -2031,7 +2092,7 @@ NMI_API sint8 m2m_wifi_set_sleep_mode(uint8 PsTyp, uint8 BcastEn);
 /**@}*/
 /** @defgroup WifiRequestSleepFn m2m_wifi_request_sleep
  *   @ingroup WLANAPI
- *  Synchronous power save request function, which requests from the NMC1500 device to sleep in the mode previously set 
+ *  Synchronous power save request function, which requests from the NMC1500 device to sleep in the mode previously set
  *   for a specific time.
  *   This function should be used in the M2M_PS_MANUAL Power save mode (only).
  */
@@ -2039,9 +2100,9 @@ NMI_API sint8 m2m_wifi_set_sleep_mode(uint8 PsTyp, uint8 BcastEn);
 /*!
 @fn	        NMI_API sint8 m2m_wifi_request_sleep(uint32 u32SlpReqTime);
 @param [in]	u32SlpReqTime
-			Request Sleep in ms 
+			Request Sleep in ms
 @warning 	The function should be called in M2M_PS_MANUAL power save only.
-@see         tenuPowerSaveModes 
+@see         tenuPowerSaveModes
 		  m2m_wifi_set_sleep_mode
 @return    The function returns @ref M2M_SUCCESS for successful operations and a negative value otherwise.
 */
@@ -2054,7 +2115,7 @@ NMI_API sint8 m2m_wifi_request_sleep(uint32 u32SlpReqTime);
  /**@{*/
 /*!
 @fn		    NMI_API uint8 m2m_wifi_get_sleep_mode(void);
-@see	    tenuPowerSaveModes 
+@see	    tenuPowerSaveModes
 		    m2m_wifi_set_sleep_mode
 @return	    The current operating power saving mode.
 
@@ -2069,7 +2130,7 @@ NMI_API uint8 m2m_wifi_get_sleep_mode(void);
  /**@{*/
 /*!
 @fn			NMI_API sint8 m2m_wifi_req_client_ctrl(uint8 cmd);
-@brief		
+@brief
 @param [in]	cmd
 			Control command sent from PS Server to PS Client (command values defined by the application)
 @pre		m2m_wifi_req_server_init should be called first
@@ -2083,7 +2144,7 @@ NMI_API sint8 m2m_wifi_req_client_ctrl(uint8 cmd);
 /** @defgroup WifiReqServerInit m2m_wifi_req_server_init
  *   @ingroup WLANAPI
  *  Synchronous function to initialize the PS Server.
- *  The WINC1500 supports non secure communication with another WINC1500, 
+ *  The WINC1500 supports non secure communication with another WINC1500,
 *   (SERVER/CLIENT) through one byte command (probe request and probe response) without any connection setup.
 *   The server mode can't be used with any other modes (STA/P2P/AP)
 */
@@ -2104,12 +2165,12 @@ NMI_API sint8 m2m_wifi_req_server_init(uint8 ch);
  */
  /**@{*/
 /*!
-@fn			NMI_API sint8 m2m_wifi_set_device_name(uint8 *pu8DeviceName, uint8 u8DeviceNameLength);		
+@fn			NMI_API sint8 m2m_wifi_set_device_name(uint8 *pu8DeviceName, uint8 u8DeviceNameLength);
 @param [in]	pu8DeviceName
 			Buffer holding the device name.
 @param [in]	u8DeviceNameLength
 			Length of the device name. Should not exceed the maximum device name's length M2M_DEVICE_NAME_MAX.
-@warning		The function called once after initialization. 
+@warning		The function called once after initialization.
 @return		The function returns @ref M2M_SUCCESS for successful operations and a negative value otherwise.
 */
 NMI_API sint8 m2m_wifi_set_device_name(uint8 *pu8DeviceName, uint8 u8DeviceNameLength);
@@ -2117,7 +2178,7 @@ NMI_API sint8 m2m_wifi_set_device_name(uint8 *pu8DeviceName, uint8 u8DeviceNameL
 /** @defgroup WifiSetLsnIntFn m2m_wifi_set_lsn_int
  *   @ingroup WLANAPI
 *	Synchronous function for setting the wi-fi listen interval for power save operation. It is represented in units
-*	of AP Beacon periods.  
+*	of AP Beacon periods.
  */
  /**@{*/
 /*!
@@ -2126,7 +2187,7 @@ NMI_API sint8 m2m_wifi_set_device_name(uint8 *pu8DeviceName, uint8 u8DeviceNameL
 @param [in]	pstrM2mLsnInt
 			Structure holding the listen interval configurations.
 @pre		Function m2m_wifi_set_sleep_mode shall be called first
-@warning     	The function should be called once after initialization. 
+@warning     	The function should be called once after initialization.
 @see		tstrM2mLsnInt
                      m2m_wifi_set_sleep_mode
 @return		The function returns @ref M2M_SUCCESS for successful operations and a negative value otherwise.
@@ -2141,7 +2202,7 @@ NMI_API sint8 m2m_wifi_set_lsn_int(tstrM2mLsnInt *pstrM2mLsnInt);
  *    The monitoring callback function must be implemented before starting the monitoring mode, in-order to handle the packets received.
  *    Registering of the implemented callback function is through the callback pointer @ref tpfAppMonCb in the @ref tstrWifiInitParam structure.
  *    passed to @ref m2m_wifi_init function at initialization.
- *    
+ *
  */
  /**@{*/
 /*!
@@ -2149,8 +2210,8 @@ NMI_API sint8 m2m_wifi_set_lsn_int(tstrM2mLsnInt *pstrM2mLsnInt);
  * @param [in]     pstrMtrCtrl
  *                 		Pointer to @ref tstrM2MWifiMonitorModeCtrl structure holding the Filtering parameters.
  * @param [in]     pu8PayloadBuffer
- * 				   Pointer to a Buffer allocated by the application. The buffer SHALL hold the Data field of 
- *				   the WIFI RX Packet (Or a part from it). If it is set to NULL, the WIFI data payload will 
+ * 				   Pointer to a Buffer allocated by the application. The buffer SHALL hold the Data field of
+ *				   the WIFI RX Packet (Or a part from it). If it is set to NULL, the WIFI data payload will
  *				   be discarded by the monitoring driver.
  * @param [in]     u16BufferSize
  *				   The total size of the pu8PayloadBuffer in bytes.
@@ -2159,29 +2220,29 @@ NMI_API sint8 m2m_wifi_set_lsn_int(tstrM2mLsnInt *pstrM2mLsnInt);
  *				   in reading specific information from the received packet. It must assign the offset to the starting
  *				   position of it relative to the DATA payload start.\n
  *				   \e Example, \e if \e the \e SSID \e is \e needed \e to \e be \e read \e from \e a \e PROBE \e REQ \e packet, \e the \e u16Offset \e MUST \e be \e set \e to \e 0.
- * @warning        This mode available as sniffer ONLY, you can not be connected in any modes (Station, Access Point, or P2P).\n 
+ * @warning        This mode available as sniffer ONLY, you can not be connected in any modes (Station, Access Point, or P2P).\n
  * @see             tstrM2MWifiMonitorModeCtrl
  			   tstrM2MWifiRxPacketInfo
  			   tstrWifiInitParam
  			   tenuM2mScanCh
- 			   m2m_wifi_disable_monitoring_mode               
+ 			   m2m_wifi_disable_monitoring_mode
  * @return       The function returns @ref M2M_SUCCESS for successful operations and a negative value otherwise.
 
 *\section Example
 *  The example demonstrates the main function where-by the monitoring enable function is called after the initialization of the driver and the packets are
 *   handled in the callback function.
 * @code
-			
+
 			#include "m2m_wifi.h"
 			#include "m2m_types.h"
 
-			//Declare receive buffer 
+			//Declare receive buffer
 			uint8 gmgmt[1600];
-	
+
 			//Callback functions
 			void wifi_cb(uint8 u8WiFiEvent, void * pvMsg)
 			{
-				; 
+				;
 			}
 			void wifi_monitoring_cb(tstrM2MWifiRxPacketInfo *pstrWifiRxPacket, uint8 *pu8Payload, uint16 u16PayloadSize)
 			{
@@ -2195,16 +2256,16 @@ NMI_API sint8 m2m_wifi_set_lsn_int(tstrM2mLsnInt *pstrM2mLsnInt);
 					}
 				}
 			}
-			
+
 			int main()
 			{
-				//Register wifi_monitoring_cb 
+				//Register wifi_monitoring_cb
 				tstrWifiInitParam param;
 				param.pfAppWifiCb = wifi_cb;
 				param.pfAppMonCb  = wifi_monitoring_cb;
-				
+
 				nm_bsp_init();
-				
+
 				if(!m2m_wifi_init(&param)) {
 					//Enable Monitor Mode with filter to receive all data frames on channel 1
 					tstrM2MWifiMonitorModeCtrl	strMonitorCtrl = {0};
@@ -2212,7 +2273,7 @@ NMI_API sint8 m2m_wifi_set_lsn_int(tstrM2mLsnInt *pstrM2mLsnInt);
 					strMonitorCtrl.u8FrameType		= DATA_BASICTYPE;
 					strMonitorCtrl.u8FrameSubtype	= M2M_WIFI_FRAME_SUB_TYPE_ANY; //Receive any subtype of data frame
 					m2m_wifi_enable_monitoring_mode(&strMonitorCtrl, gmgmt, sizeof(gmgmt), 0);
-					
+
 					while(1) {
 						m2m_wifi_handle_events(NULL);
 					}
@@ -2221,7 +2282,7 @@ NMI_API sint8 m2m_wifi_set_lsn_int(tstrM2mLsnInt *pstrM2mLsnInt);
 			}
  * @endcode
  */
-NMI_API sint8 m2m_wifi_enable_monitoring_mode(tstrM2MWifiMonitorModeCtrl *pstrMtrCtrl, uint8 *pu8PayloadBuffer, 
+NMI_API sint8 m2m_wifi_enable_monitoring_mode(tstrM2MWifiMonitorModeCtrl *pstrMtrCtrl, uint8 *pu8PayloadBuffer,
 										   uint16 u16BufferSize, uint16 u16DataOffset);
 /**@}*/
 /** @defgroup WifiDisableMonitorModeFn m2m_wifi_disable_monitoring_mode
@@ -2232,7 +2293,7 @@ NMI_API sint8 m2m_wifi_enable_monitoring_mode(tstrM2MWifiMonitorModeCtrl *pstrMt
  /**@{*/
 /*!
  * @fn             NMI_API sint8 m2m_wifi_disable_monitoring_mode(void);
- * @see           m2m_wifi_enable_monitoring_mode               
+ * @see           m2m_wifi_enable_monitoring_mode
  * @return      The function returns @ref M2M_SUCCESS for successful operations and a negative value otherwise.
  */
 NMI_API sint8 m2m_wifi_disable_monitoring_mode(void);
@@ -2244,17 +2305,17 @@ NMI_API sint8 m2m_wifi_disable_monitoring_mode(void);
  /**@{*/
 /*!
  * @fn             NMI_API sint8 m2m_wifi_send_wlan_pkt(uint8 *, uint16, uint16);
- 
+
  * @param [in]     pu8WlanPacket
  *                 	     Pointer to a buffer holding the whole WIFI frame.
  * @param [in]     u16WlanHeaderLength
  * 			      The size of the WIFI packet header ONLY.
  * @param [in]     u16WlanPktSize
- *			     The size of the whole bytes in packet. 
+ *			     The size of the whole bytes in packet.
  * @see             m2m_wifi_enable_monitoring_mode
  			   m2m_wifi_disable_monitoring_mode
  * @pre              Enable Monitoring mode first using @ref m2m_wifi_enable_monitoring_mode
- * @warning        This function available in monitoring mode ONLY.\n  
+ * @warning        This function available in monitoring mode ONLY.\n
  * @note             Packets are user's responsibility.
  * @return     	    The function returns @ref M2M_SUCCESS for successful operations and a negative value otherwise.
  */
@@ -2262,8 +2323,8 @@ NMI_API sint8 m2m_wifi_send_wlan_pkt(uint8 *pu8WlanPacket, uint16 u16WlanHeaderL
 /**@}*/
 /** @defgroup WifiSendEthernetPktFn m2m_wifi_send_ethernet_pkt
  *   @ingroup WLANAPI
- *   Synchronous function to transmit an Ethernet packet. Transmit a packet directly in bypass mode where the TCP/IP stack is disabled and the implementation of this packet is left to the application developer. 
- *   The Ethernet packet composition is left to the application developer. 
+ *   Synchronous function to transmit an Ethernet packet. Transmit a packet directly in bypass mode where the TCP/IP stack is disabled and the implementation of this packet is left to the application developer.
+ *   The Ethernet packet composition is left to the application developer.
  */
  /**@{*/
 /*!
@@ -2271,8 +2332,8 @@ NMI_API sint8 m2m_wifi_send_wlan_pkt(uint8 *pu8WlanPacket, uint16 u16WlanHeaderL
  * @param [in]     pu8Packet
  *                        Pointer to a buffer holding the whole Ethernet frame.
  * @param [in]     u16PacketSize
- * 		            The size of the whole bytes in packet.    
-  * @attention     This function available in Bypass mode ONLY. Make sure that firmware version built with macro \ref ETH_MODE.\n  
+ * 		            The size of the whole bytes in packet.
+  * @attention     This function available in Bypass mode ONLY. Make sure that firmware version built with macro \ref ETH_MODE.\n
  * @note             Packets are the user's responsibility.
  * @return         The function returns @ref M2M_SUCCESS for successful operations and a negative value otherwise.
 
@@ -2287,7 +2348,7 @@ NMI_API sint8 m2m_wifi_send_ethernet_pkt(uint8* pu8Packet,uint16 u16PacketSize);
  *  	The UTC is important for checking the expiration date of X509 certificates used while establishing
  *  	TLS (Transport Layer Security) connections.
  *  	It is highly recommended to use it if there is no other means to get the UTC time. If there is a RTC
- *  	on the host MCU, the SNTP could be disabled and the host should set the system time to the firmware 
+ *  	on the host MCU, the SNTP could be disabled and the host should set the system time to the firmware
  *  	using the @ref m2m_wifi_set_system_time function.
  */
  /**@{*/
@@ -2296,8 +2357,8 @@ NMI_API sint8 m2m_wifi_send_ethernet_pkt(uint8* pu8Packet,uint16 u16PacketSize);
  * @param [in]     bEnable
 *				Enabling/Disabling flag
  *                        '0' :disable SNTP
- *                        '1' :enable SNTP  
- * @see             m2m_wifi_set_sytem_time       
+ *                        '1' :enable SNTP
+ * @see             m2m_wifi_set_sytem_time
  * @return        The function returns @ref M2M_SUCCESS for successful operations and a negative value otherwise.
  */
 NMI_API sint8 m2m_wifi_enable_sntp(uint8 bEnable);
@@ -2309,12 +2370,12 @@ NMI_API sint8 m2m_wifi_enable_sntp(uint8 bEnable);
  */
  /**@{*/
 /*!
- * @fn             NMI_API sint8 m2m_wifi_set_sytem_time(uint32);   
+ * @fn             NMI_API sint8 m2m_wifi_set_sytem_time(uint32);
  * @param [in]     u32RTCSeconds
- *                        UTC value in seconds. 
+ *                        UTC value in seconds.
  * @see            m2m_wifi_enable_sntp
- 			  tstrSystemTime   
-  * @note         If there is an RTC on the host MCU, the SNTP could be disabled and the host should set the system time to the firmware 
+ 			  tstrSystemTime
+  * @note         If there is an RTC on the host MCU, the SNTP could be disabled and the host should set the system time to the firmware
  *		         using the API \ref m2m_wifi_set_sytem_time.
  * @return        The function returns @ref M2M_SUCCESS for successful operations and a negative value otherwise.
  */
@@ -2330,19 +2391,19 @@ NMI_API sint8 m2m_wifi_set_sytem_time(uint32 u32UTCSeconds);
 /*!
  * @fn             NMI_API sint8 m2m_wifi_set_cust_InfoElement(uint8*);
  * @param [in]     pau8M2mCustInfoElement
- *                        Pointer to Buffer containing the IE to be sent. It is the application developer's responsibility to ensure on the correctness  of the information element's ordering passed in. 
+ *                        Pointer to Buffer containing the IE to be sent. It is the application developer's responsibility to ensure on the correctness  of the information element's ordering passed in.
  * @warning	       - Size of All elements combined must not exceed 255 byte.\n
  *			       - Used in Access Point Mode \n
  * @note              IEs Format will be follow the following layout:\n
- * @verbatim 
-               --------------- ---------- ---------- ------------------- -------- -------- ----------- ----------------------  
-              | Byte[0]       | Byte[1]  | Byte[2]  | Byte[3:length1+2] | ..... | Byte[n] | Byte[n+1] | Byte[n+2:lengthx+2]  | 
-              |---------------|----------|----------|-------------------|-------- --------|-----------|------------------| 
-              | #of all Bytes | IE1 ID   | Length1  | Data1(Hex Coded)  | ..... | IEx ID  | Lengthx   | Datax(Hex Coded)     | 
-               --------------- ---------- ---------- ------------------- -------- -------- ----------- ---------------------- 
+ * @verbatim
+               --------------- ---------- ---------- ------------------- -------- -------- ----------- ----------------------
+              | Byte[0]       | Byte[1]  | Byte[2]  | Byte[3:length1+2] | ..... | Byte[n] | Byte[n+1] | Byte[n+2:lengthx+2]  |
+              |---------------|----------|----------|-------------------|-------- --------|-----------|------------------|
+              | #of all Bytes | IE1 ID   | Length1  | Data1(Hex Coded)  | ..... | IEx ID  | Lengthx   | Datax(Hex Coded)     |
+               --------------- ---------- ---------- ------------------- -------- -------- ----------- ----------------------
  * @endverbatim
  * @see             m2m_wifi_enable_sntp
- *                      tstrSystemTime               
+ *                      tstrSystemTime
  * @return        The function returns @ref M2M_SUCCESS for successful operations and a negative value otherwise.
  \section Example
    The example demonstrates how the information elements are set using this function.
@@ -2360,10 +2421,10 @@ NMI_API sint8 m2m_wifi_set_sytem_time(uint32 u32UTCSeconds);
                 elementData[4]=201; elementData[5]=2; elementData[6]='B'; elementData[7]='C';
                 //Third IE
                 elementData[8]=202; elementData[9]=3; elementData[10]='D'; elementData[11]=0; elementData[12]='F';
-            } else if(1 == state) {	
+            } else if(1 == state) {
                 //Append 2 IEs to others, Notice that we keep old data in array starting with\n
                 //element 13 and total number of bytes increased to 20
-                state = 2; 
+                state = 2;
                 //Total Number of Bytes
                 elementData[0]=20;
                 //Fourth IE
@@ -2371,11 +2432,11 @@ NMI_API sint8 m2m_wifi_set_sytem_time(uint32 u32UTCSeconds);
                 //Fifth IE
                 elementData[16]=204; elementData[17]=3; elementData[18]='X'; elementData[19]=5; elementData[20]='Z';
             } else if(2 == state) {	//Delete All IEs
-                state = 0; 
+                state = 0;
                 //Total Number of Bytes
                 elementData[0]=0;
             }
-            m2m_wifi_set_cust_InfoElement(elementData);	
+            m2m_wifi_set_cust_InfoElement(elementData);
  * @endcode
  */
 NMI_API sint8 m2m_wifi_set_cust_InfoElement(uint8* pau8M2mCustInfoElement);
@@ -2388,14 +2449,14 @@ NMI_API sint8 m2m_wifi_set_cust_InfoElement(uint8* pau8M2mCustInfoElement);
  /**@{*/
 /*!
  * @fn             NMI_API sint8 m2m_wifi_enable_mac_mcast(uint8 *, uint8);
- * @brief        
+ * @brief
  * @param [in]     pu8MulticastMacAddress
  *                        Pointer to MAC address
  * @param [in]     u8AddRemove
  *                        A flag to add or remove the MAC ADDRESS, based on the following values:
  *                        -  0 : remove MAC address
- *                        -  1 : add MAC address    
- * @attention    This function is available in bypass mode ONLY. Make sure that firmware version built with the macro @ref ETH_MODE.\n  
+ *                        -  1 : add MAC address
+ * @attention    This function is available in bypass mode ONLY. Make sure that firmware version built with the macro @ref ETH_MODE.\n
  * @note         Maximum number of MAC addresses that could be added is 8.
  * @return       The function returns @ref M2M_SUCCESS for successful operations and a negative value otherwise.
  */
@@ -2403,12 +2464,12 @@ NMI_API sint8 m2m_wifi_enable_mac_mcast(uint8* pu8MulticastMacAddress, uint8 u8A
 /**@}*/
 /** @defgroup SetReceiveBufferFn m2m_wifi_set_receive_buffer
  *   @ingroup WLANAPI
- *    Synchronous function for  setting or changing the receiver buffer's length. 
+ *    Synchronous function for  setting or changing the receiver buffer's length.
  *    Changes are made according to the developer option in bypass mode and this function should be called in the receive callback handling.
  *@{*/
 /*!
  * @fn             NMI_API sint8 m2m_wifi_set_receive_buffer(void *, uint16);
-     
+
  * @param [in]     pvBuffer
  *                 Pointer to Buffer to receive data.
  *		     NULL pointer causes a negative error @ref M2M_ERR_FAIL.
@@ -2416,8 +2477,8 @@ NMI_API sint8 m2m_wifi_enable_mac_mcast(uint8* pu8MulticastMacAddress, uint8 u8A
  * @param [in]     u16BufferLen
  *                 Length of data to be received.  Maximum length of data should not exceed the size defined by TCP/IP
  *      	     defined as @ref SOCKET_BUFFER_MAX_LENGTH
- *		     
- * @warning      This function is available in the bypass mode ONLY. Make sure that firmware version is built with macro @ref ETH_MODE.\n  
+ *
+ * @warning      This function is available in the bypass mode ONLY. Make sure that firmware version is built with macro @ref ETH_MODE.\n
  * @return       The function returns @ref M2M_SUCCESS for successful operations and a negative value otherwise.
  */
 NMI_API sint8 m2m_wifi_set_receive_buffer(void* pvBuffer,uint16 u16BufferLen);

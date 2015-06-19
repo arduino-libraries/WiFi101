@@ -4,7 +4,7 @@
  *
  * \brief This module contains NMC1000 bus APIs implementation.
  *
- * Copyright (c) 2014 Atmel Corporation. All rights reserved.
+ * Copyright (c) 2015 Atmel Corporation. All rights reserved.
  *
  * \asf_license_start
  *
@@ -22,9 +22,6 @@
  *
  * 3. The name of Atmel may not be used to endorse or promote products derived
  *    from this software without specific prior written permission.
- *
- * 4. This software may only be redistributed and used in connection with an
- *    Atmel microcontroller product.
  *
  * THIS SOFTWARE IS PROVIDED BY ATMEL "AS IS" AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -57,12 +54,12 @@
 *	@author	M. Abdelmawla
 *	@date	11 July 2012
 *	@version	1.0
-*/ 
+*/
 sint8 nm_bus_iface_init(void *pvInitVal)
 {
 	sint8 ret = M2M_SUCCESS;
 	ret = nm_bus_init(pvInitVal);
-	
+
 	return ret;
 }
 
@@ -73,7 +70,7 @@ sint8 nm_bus_iface_init(void *pvInitVal)
 *	@author	Samer Sarhan
 *	@date	07 April 2014
 *	@version	1.0
-*/ 
+*/
 sint8 nm_bus_iface_deinit(void)
 {
 	sint8 ret = M2M_SUCCESS;
@@ -89,11 +86,11 @@ sint8 nm_bus_iface_deinit(void)
 *	@author	Viswanathan Murugesan
 *	@date	22 Oct 2014
 *	@version	1.0
-*/ 
+*/
 sint8 nm_bus_iface_reconfigure(void *ptr)
 {
 	sint8 ret = M2M_SUCCESS;
-#ifdef USE_UART
+#ifdef CONF_WINC_USE_UART
 	ret = nm_uart_reconfigure(ptr);
 #endif
 	return ret;
@@ -107,14 +104,14 @@ sint8 nm_bus_iface_reconfigure(void *ptr)
 *	@author	M. Abdelmawla
 *	@date	11 July 2012
 *	@version	1.0
-*/ 
+*/
 uint32 nm_read_reg(uint32 u32Addr)
 {
-#ifdef USE_UART
+#ifdef CONF_WINC_USE_UART
 	return nm_uart_read_reg(u32Addr);
-#elif defined (USE_SPI)
+#elif defined (CONF_WINC_USE_SPI)
 	return nm_spi_read_reg(u32Addr);
-#elif defined (USE_I2C)
+#elif defined (CONF_WINC_USE_I2C)
 	return nm_i2c_read_reg(u32Addr);
 #else
 #error "Plesae define bus usage"
@@ -133,14 +130,14 @@ uint32 nm_read_reg(uint32 u32Addr)
 *	@author	M. Abdelmawla
 *	@date	11 July 2012
 *	@version	1.0
-*/ 
+*/
 sint8 nm_read_reg_with_ret(uint32 u32Addr, uint32* pu32RetVal)
 {
-#ifdef USE_UART
+#ifdef CONF_WINC_USE_UART
 	return nm_uart_read_reg_with_ret(u32Addr,pu32RetVal);
-#elif defined (USE_SPI)
+#elif defined (CONF_WINC_USE_SPI)
 	return nm_spi_read_reg_with_ret(u32Addr,pu32RetVal);
-#elif defined (USE_I2C)
+#elif defined (CONF_WINC_USE_I2C)
 	return nm_i2c_read_reg_with_ret(u32Addr,pu32RetVal);
 #else
 #error "Plesae define bus usage"
@@ -158,14 +155,14 @@ sint8 nm_read_reg_with_ret(uint32 u32Addr, uint32* pu32RetVal)
 *	@author	M. Abdelmawla
 *	@date	11 July 2012
 *	@version	1.0
-*/ 
+*/
 sint8 nm_write_reg(uint32 u32Addr, uint32 u32Val)
 {
-#ifdef USE_UART
+#ifdef CONF_WINC_USE_UART
 	return nm_uart_write_reg(u32Addr,u32Val);
-#elif defined (USE_SPI)
+#elif defined (CONF_WINC_USE_SPI)
 	return nm_spi_write_reg(u32Addr,u32Val);
-#elif defined (USE_I2C)
+#elif defined (CONF_WINC_USE_I2C)
 	return nm_i2c_write_reg(u32Addr,u32Val);
 #else
 #error "Plesae define bus usage"
@@ -174,11 +171,11 @@ sint8 nm_write_reg(uint32 u32Addr, uint32 u32Val)
 
 static sint8 p_nm_read_block(uint32 u32Addr, uint8 *puBuf, uint16 u16Sz)
 {
-#ifdef USE_UART
+#ifdef CONF_WINC_USE_UART
 	return nm_uart_read_block(u32Addr,puBuf,u16Sz);
-#elif defined (USE_SPI)
+#elif defined (CONF_WINC_USE_SPI)
 	return nm_spi_read_block(u32Addr,puBuf,u16Sz);
-#elif defined (USE_I2C)
+#elif defined (CONF_WINC_USE_I2C)
 	return nm_i2c_read_block(u32Addr,puBuf,u16Sz);
 #else
 #error "Plesae define bus usage"
@@ -198,7 +195,7 @@ static sint8 p_nm_read_block(uint32 u32Addr, uint8 *puBuf, uint16 u16Sz)
 *	@author	M. Abdelmawla
 *	@date	11 July 2012
 *	@version	1.0
-*/ 
+*/
 sint8 nm_read_block(uint32 u32Addr, uint8 *puBuf, uint32 u32Sz)
 {
 	uint16 u16MaxTrxSz = egstrNmBusCapabilities.u16MaxTrxSz - MAX_TRX_CFG_SZ;
@@ -209,7 +206,7 @@ sint8 nm_read_block(uint32 u32Addr, uint8 *puBuf, uint32 u32Sz)
 	{
 		if(u32Sz <= u16MaxTrxSz)
 		{
-			s8Ret += p_nm_read_block(u32Addr, &puBuf[off], (uint16)u32Sz);	
+			s8Ret += p_nm_read_block(u32Addr, &puBuf[off], (uint16)u32Sz);
 			break;
 		}
 		else
@@ -227,11 +224,11 @@ sint8 nm_read_block(uint32 u32Addr, uint8 *puBuf, uint32 u32Sz)
 
 static sint8 p_nm_write_block(uint32 u32Addr, uint8 *puBuf, uint16 u16Sz)
 {
-#ifdef USE_UART
+#ifdef CONF_WINC_USE_UART
 	return nm_uart_write_block(u32Addr,puBuf,u16Sz);
-#elif defined (USE_SPI)
+#elif defined (CONF_WINC_USE_SPI)
 	return nm_spi_write_block(u32Addr,puBuf,u16Sz);
-#elif defined (USE_I2C)
+#elif defined (CONF_WINC_USE_I2C)
 	return nm_i2c_write_block(u32Addr,puBuf,u16Sz);
 #else
 #error "Plesae define bus usage"
@@ -251,7 +248,7 @@ static sint8 p_nm_write_block(uint32 u32Addr, uint8 *puBuf, uint16 u16Sz)
 *	@author	M. Abdelmawla
 *	@date	11 July 2012
 *	@version	1.0
-*/ 
+*/
 sint8 nm_write_block(uint32 u32Addr, uint8 *puBuf, uint32 u32Sz)
 {
 	uint16 u16MaxTrxSz = egstrNmBusCapabilities.u16MaxTrxSz - MAX_TRX_CFG_SZ;
@@ -262,7 +259,7 @@ sint8 nm_write_block(uint32 u32Addr, uint8 *puBuf, uint32 u32Sz)
 	{
 		if(u32Sz <= u16MaxTrxSz)
 		{
-			s8Ret += p_nm_write_block(u32Addr, &puBuf[off], (uint16)u32Sz);	
+			s8Ret += p_nm_write_block(u32Addr, &puBuf[off], (uint16)u32Sz);
 			break;
 		}
 		else

@@ -4,7 +4,7 @@
  *
  * \brief This module contains NMC1000 bus APIs implementation.
  *
- * Copyright (c) 2014 Atmel Corporation. All rights reserved.
+ * Copyright (c) 2015 Atmel Corporation. All rights reserved.
  *
  * \asf_license_start
  *
@@ -22,9 +22,6 @@
  *
  * 3. The name of Atmel may not be used to endorse or promote products derived
  *    from this software without specific prior written permission.
- *
- * 4. This software may only be redistributed and used in connection with an
- *    Atmel microcontroller product.
  *
  * THIS SOFTWARE IS PROVIDED BY ATMEL "AS IS" AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -57,7 +54,7 @@ extern "C"{
 *	@fn		nm_bus_iface_init
 *	@brief	Initialize bus interface
 *	@return	M2M_SUCCESS in case of success and M2M_ERR_BUS_FAIL in case of failure
-*/ 
+*/
 sint8 nm_bus_iface_init(void *);
 
 
@@ -65,14 +62,14 @@ sint8 nm_bus_iface_init(void *);
 *	@fn		nm_bus_iface_deinit
 *	@brief	Deinitialize bus interface
 *	@return	M2M_SUCCESS in case of success and M2M_ERR_BUS_FAIL in case of failure
-*/ 
+*/
 sint8 nm_bus_iface_deinit(void);
 
 /**
 *	@fn		nm_bus_iface_reconfigure
 *	@brief	reconfigure bus interface
 *	@return	M2M_SUCCESS in case of success and M2M_ERR_BUS_FAIL in case of failure
-*/ 
+*/
 sint8 nm_bus_iface_reconfigure(void *ptr);
 
 /**
@@ -81,7 +78,7 @@ sint8 nm_bus_iface_reconfigure(void *ptr);
 *	@param [in]	u32Addr
 *				Register address
 *	@return	Register value
-*/ 
+*/
 uint32 nm_read_reg(uint32 u32Addr);
 
 /**
@@ -92,7 +89,7 @@ uint32 nm_read_reg(uint32 u32Addr);
 *	@param [out]	pu32RetVal
 *				Pointer to u32 variable used to return the read value
 *	@return	ZERO in case of success and M2M_ERR_BUS_FAIL in case of failure
-*/ 
+*/
 sint8 nm_read_reg_with_ret(uint32 u32Addr, uint32* pu32RetVal);
 
 /**
@@ -103,7 +100,7 @@ sint8 nm_read_reg_with_ret(uint32 u32Addr, uint32* pu32RetVal);
 *	@param [in]	u32Val
 *				Value to be written to the register
 *	@return	ZERO in case of success and M2M_ERR_BUS_FAIL in case of failure
-*/ 
+*/
 sint8 nm_write_reg(uint32 u32Addr, uint32 u32Val);
 
 /**
@@ -116,7 +113,7 @@ sint8 nm_write_reg(uint32 u32Addr, uint32 u32Val);
 *	@param [in]	u32Sz
 *				Number of bytes to read. The buffer size must be >= u32Sz
 *	@return	ZERO in case of success and M2M_ERR_BUS_FAIL in case of failure
-*/ 
+*/
 sint8 nm_read_block(uint32 u32Addr, uint8 *puBuf, uint32 u32Sz);
 
 /**
@@ -129,7 +126,7 @@ sint8 nm_read_block(uint32 u32Addr, uint8 *puBuf, uint32 u32Sz);
 *	@param [in]	u32Sz
 *				Number of bytes to write. The buffer size must be >= u32Sz
 *	@return	ZERO in case of success and M2M_ERR_BUS_FAIL in case of failure
-*/ 
+*/
 sint8 nm_write_block(uint32 u32Addr, uint8 *puBuf, uint32 u32Sz);
 
 

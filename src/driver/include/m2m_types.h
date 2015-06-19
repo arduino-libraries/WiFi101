@@ -4,7 +4,7 @@
  *
  * \brief NMC1500 IoT Application Interface Internal Types.
  *
- * Copyright (c) 2014 Atmel Corporation. All rights reserved.
+ * Copyright (c) 2015 Atmel Corporation. All rights reserved.
  *
  * \asf_license_start
  *
@@ -22,9 +22,6 @@
  *
  * 3. The name of Atmel may not be used to endorse or promote products derived
  *    from this software without specific prior written permission.
- *
- * 4. This software may only be redistributed and used in connection with an
- *    Atmel micro-controller product.
  *
  * THIS SOFTWARE IS PROVIDED BY ATMEL "AS IS" AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -66,7 +63,37 @@ MACROS
  * @ingroup m2m_wifi
  */
 /**@{*/
-#define MAKE_VERSION(major, minor, patch) (((uint16)(major) << 8) | ((minor << 4) | (patch) ))
+#define M2M_MAJOR_SHIFT (8)
+#define M2M_MINOR_SHIFT (4)
+#define M2M_PATCH_SHIFT (0)
+
+#define M2M_DRV_VERSION_SHIFT (16)
+#define M2M_FW_VERSION_SHIFT (0)
+
+#define M2M_GET_MAJOR(ver_info_hword) ((uint8)((ver_info_hword) >> M2M_MAJOR_SHIFT) & 0xff)
+#define M2M_GET_MINOR(ver_info_hword) ((uint8)((ver_info_hword) >> M2M_MINOR_SHIFT) & 0x0f)
+#define M2M_GET_PATCH(ver_info_hword) ((uint8)((ver_info_hword) >> M2M_PATCH_SHIFT) & 0x0f)
+
+#define M2M_GET_FW_VER(ver_info_word)  ((uint16) ((ver_info_word) >> M2M_FW_VERSION_SHIFT))
+#define M2M_GET_DRV_VER(ver_info_word) ((uint16) ((ver_info_word) >> M2M_DRV_VERSION_SHIFT))
+
+#define M2M_GET_DRV_MAJOR(ver_info_word) M2M_GET_MAJOR(M2M_GET_DRV_VER(ver_info_word))
+#define M2M_GET_DRV_MINOR(ver_info_word) M2M_GET_MINOR(M2M_GET_DRV_VER(ver_info_word))
+#define M2M_GET_DRV_PATCH(ver_info_word) M2M_GET_PATCH(M2M_GET_DRV_VER(ver_info_word))
+
+#define M2M_GET_FW_MAJOR(ver_info_word) M2M_GET_MAJOR(M2M_GET_FW_VER(ver_info_word))
+#define M2M_GET_FW_MINOR(ver_info_word) M2M_GET_MINOR(M2M_GET_FW_VER(ver_info_word))
+#define M2M_GET_FW_PATCH(ver_info_word) M2M_GET_PATCH(M2M_GET_FW_VER(ver_info_word))
+
+#define M2M_MAKE_VERSION(major, minor, patch) ( \
+	((uint16)((major)  & 0xff)  << M2M_MAJOR_SHIFT) | \
+	((uint16)((minor)  & 0x0f)  << M2M_MINOR_SHIFT) | \
+	((uint16)((patch)  & 0x0f)  << M2M_PATCH_SHIFT))
+
+#define M2M_MAKE_VERSION_INFO(fw_major, fw_minor, fw_patch, drv_major, drv_minor, drv_patch) \
+	( \
+	( ((uint32)M2M_MAKE_VERSION((fw_major),  (fw_minor),  (fw_patch)))  << M2M_FW_VERSION_SHIFT) | \
+	( ((uint32)M2M_MAKE_VERSION((drv_major), (drv_minor), (drv_patch))) << M2M_DRV_VERSION_SHIFT))
 
 /*======*======*======*======*
 		FIRMWARE VERSION NO INFO
@@ -77,7 +104,7 @@ MACROS
 */
 
 
-#define M2M_FIRMWARE_VERSION_MINOR_NO					(1)
+#define M2M_FIRMWARE_VERSION_MINOR_NO					(3)
 /*!< Firmware Minor release version number.
 */
 
@@ -94,11 +121,11 @@ MACROS
 */
 
 
-#define M2M_DRIVER_VERSION_MINOR_NO						(1)
+#define M2M_DRIVER_VERSION_MINOR_NO						(3)
 /*!< Driver Minor release version number.
 */
 
-#define M2M_DRIVER_VERSION_PATCH_NO						(1)
+#define M2M_DRIVER_VERSION_PATCH_NO						(0)
 /*!< Driver patch release version number.
 */
 
@@ -399,8 +426,26 @@ typedef enum {
 		do not need it.
 	*/
 	M2M_WIFI_RESP_MEMORY_RECOVER,
-	M2M_WIFI_REQ_CUST_INFO_ELEMENT
+	M2M_WIFI_REQ_CUST_INFO_ELEMENT,
 	/*!< Add Custom ELement to Beacon Managament Frame.
+	*/
+	M2M_WIFI_REQ_SCAN,
+	/*!< Request scan command.
+	*/
+	M2M_WIFI_RESP_SCAN_DONE,
+	/*!< Scan complete notification response.
+	*/
+	M2M_WIFI_REQ_SCAN_RESULT,
+	/*!< Request Scan results command.
+	*/
+	M2M_WIFI_RESP_SCAN_RESULT,
+	/*!< Request Scan results resopnse.
+	*/
+	M2M_WIFI_REQ_SET_SCAN_OPTION,
+	/*!< Set Scan options "slot time, slot number .. etc" .
+	*/
+	M2M_WIFI_REQ_SET_SCAN_REGION
+	/*!< Set scan region.
 	*/
 }tenuM2mConfigCmd;
 
@@ -445,19 +490,19 @@ typedef enum {
 	M2M_WIFI_REQ_SLEEP,
 	/*!< Set PS mode command.
 	*/
-	M2M_WIFI_REQ_SCAN,
+	M2M_WIFI_REQ_SCAN_RESERVED,
 	/*!< Request scan command.
 	*/
 	M2M_WIFI_REQ_WPS_SCAN,
 	/*!< Request WPS scan command.
 	*/
-	M2M_WIFI_RESP_SCAN_DONE,
+	M2M_WIFI_RESP_SCAN_DONE_RESERVED,
 	/*!< Scan complete notification response.
 	*/
-	M2M_WIFI_REQ_SCAN_RESULT,
+	M2M_WIFI_REQ_SCAN_RESULT_RESERVED,
 	/*!< Request Scan results command.
 	*/
-	M2M_WIFI_RESP_SCAN_RESULT,
+	M2M_WIFI_RESP_SCAN_RESULT_RESERVED,
 	/*!< Request Scan results resopnse.
 	*/
 	M2M_WIFI_REQ_WPS,
@@ -502,10 +547,10 @@ typedef enum {
 	M2M_WIFI_RESP_ETHERNET_RX_PACKET,
 	/*!< Receive ethernet packet in bypass mode.
 	*/
-	M2M_WIFI_REQ_SET_SCAN_OPTION,
+	M2M_WIFI_REQ_SET_SCAN_OPTION_RESERVED,
 	/*!< Set Scan options "slot time, slot number .. etc" .
 	*/
-	M2M_WIFI_REQ_SET_SCAN_REGION,
+	M2M_WIFI_REQ_SET_SCAN_REGION_RESERVED,
 	/*!< Set scan region.
 	*/
 	M2M_WIFI_REQ_DOZE,
@@ -854,7 +899,8 @@ typedef struct{
 	uint8				au8SSID[M2M_MAX_SSID_LEN];
 	/*!< SSID of the desired AP. It must be NULL terminated string.
 	*/
-#define __CONN_PAD_SIZE__		(4 - ((sizeof(tstrM2MWifiSecInfo) + M2M_MAX_SSID_LEN + 2) % 4))
+	uint8 				u8NoSaveCred;
+#define __CONN_PAD_SIZE__		(4 - ((sizeof(tstrM2MWifiSecInfo) + M2M_MAX_SSID_LEN + 3) % 4))
 	uint8				__PAD__[__CONN_PAD_SIZE__];
 	/*!< Padding bytes for forcing 4-byte alignment
 	*/

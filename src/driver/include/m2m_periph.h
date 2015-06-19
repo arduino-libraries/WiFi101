@@ -4,7 +4,7 @@
  *
  * \brief NMC1500 Peripherals Application Interface.
  *
- * Copyright (c) 2014 Atmel Corporation. All rights reserved.
+ * Copyright (c) 2015 Atmel Corporation. All rights reserved.
  *
  * \asf_license_start
  *
@@ -22,9 +22,6 @@
  *
  * 3. The name of Atmel may not be used to endorse or promote products derived
  *    from this software without specific prior written permission.
- *
- * 4. This software may only be redistributed and used in connection with an
- *    Atmel microcontroller product.
  *
  * THIS SOFTWARE IS PROVIDED BY ATMEL "AS IS" AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -67,7 +64,7 @@ DATA TYPES
 	tstrPerphInitParam
 
 @brief
-	Peripheral module initialization parameters.  
+	Peripheral module initialization parameters.
 */
 typedef struct {
 	void * arg;
@@ -127,7 +124,7 @@ typedef enum {
 	tstrI2cMasterInitParam
 
 @brief
-	I2C master configuration parameters.  
+	I2C master configuration parameters.
 @sa
 	tenuI2cMasterSclMuxOpt
 	tenuI2cMasterSdaMuxOpt
@@ -149,11 +146,11 @@ typedef struct {
 	m2m_periph_i2c_master_read
 */
 typedef enum  {
-    I2C_MASTER_NO_FLAGS          = 0x00, 
+    I2C_MASTER_NO_FLAGS          = 0x00,
 	/*!< No flags.  */
-    I2C_MASTER_NO_STOP           = 0x01, 
+    I2C_MASTER_NO_STOP           = 0x01,
 	/*!< No stop bit after this transaction. Useful for scattered buffer read/write operations. */
-	I2C_MASTER_NO_START          = 0x02, 
+	I2C_MASTER_NO_START          = 0x02,
 	/*!< No start bit at the beginning of this transaction. Useful for scattered buffer read/write operations.*/
 } tenuI2cMasterFlags;
 
@@ -165,13 +162,13 @@ typedef enum  {
 	Bitwise-ORed flags for use in m2m_perph_pullup_ctrl.
 @sa
 	m2m_periph_pullup_ctrl
-	
+
 */
 typedef enum {
 	M2M_PERIPH_PULLUP_HOST_WAKEUP     = (1ul << 0),
 	M2M_PERIPH_PULLUP_RTC_CLK         = (1ul << 1),
 	M2M_PERIPH_PULLUP_IRQN            = (1ul << 2),
-	M2M_PERIPH_PULLUP_GPIO_3          = (1ul << 3), 
+	M2M_PERIPH_PULLUP_GPIO_3          = (1ul << 3),
 	M2M_PERIPH_PULLUP_GPIO_4          = (1ul << 4),
 	M2M_PERIPH_PULLUP_GPIO_5          = (1ul << 5),
 	M2M_PERIPH_PULLUP_SD_DAT3         = (1ul << 6),
@@ -213,7 +210,7 @@ FUNCTION PROTOTYPES
 	NMI_API sint8 m2m_periph_init(tstrPerphInitParam * param);
 
 @brief
-	Initialize the NMC1500 peripheral driver module. 
+	Initialize the NMC1500 peripheral driver module.
 
 @param [in]	param
 				Peripheral module initialization structure. See members of tstrPerphInitParam.
@@ -231,7 +228,7 @@ NMI_API sint8 m2m_periph_init(tstrPerphInitParam * param);
 	NMI_API sint8 m2m_periph_gpio_set_dir(uint8 u8GpioNum, uint8 u8GpioDir);
 
 @brief
-	Configure a specific NMC1500 pad as a GPIO and sets its direction (input or output).  
+	Configure a specific NMC1500 pad as a GPIO and sets its direction (input or output).
 
 @param [in]	u8GpioNum
 				GPIO number. Allowed values are defined in tenuGpioNum.
@@ -252,7 +249,7 @@ NMI_API sint8 m2m_periph_gpio_set_dir(uint8 u8GpioNum, uint8 u8GpioDir);
 	NMI_API sint8 m2m_periph_gpio_set_val(uint8 u8GpioNum, uint8 u8GpioVal);
 
 @brief
-	Set an NMC1500 GPIO output level high or low.  
+	Set an NMC1500 GPIO output level high or low.
 
 @param [in]	u8GpioNum
 				GPIO number. Allowed values are defined in tenuGpioNum.
@@ -273,7 +270,7 @@ NMI_API sint8 m2m_periph_gpio_set_val(uint8 u8GpioNum, uint8 u8GpioVal);
 	NMI_API sint8 m2m_periph_gpio_get_val(uint8 u8GpioNum, uint8 * pu8GpioVal);
 
 @brief
-	Read an NMC1500 GPIO input level.  
+	Read an NMC1500 GPIO input level.
 
 @param [in]	u8GpioNum
 				GPIO number. Allowed values are defined in tenuGpioNum.
@@ -294,13 +291,13 @@ NMI_API sint8 m2m_periph_gpio_get_val(uint8 u8GpioNum, uint8 * pu8GpioVal);
 	NMI_API sint8 m2m_periph_gpio_pullup_ctrl(uint8 u8GpioNum, uint8 u8PullupEn);
 
 @brief
-	Set an NMC1500 GPIO pullup resisitor enable or disable.  
+	Set an NMC1500 GPIO pullup resisitor enable or disable.
 
 @param [in]	u8GpioNum
 				GPIO number. Allowed values are defined in tenuGpioNum.
 
 @param [in] u8PullupEn
-				Zero: pullup disabled. Non-zero: pullup enabled. 
+				Zero: pullup disabled. Non-zero: pullup enabled.
 
 @return
 	The function SHALL return 0 for success and a negative value otherwise.
@@ -340,7 +337,7 @@ NMI_API sint8 m2m_periph_i2c_master_init(tstrI2cMasterInitParam * param);
 @param [in]	pu8Buf
 				A pointer to an input buffer which contains a stream of bytes.
 @param [in]	u16BufLen
-				Input buffer length in bytes. 
+				Input buffer length in bytes.
 @param [in]	flags
 				Write operation bitwise-ORed flags. See tenuI2cMasterFlags.
 
@@ -365,7 +362,7 @@ NMI_API sint8 m2m_periph_i2c_master_write(uint8 u8SlaveAddr, uint8 * pu8Buf, uin
 @param [out] pu8Buf
 				A pointer to an output buffer in which a stream of bytes are received.
 @param [in]	u16BufLen
-				Max output buffer length in bytes. 
+				Max output buffer length in bytes.
 @param [out] pu16ReadLen
 				Actual number of bytes received.
 @param [in]	flags

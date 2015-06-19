@@ -4,7 +4,7 @@
  *
  * \brief NMC1500 Peripherials Application Interface.
  *
- * Copyright (c) 2014 Atmel Corporation. All rights reserved.
+ * Copyright (c) 2015 Atmel Corporation. All rights reserved.
  *
  * \asf_license_start
  *
@@ -22,9 +22,6 @@
  *
  * 3. The name of Atmel may not be used to endorse or promote products derived
  *    from this software without specific prior written permission.
- *
- * 4. This software may only be redistributed and used in connection with an
- *    Atmel microcontroller product.
  *
  * THIS SOFTWARE IS PROVIDED BY ATMEL "AS IS" AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -51,8 +48,6 @@ INCLUDES
 #include "driver/source/nmasic.h"
 #include "m2m_hif.h"
 
-//#ifdef CONF_PERIPH
-
 /*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
 MACROS
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*/
@@ -77,7 +72,7 @@ static sint8 get_gpio_idx(uint8 u8GpioNum)
 	}
 }
 /*
- * GPIO read/write skeleton with wakeup/sleep capability. 
+ * GPIO read/write skeleton with wakeup/sleep capability.
  */
 static sint8 gpio_ioctl(uint8 op, uint8 u8GpioNum, uint8 u8InVal, uint8 * pu8OutVal)
 {
@@ -91,7 +86,7 @@ static sint8 gpio_ioctl(uint8 op, uint8 u8GpioNum, uint8 u8InVal, uint8 * pu8Out
 
 	if(op == GPIO_OP_DIR) {
 		ret = set_gpio_dir((uint8)gpio, u8InVal);
-	} else if(op == GPIO_OP_SET) {	
+	} else if(op == GPIO_OP_SET) {
 		ret = set_gpio_val((uint8)gpio, u8InVal);
 	} else if(op == GPIO_OP_GET) {
 		ret = get_gpio_val((uint8)gpio, pu8OutVal);
@@ -154,7 +149,6 @@ sint8 m2m_periph_i2c_master_read(uint8 u8SlaveAddr, uint8 * pu8Buf, uint16 u16Bu
 
 
 sint8 m2m_periph_pullup_ctrl(uint32 pinmask, uint8 enable)
-{		
-	return pullup_ctrl(pinmask, enable);	
+{
+	return pullup_ctrl(pinmask, enable);
 }
-//#endif /* CONF_PERIPH */

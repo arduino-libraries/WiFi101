@@ -4,7 +4,7 @@
  *
  * \brief NMC1500 IoT OTA Interface.
  *
- * Copyright (c) 2014 Atmel Corporation. All rights reserved.
+ * Copyright (c) 2015 Atmel Corporation. All rights reserved.
  *
  * \asf_license_start
  *
@@ -22,9 +22,6 @@
  *
  * 3. The name of Atmel may not be used to endorse or promote products derived
  *    from this software without specific prior written permission.
- *
- * 4. This software may only be redistributed and used in connection with an
- *    Atmel microcontroller product.
  *
  * THIS SOFTWARE IS PROVIDED BY ATMEL "AS IS" AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -97,7 +94,7 @@ static void m2m_ota_cb(uint8 u8OpCode, uint16 u16DataSize, uint32 u32Addr)
 	}
 	else if (u8OpCode == M2M_OTA_RESP_UPDATE_STATUS)
 	{
-		tstrOtaUpdateStatusResp strOtaUpdateStatusResp; 
+		tstrOtaUpdateStatusResp strOtaUpdateStatusResp;
 		m2m_memset((uint8*)&strOtaUpdateStatusResp,0,sizeof(tstrOtaUpdateStatusResp));
 		ret = hif_receive(u32Addr, (uint8*) &strOtaUpdateStatusResp,sizeof(tstrOtaUpdateStatusResp), 0);
 		if(ret == M2M_SUCCESS)
@@ -121,11 +118,11 @@ static void m2m_ota_cb(uint8 u8OpCode, uint16 u16DataSize, uint32 u32Addr)
 
 @param [in]	pfOtaUpdateCb
 				OTA Update callback function
-				
-@param [in]	pfOtaNotifCb
-				OTA notify callback function 
 
-@return		
+@param [in]	pfOtaNotifCb
+				OTA notify callback function
+
+@return
 	The function SHALL return 0 for success and a negative value otherwise.
 */
 NMI_API sint8  m2m_ota_init(tpfOtaUpdateCb pfOtaUpdateCb, tpfOtaNotifCb pfOtaNotifCb)
@@ -155,15 +152,15 @@ NMI_API sint8  m2m_ota_init(tpfOtaUpdateCb pfOtaUpdateCb, tpfOtaNotifCb pfOtaNot
 	Set the OTA url
 
 @param [in]	u8Url
-			 The url server address 
+			 The url server address
 
-@return		
+@return
 	The function SHALL return 0 for success and a negative value otherwise.
 */
 NMI_API sint8  m2m_ota_notif_set_url(uint8 * u8Url)
 {
 	sint8 ret = M2M_SUCCESS;
-	uint16 u16UrlSize = m2m_strlen(u8Url) + 1; 
+	uint16 u16UrlSize = m2m_strlen(u8Url) + 1;
 	/*Todo: we may change it to data pkt but we need to give it higer priority
 			but the priorty is not implemnted yet in data pkt
 	*/
@@ -179,7 +176,7 @@ NMI_API sint8  m2m_ota_notif_set_url(uint8 * u8Url)
 @brief
 	check for ota update
 
-@return		
+@return
 	The function SHALL return 0 for success and a negative value otherwise.
 */
 NMI_API sint8  m2m_ota_notif_check_for_update(void)
@@ -197,9 +194,9 @@ NMI_API sint8  m2m_ota_notif_check_for_update(void)
 	Schedule OTA update
 
 @param [in]	u32Period
-	Period in days 
+	Period in days
 
-@return		
+@return
 	The function SHALL return 0 for success and a negative value otherwise.
 */
 NMI_API sint8 m2m_ota_notif_sched(uint32 u32Period)
@@ -214,19 +211,19 @@ NMI_API sint8 m2m_ota_notif_sched(uint32 u32Period)
 	NMI_API sint8 m2m_ota_start_update(uint8 * u8DownloadUrl);
 
 @brief
-	Request OTA start update using the downloaded url 
+	Request OTA start update using the downloaded url
 
 @param [in]	u8DownloadUrl
 		The download firmware url, you get it from device info
-				
-@return		
+
+@return
 	The function SHALL return 0 for success and a negative value otherwise.
 
 */
 NMI_API sint8 m2m_ota_start_update(uint8 * u8DownloadUrl)
 {
 	sint8 ret = M2M_SUCCESS;
-	uint16 u16DurlSize = m2m_strlen(u8DownloadUrl) + 1; 
+	uint16 u16DurlSize = m2m_strlen(u8DownloadUrl) + 1;
 	/*Todo: we may change it to data pkt but we need to give it higer priority
 			but the priorty is not implemnted yet in data pkt
 	*/
@@ -240,9 +237,9 @@ NMI_API sint8 m2m_ota_start_update(uint8 * u8DownloadUrl)
 	NMI_API sint8 m2m_ota_rollback(void);
 
 @brief
-	Request OTA Rollback image 
+	Request OTA Rollback image
 
-@return		
+@return
 	The function SHALL return 0 for success and a negative value otherwise.
 */
 NMI_API sint8 m2m_ota_rollback(void)
@@ -258,9 +255,9 @@ NMI_API sint8 m2m_ota_rollback(void)
 	NMI_API sint8 m2m_ota_switch_firmware(void);
 
 @brief
-	Switch to the upgraded Firmware 
+	Switch to the upgraded Firmware
 
-@return		
+@return
 	The function SHALL return 0 for success and a negative value otherwise.
 */
 NMI_API sint8 m2m_ota_switch_firmware(void)
@@ -289,12 +286,12 @@ NMI_API sint8 m2m_ota_test(void)
 		{
 			{
 				page = (rand()%1400);
-				
+
 				if((page<100)||(page>1400)) page  = 1400;
 			}
-			
-			if(u32Sz>page) 
-			{	
+
+			if(u32Sz>page)
+			{
 				u32Sz-=page;
 			}
 			else

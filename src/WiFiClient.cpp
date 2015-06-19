@@ -244,17 +244,20 @@ void WiFiClient::stop()
 uint8_t WiFiClient::connected()
 {
 	m2m_wifi_handle_events(NULL);
+	if (available())
+		return 1;
 	return CONNECTED;
 }
 
 uint8_t WiFiClient::status()
 {
-/*	if (_sock == 255) {
+	/*if (_sock == 255) {
 		return CLOSED;
 		} else {
 		return ServerDrv::getClientState(_sock);
 	}*/
-return 0;
+	// Deprecated.
+	return 0;
 }
 
 WiFiClient::operator bool()

@@ -65,6 +65,8 @@ private:
 
 public:
 	uint32_t _localip;
+	uint32_t _submask;
+	uint32_t _gateway;
 	uint32_t _resolve;
 	uint32_t _req2;
 	wl_mode_t _mode;

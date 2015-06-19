@@ -48,7 +48,7 @@
 #include "driver/source/nmdrv.h"
 #include "driver/source/nmasic.h"
 
-#ifdef USE_SPI
+#ifdef CONF_WINC_USE_SPI
 #include "driver/source/nmspi.h"
 #endif
 
@@ -122,7 +122,7 @@ sint8 nm_drv_init_download_mode()
 	}
 
 
-#ifdef USE_SPI
+#ifdef CONF_WINC_USE_SPI
 	/* Must do this after global reset to set SPI data packet size. */
 	nm_spi_init();
 #endif
@@ -189,7 +189,7 @@ sint8 nm_drv_init(void * arg)
 		goto ERR2;
 	}
 
-#ifdef USE_SPI
+#ifdef CONF_WINC_USE_SPI
 	/* Must do this after global reset to set SPI data packet size. */
 	nm_spi_init();
 #endif
@@ -226,19 +226,18 @@ sint8 nm_drv_init(void * arg)
 	
 	chip_apply_conf();
 
-	ret = nm_get_firmware_info(&strtmp);
+	nm_get_firmware_info(&strtmp);
 
 	M2M_INFO("Firmware ver   : %u.%u.%u\n", strtmp.u8FirmwareMajor, strtmp.u8FirmwareMinor, strtmp.u8FirmwarePatch);
 	M2M_INFO("Min driver ver : %u.%u.%u\n", strtmp.u8DriverMajor, strtmp.u8DriverMinor, strtmp.u8DriverPatch);
 	M2M_INFO("Curr driver ver: %u.%u.%u\n", M2M_DRIVER_VERSION_MAJOR_NO, M2M_DRIVER_VERSION_MINOR_NO, M2M_DRIVER_VERSION_PATCH_NO);
-	
-	if(M2M_ERR_FW_VER_MISMATCH == ret)
+
+	if(strtmp.u8FirmwareMajor != M2M_DRIVER_VERSION_MAJOR_NO
+			|| strtmp.u8FirmwareMinor != M2M_DRIVER_VERSION_MINOR_NO)
 	{
 		ret = M2M_ERR_FW_VER_MISMATCH;
-		M2M_ERR("Mismatch Firmawre Version\n");
+		M2M_ERR("Firmware version mismatch!\n");
 	}
-
-
 	return ret;
 ERR2:
 	nm_bus_iface_deinit();
@@ -268,7 +267,7 @@ sint8 nm_drv_deinit(void * arg)
 		M2M_ERR("[nmi stop]: fail init bus\n");
 		goto ERR1;
 	}
-#ifdef USE_SPI
+#ifdef CONF_WINC_USE_SPI
 	/* Must do this after global reset to set SPI data packet size. */
 	nm_spi_deinit();
 #endif
@@ -295,17 +294,17 @@ sint8 nm_get_firmware_info(tstrM2mRev* M2mRev)
 
 	ret = nm_read_reg_with_ret(NMI_REV_REG, &reg);
 
-	M2mRev->u8DriverMajor	= (uint8)(reg >> 24)&0xff;
-	M2mRev->u8DriverMinor   = (uint8)(reg >> 20)&0x0f;
-	M2mRev->u8DriverPatch	= (uint8)(reg >> 16)&0x0f;
-	M2mRev->u8FirmwareMajor	= (uint8)(reg >> 8)&0xff;
-	M2mRev->u8FirmwareMinor = (uint8)(reg >> 4)&0x0f;	
-	M2mRev->u8FirmwarePatch = (uint8)(reg)&0x0f;	
+	M2mRev->u8DriverMajor	= M2M_GET_DRV_MAJOR(reg);
+	M2mRev->u8DriverMinor   = M2M_GET_DRV_MINOR(reg);
+	M2mRev->u8DriverPatch	= M2M_GET_DRV_PATCH(reg);
+	M2mRev->u8FirmwareMajor	= M2M_GET_FW_MAJOR(reg);
+	M2mRev->u8FirmwareMinor = M2M_GET_FW_MINOR(reg);
+	M2mRev->u8FirmwarePatch = M2M_GET_FW_PATCH(reg);
 	M2mRev->u32Chipid	= nmi_get_chipid();
 	
-	curr_firm_ver   = MAKE_VERSION(M2mRev->u8FirmwareMajor, M2mRev->u8FirmwareMinor,M2mRev->u8FirmwarePatch);
-	curr_drv_ver    = MAKE_VERSION(M2M_DRIVER_VERSION_MAJOR_NO, M2M_DRIVER_VERSION_MINOR_NO, M2M_DRIVER_VERSION_PATCH_NO);
-	min_req_drv_ver = MAKE_VERSION(M2mRev->u8DriverMajor, M2mRev->u8DriverMinor,M2mRev->u8DriverPatch);
+	curr_firm_ver   = M2M_MAKE_VERSION(M2mRev->u8FirmwareMajor, M2mRev->u8FirmwareMinor,M2mRev->u8FirmwarePatch);
+	curr_drv_ver    = M2M_MAKE_VERSION(M2M_DRIVER_VERSION_MAJOR_NO, M2M_DRIVER_VERSION_MINOR_NO, M2M_DRIVER_VERSION_PATCH_NO);
+	min_req_drv_ver = M2M_MAKE_VERSION(M2mRev->u8DriverMajor, M2mRev->u8DriverMinor,M2mRev->u8DriverPatch);
 	if(curr_drv_ver <  min_req_drv_ver) {
 		/*The current driver version should be larger or equal 
 		than the min driver that the current firmware support  */

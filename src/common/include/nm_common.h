@@ -4,7 +4,7 @@
  *
  * \brief This module contains common APIs declarations.
  *
- * Copyright (c) 2014 Atmel Corporation. All rights reserved.
+ * Copyright (c) 2015 Atmel Corporation. All rights reserved.
  *
  * \asf_license_start
  *
@@ -23,9 +23,6 @@
  * 3. The name of Atmel may not be used to endorse or promote products derived
  *    from this software without specific prior written permission.
  *
- * 4. This software may only be redistributed and used in connection with an
- *    Atmel micro-controller product.
- *
  * THIS SOFTWARE IS PROVIDED BY ATMEL "AS IS" AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT ARE
@@ -41,7 +38,7 @@
  * \asf_license_stop
  *
  */
- 
+
 #ifndef _NM_COMMON_H_
 #define _NM_COMMON_H_
 
@@ -72,7 +69,7 @@
 /*
 Invalid argument
 */
-#define M2M_ERR_INVALID_ARG				 ((sint8)-15)	
+#define M2M_ERR_INVALID_ARG				 ((sint8)-15)
 
 /*i2c MAASTER ERR*/
 #define I2C_ERR_LARGE_ADDRESS 	  0xE1UL	/*the address exceed the max addressing mode in i2c flash*/
@@ -83,7 +80,7 @@ Invalid argument
 /**/
 #define PROGRAM_START		0x26961735UL
 #define BOOT_SUCCESS		0x10add09eUL
-#define BOOT_START		    0x12345678UL     
+#define BOOT_START		    0x12345678UL
 
 
 #define NBIT31				(0x80000000)
@@ -140,20 +137,20 @@ Invalid argument
 #define M2M_REQ(...)
 #define M2M_DBG(...)
 
-#if (CONF_WIFI_M2M_DEBUG == 1)
-#define M2M_PRINT(...)							do{CONF_WIFI_M2M_PRINTF(__VA_ARGS__);CONF_WIFI_M2M_PRINTF("\r");}while(0)
+#if (CONF_WINC_DEBUG == 1)
+#define M2M_PRINT(...)							do{CONF_WINC_PRINTF(__VA_ARGS__);CONF_WINC_PRINTF("\r");}while(0)
 	#if (M2M_LOG_LEVEL >= M2M_LOG_ERROR)
 	#undef M2M_ERR
-	#define M2M_ERR(...)							do{CONF_WIFI_M2M_PRINTF("(APP)(ERR)[%s][%d]",__FUNCTION__,__LINE__); CONF_WIFI_M2M_PRINTF(__VA_ARGS__);CONF_WIFI_M2M_PRINTF("\r");}while(0)
+	#define M2M_ERR(...)							do{CONF_WINC_PRINTF("(APP)(ERR)[%s][%d]",__FUNCTION__,__LINE__); CONF_WINC_PRINTF(__VA_ARGS__);CONF_WINC_PRINTF("\r");}while(0)
 		#if (M2M_LOG_LEVEL >= M2M_LOG_INFO)
 		#undef M2M_INFO
-		#define M2M_INFO(...)							do{CONF_WIFI_M2M_PRINTF("(APP)(INFO)"); CONF_WIFI_M2M_PRINTF(__VA_ARGS__);CONF_WIFI_M2M_PRINTF("\r");}while(0)
+		#define M2M_INFO(...)							do{CONF_WINC_PRINTF("(APP)(INFO)"); CONF_WINC_PRINTF(__VA_ARGS__);CONF_WINC_PRINTF("\r");}while(0)
 			#if (M2M_LOG_LEVEL >= M2M_LOG_REQ)
 			#undef M2M_REQ
-			#define M2M_REQ(...)							do{CONF_WIFI_M2M_PRINTF("(APP)(R)"); CONF_WIFI_M2M_PRINTF(__VA_ARGS__);CONF_WIFI_M2M_PRINTF("\r");}while(0)
+			#define M2M_REQ(...)							do{CONF_WINC_PRINTF("(APP)(R)"); CONF_WINC_PRINTF(__VA_ARGS__);CONF_WINC_PRINTF("\r");}while(0)
 				#if (M2M_LOG_LEVEL >= M2M_LOG_DBG)
 				#undef M2M_DBG
-				#define M2M_DBG(...)							do{CONF_WIFI_M2M_PRINTF("(APP)(DBG)[%s][%d]",__FUNCTION__,__LINE__); CONF_WIFI_M2M_PRINTF(__VA_ARGS__);CONF_WIFI_M2M_PRINTF("\r");}while(0)
+				#define M2M_DBG(...)							do{CONF_WINC_PRINTF("(APP)(DBG)[%s][%d]",__FUNCTION__,__LINE__); CONF_WINC_PRINTF(__VA_ARGS__);CONF_WINC_PRINTF("\r");}while(0)
 				#endif
 			#endif
 		#endif
@@ -180,7 +177,7 @@ static void M2M_PRINT(const char *_format, ...) // __attribute__ ((__format__ (M
 {
 
 }
-static void CONF_WIFI_M2M_PRINTF(const char *_format, ...)
+static void CONF_WINC_PRINTF(const char *_format, ...)
 {
 }
 #endif

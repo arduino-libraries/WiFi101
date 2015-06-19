@@ -4,7 +4,7 @@
  *
  * \brief This module contains NMC1500 ASIC specific internal APIs.
  *
- * Copyright (c) 2014 Atmel Corporation. All rights reserved.
+ * Copyright (c) 2015 Atmel Corporation. All rights reserved.
  *
  * \asf_license_start
  *
@@ -22,9 +22,6 @@
  *
  * 3. The name of Atmel may not be used to endorse or promote products derived
  *    from this software without specific prior written permission.
- *
- * 4. This software may only be redistributed and used in connection with an
- *    Atmel microcontroller product.
  *
  * THIS SOFTWARE IS PROVIDED BY ATMEL "AS IS" AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -154,7 +151,7 @@ void enable_rf_blocks(void)
 	nm_write_reg(0x7, 0x0);
 }
 
-sint8 enable_interrupts(void) 
+sint8 enable_interrupts(void)
 {
 	uint32 reg;
 	sint8 ret;
@@ -190,12 +187,12 @@ sint8 cpu_start(void) {
 	sint8 ret;
 
 	/**
-	reset regs 
+	reset regs
 	*/
 	nm_write_reg(BOOTROM_REG,0);
 	nm_write_reg(NMI_STATE_REG,0);
 	nm_write_reg(NMI_REV_REG,0);
-	
+
 	/**
 	Go...
 	**/
@@ -289,9 +286,9 @@ uint32 nmi_get_rfrevid(void)
 
 void restore_pmu_settings_after_global_reset(void)
 {
-	/* 
-	* Must restore PMU register value after 
-	* global reset if PMU toggle is done at 
+	/*
+	* Must restore PMU register value after
+	* global reset if PMU toggle is done at
 	* least once since the last hard reset.
 	*/
 	if(REV(nmi_get_chipid()) >= REV_2B0) {
@@ -310,15 +307,15 @@ void nmi_update_pll(void)
 	nm_write_reg(0x1428, pll);
 
 }
-void nmi_set_sys_clk_src_to_xo(void) 
+void nmi_set_sys_clk_src_to_xo(void)
 {
 	uint32 val32;
-	
+
 	/* Switch system clock source to XO. This will take effect after nmi_update_pll(). */
 	val32 = nm_read_reg(0x141c);
 	val32 |= (1 << 2);
 	nm_write_reg(0x141c, val32);
-	
+
 	/* Do PLL update */
 	nmi_update_pll();
 }
@@ -328,7 +325,7 @@ sint8 chip_wake(void)
 
 	ret  = nm_clkless_wake();
 	if(ret != M2M_SUCCESS) return ret;
-	
+
 	enable_rf_blocks();
 
 	return ret;
@@ -370,12 +367,12 @@ sint8 chip_reset_and_cpu_halt(void)
 sint8 chip_reset(void)
 {
 	sint8 ret = M2M_SUCCESS;
-#ifndef USE_UART
+#ifndef CONF_WINC_USE_UART
 	nmi_set_sys_clk_src_to_xo();
 #endif
 	ret += nm_write_reg(NMI_GLB_RESET_0, 0);
 	nm_bsp_sleep(50);
-#ifndef USE_UART
+#ifndef CONF_WINC_USE_UART
 	restore_pmu_settings_after_global_reset();
 #endif
 	return ret;
@@ -392,11 +389,9 @@ sint8 chip_reset(void)
 
 void rom_test()
 {
-	uint8	*pu8DataSec;
 	uint8	*pu8TextSec;
 	FILE	*fp;
 	uint32	u32CodeSize = 0;
-	uint32	u32DataSize = 0;
 
 	nm_bsp_sleep(1000);
 
@@ -422,6 +417,8 @@ void rom_test()
 		}
 	}
 #if 0
+	uint8	*pu8DataSec;
+	uint32	u32DataSize = 0;
 	/* Read data section.
 	*/
 	fp = fopen(ROM_DATA_FILE,"rb");
@@ -452,7 +449,7 @@ sint8 wait_for_bootrom(uint8 arg)
 {
 	sint8 ret = M2M_SUCCESS;
 	uint32 reg = 0, cnt = 0;
-	
+
 	reg = 0;
 	while(1) {
 		reg = nm_read_reg(0x1014);	/* wait for efuse loading done */
@@ -481,13 +478,13 @@ sint8 wait_for_bootrom(uint8 arg)
 			}
 		}
 	}
-	
+
 	if(2 == arg) {
 		nm_write_reg(NMI_REV_REG, M2M_ATE_FW_START_VALUE);
 	} else {
 		/*bypass this step*/
 	}
-	
+
 	nm_write_reg(BOOTROM_REG,M2M_START_FIRMWARE);
 
 #ifdef __ROM_TEST__
@@ -504,14 +501,14 @@ sint8 wait_for_firmware_start(uint8 arg)
 	uint32 reg = 0, cnt = 0;
 	volatile uint32 regAddress = NMI_STATE_REG;
 	volatile uint32 checkValue = M2M_FINISH_INIT_STATE;
-	
+
 	if(2 == arg) {
 		regAddress = NMI_REV_REG;
 		checkValue = M2M_ATE_FW_IS_UP_VALUE;
 	} else {
 		/*bypass this step*/
 	}
-	
+
 	while (checkValue != reg)
 	{
 		nm_bsp_sleep(2); /* TODO: Why bus error if this delay is not here. */
@@ -570,11 +567,9 @@ sint8 chip_deinit(void)
 		}
 
 	} while (timeout);
-	
-	return ret;		
-}
 
-//#ifdef CONF_PERIPH
+	return ret;
+}
 
 sint8 set_gpio_dir(uint8 gpio, uint8 dir)
 {
@@ -583,7 +578,7 @@ sint8 set_gpio_dir(uint8 gpio, uint8 dir)
 
 	ret = nm_read_reg_with_ret(0x20108, &val32);
 	if(ret != M2M_SUCCESS) goto _EXIT;
-	
+
 	if(dir) {
 		val32 |= (1ul << gpio);
 	} else {
@@ -602,7 +597,7 @@ sint8 set_gpio_val(uint8 gpio, uint8 val)
 
 	ret = nm_read_reg_with_ret(0x20100, &val32);
 	if(ret != M2M_SUCCESS) goto _EXIT;
-	
+
 	if(val) {
 		val32 |= (1ul << gpio);
 	} else {
@@ -622,7 +617,7 @@ sint8 get_gpio_val(uint8 gpio, uint8* val)
 
 	ret = nm_read_reg_with_ret(0x20104, &val32);
 	if(ret != M2M_SUCCESS) goto _EXIT;
-	
+
 	*val = (uint8)((val32 >> gpio) & 0x01);
 
 _EXIT:
@@ -651,28 +646,27 @@ sint8 pullup_ctrl(uint32 pinmask, uint8 enable)
 _EXIT:
 	return s8Ret;
 }
-//#endif /* CONF_PERIPH */
 
 sint8 nmi_get_otp_mac_address(uint8 *pu8MacAddr,  uint8 * pu8IsValid)
 {
 	sint8 ret;
 	uint32	u32RegValue;
 	uint8	mac[6];
-	
+
 	ret = nm_read_reg_with_ret(rNMI_GP_REG_0, &u32RegValue);
 	if(ret != M2M_SUCCESS) goto _EXIT_ERR;
-	
+
 	if(!EFUSED_MAC(u32RegValue)) {
 		M2M_DBG("Default MAC\n");
 		m2m_memset(pu8MacAddr, 0, 6);
 		goto _EXIT_ERR;
 	}
-	
+
 	M2M_DBG("OTP MAC\n");
 	u32RegValue >>=16;
 	nm_read_block(u32RegValue|0x30000, mac, 6);
-	m2m_memcpy(pu8MacAddr,mac,6); 
-	if(pu8IsValid) *pu8IsValid = 1;	
+	m2m_memcpy(pu8MacAddr,mac,6);
+	if(pu8IsValid) *pu8IsValid = 1;
 	return ret;
 
 _EXIT_ERR:
@@ -685,16 +679,16 @@ sint8 nmi_get_mac_address(uint8 *pu8MacAddr)
 	sint8 ret;
 	uint32	u32RegValue;
 	uint8	mac[6];
-	
+
 	ret = nm_read_reg_with_ret(rNMI_GP_REG_0, &u32RegValue);
 	if(ret != M2M_SUCCESS) goto _EXIT_ERR;
 
 	u32RegValue &=0x0000ffff;
 	nm_read_block(u32RegValue|0x30000, mac, 6);
 	m2m_memcpy(pu8MacAddr, mac, 6);
-	
+
 	return ret;
-	
+
 _EXIT_ERR:
 	return ret;
 }

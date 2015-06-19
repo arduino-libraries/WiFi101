@@ -4,7 +4,7 @@
  *
  * \brief This module contains common APIs declarations.
  *
- * Copyright (c) 2014 Atmel Corporation. All rights reserved.
+ * Copyright (c) 2015 Atmel Corporation. All rights reserved.
  *
  * \asf_license_start
  *
@@ -22,9 +22,6 @@
  *
  * 3. The name of Atmel may not be used to endorse or promote products derived
  *    from this software without specific prior written permission.
- *
- * 4. This software may only be redistributed and used in connection with an
- *    Atmel microcontroller product.
  *
  * THIS SOFTWARE IS PROVIDED BY ATMEL "AS IS" AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -96,7 +93,7 @@ uint8 m2m_strncmp(uint8 *pcS1, uint8 *pcS2, uint16 u16Len)
     return 0;
 }
 
-/* Finds the occurance of pcStr in pcIn. 
+/* Finds the occurance of pcStr in pcIn.
 If pcStr is part of pcIn it returns a valid pointer to the start of pcStr within pcIn.
 Otherwise a NULL Pointer is returned.
 */
