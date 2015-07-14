@@ -20,9 +20,11 @@
 #include "WiFi101.h"
 #include <string.h>
 #include <Arduino.h>
+#include "SPI.h"
 
 extern "C" {
   #include "bsp/include/nm_bsp.h"
+  #include "bus_wrapper/include/nm_bus_wrapper_samd21.h"
   #include "socket/include/socket_buffer.h"
   #include "driver/source/nmasic.h"
   #include "driver/include/m2m_periph.h"
@@ -34,12 +36,7 @@ static void wifi_cb(uint8_t u8MsgType, void *pvMsg)
 		case M2M_WIFI_RESP_CON_STATE_CHANGED:
 		{
 			tstrM2mWifiStateChanged *pstrWifiState = (tstrM2mWifiStateChanged *)pvMsg;
-			if (pstrWifiState->u8CurrState == M2M_WIFI_CONNECTED) {
-				//SERIAL_PORT_MONITOR.println("wifi_cb: M2M_WIFI_RESP_CON_STATE_CHANGED: CONNECTED");
-				if (WiFi._mode == WL_STA_MODE) {
-					WiFi._status = WL_CONNECTED;
-				}
-			} else if (pstrWifiState->u8CurrState == M2M_WIFI_DISCONNECTED) {
+			if (pstrWifiState->u8CurrState == M2M_WIFI_DISCONNECTED) {
 				//SERIAL_PORT_MONITOR.println("wifi_cb: M2M_WIFI_RESP_CON_STATE_CHANGED: DISCONNECTED");
 				if (WiFi._mode == WL_STA_MODE) {
 					WiFi._status = WL_DISCONNECTED;
@@ -60,6 +57,9 @@ static void wifi_cb(uint8_t u8MsgType, void *pvMsg)
 				WiFi._localip = pstrIPCfg->u32StaticIP;
 				WiFi._submask = pstrIPCfg->u32SubnetMask;
 				WiFi._gateway = pstrIPCfg->u32Gateway;
+				
+				WiFi._status = WL_CONNECTED;
+
 				// WiFi led ON.
 				m2m_periph_gpio_set_val(M2M_PERIPH_GPIO15, 0);
 			}
@@ -191,7 +191,12 @@ char* WiFiClass::firmwareVersion()
 	tstrM2mRev rev;
 	nm_get_firmware_info(&rev);
 	memset(_version, 0, 9);
-	sprintf(_version, "%d.%d.%d", rev.u8FirmwareMajor, rev.u8FirmwareMinor, rev.u8FirmwarePatch);
+	if (rev.u8FirmwareMajor != rev.u8DriverMajor && rev.u8FirmwareMinor != rev.u8DriverMinor) {
+		sprintf(_version, "-Err-");
+	}
+	else {
+		sprintf(_version, "%d.%d.%d", rev.u8FirmwareMajor, rev.u8FirmwareMinor, rev.u8FirmwarePatch);
+	}
 	return _version;
 }
 
@@ -268,9 +273,6 @@ uint8_t WiFiClass::startConnect(char *ssid, uint8_t u8SecType, void *pvAuthInfo)
 		_mode = WL_RESET_MODE;
 	}
 
-	// Give time for DHCP configuration:
-	delay(1000);
-
 	memset(_ssid, 0, M2M_MAX_SSID_LEN);
 	memcpy(_ssid, ssid, strlen(ssid));
 	return _status;
@@ -303,7 +305,7 @@ uint8_t WiFiClass::beginAP(char *ssid, uint8_t channel)
 
 	memset(_ssid, 0, M2M_MAX_SSID_LEN);
 	memcpy(_ssid, ssid, strlen(ssid));
-	_localip = *((uint32_t*)&strM2MAPConfig.au8DHCPServerIP[0]);
+	m2m_memcpy((uint8 *)&_localip, (uint8 *)&strM2MAPConfig.au8DHCPServerIP[0], 4);
 	_submask = 0x00FFFFFF;
 	_gateway = _localip;
 
@@ -342,7 +344,7 @@ uint8_t WiFiClass::beginProvision(char *ssid, char *url, uint8_t channel)
 
 	memset(_ssid, 0, M2M_MAX_SSID_LEN);
 	memcpy(_ssid, ssid, strlen(ssid));
-	_localip = *((uint32_t*)&strM2MAPConfig.au8DHCPServerIP[0]);
+	m2m_memcpy((uint8 *)&_localip, (uint8 *)&strM2MAPConfig.au8DHCPServerIP[0], 4);
 	_submask = 0x00FFFFFF;
 	_gateway = _localip;
 
@@ -459,6 +461,9 @@ char* WiFiClass::SSID()
 
 int32_t WiFiClass::RSSI()
 {
+	// Clear pending events:
+	m2m_wifi_handle_events(NULL);
+
 	// Send RSSI request:
 	_resolve = 0;
 	if (m2m_wifi_req_curr_rssi() < 0) {
@@ -558,8 +563,8 @@ uint8_t WiFiClass::status()
 {
 	if (!_init) {
 		init();
-		if (nmi_get_chipid() != 0x1502b1) {
-			_status = WL_NO_SHIELD;
+		if (nmi_get_chipid() == 0x1502b1) {
+			_status = WL_IDLE_STATUS;
 			return _status;
 		}
 	}
@@ -602,4 +607,12 @@ void WiFiClass::refresh(void)
 	m2m_wifi_handle_events(NULL);
 }
 
+void SPI_begin() {
+	SPI.begin();
+	SPI.setClockDivider(4);
+}
+
+uint8 SPI_transfer(uint8 data) {
+	return SPI.transfer(data);
+}
 WiFiClass WiFi;

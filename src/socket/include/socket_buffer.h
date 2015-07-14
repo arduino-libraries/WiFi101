@@ -51,10 +51,22 @@
 extern "C" {
 #endif
 
-#define SOCKET_BUFFER_TCP_SIZE				(SOCKET_BUFFER_MTU * 3)
-#define SOCKET_BUFFER_UDP_SIZE				((SOCKET_BUFFER_MTU + SOCKET_BUFFER_UDP_HEADER_SIZE) * 3)
-#define SOCKET_BUFFER_UDP_HEADER_SIZE		8
+/** Define reduced buffer size for Arduino Uno. */
+#if (defined ARDUINO_ARCH_AVR)
+#define SOCKET_BUFFER_MTU					16
+#define SOCKET_BUFFER_NB					2
+#endif
+
+/** Define bigger buffer size for Arduino Zero. */
+#if (defined __SAMD21J18A__) || (defined __SAMD21G18A__)
 #define SOCKET_BUFFER_MTU					1400
+#define SOCKET_BUFFER_NB					3
+#endif
+
+#define SOCKET_BUFFER_UDP_HEADER_SIZE		8
+
+#define SOCKET_BUFFER_TCP_SIZE				(SOCKET_BUFFER_MTU * SOCKET_BUFFER_NB)
+#define SOCKET_BUFFER_UDP_SIZE				((SOCKET_BUFFER_MTU + SOCKET_BUFFER_UDP_HEADER_SIZE) * SOCKET_BUFFER_NB)
 
 #define SOCKET_BUFFER_FLAG_CONNECTED		1
 #define SOCKET_BUFFER_FLAG_FULL				2

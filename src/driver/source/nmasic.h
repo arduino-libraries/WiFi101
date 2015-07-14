@@ -70,22 +70,14 @@
 #define REV(id)         ( ((id) & 0x00000fff ) )
 #define EFUSED_MAC(value) (value & 0xffff0000)
 
-/**
-*  @struct		tstrM2mWifiGetRevision
-*  @brief		Structure holding firmware version parameters
-*  @sa			M2M_WIFI_AUTH_WEB, M2M_WIFI_AUTH_WPA, M2M_WIFI_AUTH_WPA2
-*/
-typedef struct {
-	uint8 u8FirmwareMajor; /* Version Major Number which represents the official release base */
-	uint8 u8FirmwareMinor; /* Version Minor Number which represents the engineering release base */
-	uint8 u8FirmwarePatch;	/* Version pathc Number which represents the pathces release base */
-	uint8 u8DriverMajor; /* Version Major Number which represents the official release base */
-	uint8 u8DriverMinor; /* Version Minor Number which represents the engineering release base */
-	uint8 u8DriverPatch; /* Version Patch Number which represents the pathces release base */
-	uint8 BuildDate[sizeof(__DATE__)];
-	uint8 BuildTime[sizeof(__TIME__)];
-	uint32 u32Chipid; /* HW revision which will be basically the chip ID */
-} tstrM2mRev;
+#define rHAVE_SDIO_IRQ_GPIO_BIT     (NBIT0)
+#define rHAVE_USE_PMU_BIT           (NBIT1)
+#define rHAVE_SLEEP_CLK_SRC_RTC_BIT (NBIT2)
+#define rHAVE_SLEEP_CLK_SRC_XO_BIT  (NBIT3)
+#define rHAVE_EXT_PA_INV_TX_RX      (NBIT4)
+#define rHAVE_LEGACY_RF_SETTINGS    (NBIT5)
+#define rHAVE_LOGS_DISABLED_BIT		(NBIT6)
+
 
 #ifdef __cplusplus
      extern "C" {
@@ -139,6 +131,8 @@ sint8 pullup_ctrl(uint32 pinmask, uint8 enable);
 sint8 nmi_get_otp_mac_address(uint8 *pu8MacAddr, uint8 * pu8IsValid);
 
 sint8 nmi_get_mac_address(uint8 *pu8MacAddr);
+
+sint8 chip_apply_conf(uint32 u32conf);
 
 #ifdef __cplusplus
 	 }

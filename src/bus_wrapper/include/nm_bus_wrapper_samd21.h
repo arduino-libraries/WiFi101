@@ -2,9 +2,9 @@
  *
  * \file
  *
- * \brief This module contains NMC1500 BSP APIs definitions.
+ * \brief This module contains NMC1000 bus wrapper APIs declarations.
  *
- * Copyright (c) 2015 Atmel Corporation. All rights reserved.
+ * Copyright (c) 2014 Atmel Corporation. All rights reserved.
  *
  * \asf_license_start
  *
@@ -23,6 +23,9 @@
  * 3. The name of Atmel may not be used to endorse or promote products derived
  *    from this software without specific prior written permission.
  *
+ * 4. This software may only be redistributed and used in connection with an
+ *    Atmel microcontroller product.
+ *
  * THIS SOFTWARE IS PROVIDED BY ATMEL "AS IS" AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT ARE
@@ -39,14 +42,20 @@
  *
  */
 
-#ifndef _NM_BSP_SAMD21_H_
-#define _NM_BSP_SAMD21_H_
+#ifndef _NM_BUS_WRAPPER_SAMD21_H_
+#define _NM_BUS_WRAPPER_SAMD21_H_
 
-#define NM_DEBUG			0
-#define NM_BSP_PRINTF
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#define CONF_WINC_USE_SPI	1
+/* Wrapper to call C++ functions from C code. */
 
-#define NM_EDGE_INTERRUPT	1
+void SPI_begin();
+uint8 SPI_transfer(uint8 data);
 
-#endif /* _NM_BSP_SAMD21_H_ */
+#ifdef __cplusplus
+} //end extern "C"
+#endif
+
+#endif	/*_NM_BUS_WRAPPER_SAMD21_H_*/

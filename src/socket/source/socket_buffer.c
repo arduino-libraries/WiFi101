@@ -51,6 +51,8 @@
 
 tstrSocketBuffer gastrSocketBuffer[MAX_SOCKET];
 
+extern uint8 hif_small_xfer;
+
 void socketBufferInit(void)
 {
 	memset(gastrSocketBuffer, 0, sizeof(gastrSocketBuffer));
@@ -96,7 +98,13 @@ void socketBufferCb(SOCKET sock, uint8 u8Msg, void *pvMsg)
 			
 			tstrSocketRecvMsg *pstrRecv = (tstrSocketRecvMsg *)pvMsg;
 			if (pstrRecv && pstrRecv->s16BufferSize > 0) {
-				/* Data received. */
+				/* Protect against overflow. */
+				if (*(gastrSocketBuffer[sock].head) + pstrRecv->s16BufferSize > SOCKET_BUFFER_TCP_SIZE) {
+					*(gastrSocketBuffer[sock].flag) |= SOCKET_BUFFER_FLAG_FULL;
+					break;
+				}
+
+				/* Add data size. */
 				*(gastrSocketBuffer[sock].head) += pstrRecv->s16BufferSize;
 				
 				/* Buffer full, stop reception. */
@@ -127,33 +135,47 @@ void socketBufferCb(SOCKET sock, uint8 u8Msg, void *pvMsg)
 			
 			tstrSocketRecvMsg *pstrRecv = (tstrSocketRecvMsg *)pvMsg;
 			if (pstrRecv && pstrRecv->s16BufferSize > 0) {
-				uint32 h = *(gastrSocketBuffer[sock].head);
-				uint8 *buf = gastrSocketBuffer[sock].buffer;
-				
-				/* Store packet size. */
-				buf[h++] = pstrRecv->s16BufferSize >> 8;
-				buf[h++] = pstrRecv->s16BufferSize;
 
-				/* Store remote host port. */
-				buf[h++] = pstrRecv->strRemoteAddr.sin_port;
-				buf[h++] = pstrRecv->strRemoteAddr.sin_port >> 8;
-
-				/* Store remote host IP. */
-				buf[h++] = pstrRecv->strRemoteAddr.sin_addr.s_addr >> 24;
-				buf[h++] = pstrRecv->strRemoteAddr.sin_addr.s_addr >> 16;
-				buf[h++] = pstrRecv->strRemoteAddr.sin_addr.s_addr >> 8;
-				buf[h++] = pstrRecv->strRemoteAddr.sin_addr.s_addr;
+				if (hif_small_xfer < 2) {
+					uint32 h = *(gastrSocketBuffer[sock].head);
+					uint8 *buf = gastrSocketBuffer[sock].buffer;
+					uint16 sz = pstrRecv->s16BufferSize + pstrRecv->u16RemainingSize;
 				
-				/* Data received. */
-				*(gastrSocketBuffer[sock].head) = h + pstrRecv->s16BufferSize;
+					/* Store packet size. */
+					buf[h++] = sz >> 8;
+					buf[h++] = sz;
+
+					/* Store remote host port. */
+					buf[h++] = pstrRecv->strRemoteAddr.sin_port;
+					buf[h++] = pstrRecv->strRemoteAddr.sin_port >> 8;
+
+					/* Store remote host IP. */
+					buf[h++] = pstrRecv->strRemoteAddr.sin_addr.s_addr >> 24;
+					buf[h++] = pstrRecv->strRemoteAddr.sin_addr.s_addr >> 16;
+					buf[h++] = pstrRecv->strRemoteAddr.sin_addr.s_addr >> 8;
+					buf[h++] = pstrRecv->strRemoteAddr.sin_addr.s_addr;
+				
+					/* Data received. */
+					*(gastrSocketBuffer[sock].head) = h + pstrRecv->s16BufferSize;
+				}
+				else {
+					/* Data received. */
+					*(gastrSocketBuffer[sock].head) += pstrRecv->s16BufferSize;				
+				}
 				
 				/* Buffer full, stop reception. */
 				if (SOCKET_BUFFER_UDP_SIZE - *(gastrSocketBuffer[sock].head) < SOCKET_BUFFER_MTU + SOCKET_BUFFER_UDP_HEADER_SIZE) {
 					*(gastrSocketBuffer[sock].flag) |= SOCKET_BUFFER_FLAG_FULL;
 				}
 				else {
-					recvfrom(sock, gastrSocketBuffer[sock].buffer + *(gastrSocketBuffer[sock].head) + SOCKET_BUFFER_UDP_HEADER_SIZE,
-							SOCKET_BUFFER_MTU, 0);
+					if (hif_small_xfer && hif_small_xfer != 3) {
+						recvfrom(sock, gastrSocketBuffer[sock].buffer + *(gastrSocketBuffer[sock].head),
+								SOCKET_BUFFER_MTU, 0);
+					}
+					else {
+						recvfrom(sock, gastrSocketBuffer[sock].buffer + *(gastrSocketBuffer[sock].head) + SOCKET_BUFFER_UDP_HEADER_SIZE,
+								SOCKET_BUFFER_MTU, 0);
+					}
 				}
 			}
 			

@@ -48,6 +48,7 @@ INCLUDES
 
 #include "common/include/nm_common.h"
 #include "driver/include/m2m_types.h"
+#include "driver/source/nmdrv.h"
 
 #ifdef CONF_MGMT
 
@@ -1347,8 +1348,8 @@ NMI_API sint8 m2m_wifi_wps_disable(void);
 		if(!m2m_wifi_init(&param))
 		{
 			// Trigger P2P
-			m2m_wifi_p2p(1);
-
+			m2m_wifi_p2p(M2M_WIFI_CH_1);
+			
 			while(1)
 			{
 				m2m_wifi_handle_events(NULL);
@@ -1579,56 +1580,52 @@ NMI_API sint8 m2m_wifi_enable_dhcp(uint8  u8DhcpEn );
 
 /*!
 @fn	\
-	sint8 m2m_wifi_set_scan_options(uint8 u8NumOfSlot,uint8 u8SlotTime)
+	sint8 m2m_wifi_set_scan_options(tstrM2MScanOption* ptstrM2MScanOption)
 
-@param [in]	u8NumOfSlot;
-	The minimum number of slots is 2 for every channel,
-	For every slot the SoC will send Probe Request on air, and wait/listen for PROBE RESP/BEACONS for the u8slotTime in ms
+@param [in]	ptstrM2MScanOption;
+	Pointer to the structure holding the Scan Parameters.
 
-@param [in]	 u8SlotTime;
-		The time in ms that the Soc will wait on every channel listening for the frames on air
-		when that time increases the number of APs will increase in the scan results
-		Minimum time is 10 ms and the maximum is 250 ms
 @see
 	tenuM2mScanCh
 	m2m_wifi_request_scan
-
+	tstrM2MScanOption
+	
 @return
 	The function returns @ref M2M_SUCCESS for successful operations and a negative value otherwise.
 */
-NMI_API sint8 m2m_wifi_set_scan_options(uint8 u8NumOfSlot,uint8 u8SlotTime);
+NMI_API sint8 m2m_wifi_set_scan_options(tstrM2MScanOption* ptstrM2MScanOption);
  /**@}*/
 /** @defgroup WifiSetScanRegionFn m2m_wifi_set_scan_region
  *   @ingroup WLANAPI
  *  Synchronous wi-fi scan region setting function.
- *   This function sets the scan region, which will affect the range of possible scan channels.
+ *   This function sets the scan region, which will affect the range of possible scan channels. 
  *   For 2.5GHz supported in the current release, the requested scan region can't exceed the maximum number of channels (14).
  *@{*/
 /*!
 @fn	\
-	sint8 m2m_wifi_set_scan_region(uint8 ScanRegion)
+	sint8 m2m_wifi_set_scan_region(uint16 ScanRegion)
 
 @param [in]	ScanRegion;
-		ASIA = 14
-		NORTH_AMERICA = 11
+		ASIA
+		NORTH_AMERICA
 @see
 	tenuM2mScanCh
 	m2m_wifi_request_scan
-
+	
 @return
 	The function returns @ref M2M_SUCCESS for successful operations and a negative value otherwise.
 
 */
-NMI_API sint8 m2m_wifi_set_scan_region(uint8  ScanRegion);
+NMI_API sint8 m2m_wifi_set_scan_region(uint16  ScanRegion);
  /**@}*/
 /** @defgroup WifiRequestScanFn m2m_wifi_request_scan
 *   @ingroup WLANAPI
 *    Asynchronous wi-fi scan request on the given channel. The scan status is delivered in the wi-fi event callback and then the application
-*    is to read the scan results sequentially.
+*    is to read the scan results sequentially. 
 *    The number of  APs found (N) is returned in event @ref M2M_WIFI_RESP_SCAN_DONE with the number of found
 *     APs.
 *	The application could read the list of APs by calling the function @ref m2m_wifi_req_scan_result N times.
-*
+* 
 *@{*/
 /*!
 @fn	\
@@ -2374,12 +2371,21 @@ NMI_API sint8 m2m_wifi_enable_sntp(uint8 bEnable);
  * @param [in]     u32RTCSeconds
  *                        UTC value in seconds.
  * @see            m2m_wifi_enable_sntp
- 			  tstrSystemTime
-  * @note         If there is an RTC on the host MCU, the SNTP could be disabled and the host should set the system time to the firmware
+ 			  tstrSystemTime   
+  * @note         If there is an RTC on the host MCU, the SNTP could be disabled and the host should set the system time to the firmware 
  *		         using the API \ref m2m_wifi_set_sytem_time.
  * @return        The function returns @ref M2M_SUCCESS for successful operations and a negative value otherwise.
  */
 NMI_API sint8 m2m_wifi_set_sytem_time(uint32 u32UTCSeconds);
+/*!
+ * @fn             NMI_API sint8 m2m_wifi_get_sytem_time(void);   
+ * @see            m2m_wifi_enable_sntp
+ 			  		tstrSystemTime   
+ * @note         get the system time from the sntp client
+ *		         using the API \ref m2m_wifi_get_sytem_time.
+ * @return        The function returns @ref M2M_SUCCESS for successful operations and a negative value otherwise.
+ */
+NMI_API sint8 m2m_wifi_get_sytem_time(void);
 /**@}*/
 /** @defgroup WifiSetCustInfoElementFn m2m_wifi_set_cust_InfoElement
  *   @ingroup WLANAPI
@@ -2391,19 +2397,19 @@ NMI_API sint8 m2m_wifi_set_sytem_time(uint32 u32UTCSeconds);
 /*!
  * @fn             NMI_API sint8 m2m_wifi_set_cust_InfoElement(uint8*);
  * @param [in]     pau8M2mCustInfoElement
- *                        Pointer to Buffer containing the IE to be sent. It is the application developer's responsibility to ensure on the correctness  of the information element's ordering passed in.
+ *                        Pointer to Buffer containing the IE to be sent. It is the application developer's responsibility to ensure on the correctness  of the information element's ordering passed in. 
  * @warning	       - Size of All elements combined must not exceed 255 byte.\n
  *			       - Used in Access Point Mode \n
  * @note              IEs Format will be follow the following layout:\n
- * @verbatim
-               --------------- ---------- ---------- ------------------- -------- -------- ----------- ----------------------
-              | Byte[0]       | Byte[1]  | Byte[2]  | Byte[3:length1+2] | ..... | Byte[n] | Byte[n+1] | Byte[n+2:lengthx+2]  |
-              |---------------|----------|----------|-------------------|-------- --------|-----------|------------------|
-              | #of all Bytes | IE1 ID   | Length1  | Data1(Hex Coded)  | ..... | IEx ID  | Lengthx   | Datax(Hex Coded)     |
-               --------------- ---------- ---------- ------------------- -------- -------- ----------- ----------------------
+ * @verbatim 
+               --------------- ---------- ---------- ------------------- -------- -------- ----------- ----------------------  
+              | Byte[0]       | Byte[1]  | Byte[2]  | Byte[3:length1+2] | ..... | Byte[n] | Byte[n+1] | Byte[n+2:lengthx+2]  | 
+              |---------------|----------|----------|-------------------|-------- --------|-----------|------------------| 
+              | #of all Bytes | IE1 ID   | Length1  | Data1(Hex Coded)  | ..... | IEx ID  | Lengthx   | Datax(Hex Coded)     | 
+               --------------- ---------- ---------- ------------------- -------- -------- ----------- ---------------------- 
  * @endverbatim
  * @see             m2m_wifi_enable_sntp
- *                      tstrSystemTime
+ *                      tstrSystemTime               
  * @return        The function returns @ref M2M_SUCCESS for successful operations and a negative value otherwise.
  \section Example
    The example demonstrates how the information elements are set using this function.
@@ -2421,10 +2427,10 @@ NMI_API sint8 m2m_wifi_set_sytem_time(uint32 u32UTCSeconds);
                 elementData[4]=201; elementData[5]=2; elementData[6]='B'; elementData[7]='C';
                 //Third IE
                 elementData[8]=202; elementData[9]=3; elementData[10]='D'; elementData[11]=0; elementData[12]='F';
-            } else if(1 == state) {
+            } else if(1 == state) {	
                 //Append 2 IEs to others, Notice that we keep old data in array starting with\n
                 //element 13 and total number of bytes increased to 20
-                state = 2;
+                state = 2; 
                 //Total Number of Bytes
                 elementData[0]=20;
                 //Fourth IE
@@ -2432,14 +2438,70 @@ NMI_API sint8 m2m_wifi_set_sytem_time(uint32 u32UTCSeconds);
                 //Fifth IE
                 elementData[16]=204; elementData[17]=3; elementData[18]='X'; elementData[19]=5; elementData[20]='Z';
             } else if(2 == state) {	//Delete All IEs
-                state = 0;
+                state = 0; 
                 //Total Number of Bytes
                 elementData[0]=0;
             }
-            m2m_wifi_set_cust_InfoElement(elementData);
+            m2m_wifi_set_cust_InfoElement(elementData);	
  * @endcode
  */
 NMI_API sint8 m2m_wifi_set_cust_InfoElement(uint8* pau8M2mCustInfoElement);
+
+/*!
+@fn			NMI_API sint8 m2m_wifi_set_power_profile(uint8 u8PwrMode);
+@brief		Change the power profile mode 
+@param [in]	u8PwrMode
+			Change the WINC power profile to different mode 
+			PWR_LOW1/PWR_LOW2/PWR_HIGH/PWR_AUTO (tenuM2mPwrMode)
+@return		The function SHALL return M2M_SUCCESE for success and a negative value otherwise.
+@sa			tenuM2mPwrMode
+@pre		m2m_wifi_init
+@warning	must be called after the initializations and before any connection request and can't be changed in run time, 
+*/
+sint8 m2m_wifi_set_power_profile(uint8 u8PwrMode);
+/*!
+@fn			NMI_API sint8 m2m_wifi_set_tx_power(uint8 u8TxPwrLevel);
+@brief		set the TX power tenuM2mTxPwrLevel
+@param [in]	u8TxPwrLevel
+			change the TX power tenuM2mTxPwrLevel
+@return		The function SHALL return M2M_SUCCESE for success and a negative value otherwise.
+@sa			tenuM2mTxPwrLevel
+@pre		m2m_wifi_init
+@warning	
+*/
+sint8 m2m_wifi_set_tx_power(uint8 u8TxPwrLevel);
+
+/*!
+@fn			NMI_API sint8 m2m_wifi_enable_firmware_logs(uint8 u8Enable);
+@brief		Enable or Disable logs in run time (Disable Firmware logs will 
+			enhance the firmware start-up time and performance)
+@param [in]	u8Enable
+			Set 1 to enable the logs 0 for disable
+@return		The function SHALL return M2M_SUCCESE for success and a negative value otherwise.
+@sa			__DISABLE_FIRMWARE_LOGS__ (build option to disable logs from initializations)
+@pre		m2m_wifi_init
+@warning	
+*/
+sint8 m2m_wifi_enable_firmware_logs(uint8 u8Enable);
+/*!
+@fn			NMI_API sint8 m2m_wifi_set_battery_voltage(uint8 u8BattVolt)
+@brief		Set the battery voltage to update the firmware calculations
+@param [in]	dbBattVolt
+			Battery Volt in double
+@return		The function SHALL return M2M_SUCCESE for success and a negative value otherwise.
+@sa			
+@pre		m2m_wifi_init
+@warning	
+*/
+sint8 m2m_wifi_set_battery_voltage(uint16 u16BattVoltx100);
+/**
+*	@fn		m2m_wifi_get_firmware_version(tstrM2mRev* M2mRev)
+*	@brief	Get Firmware version info
+*	@param [out]	M2mRev
+*			    pointer holds address of structure "tstrM2mRev" that contains the firmware version parameters
+*	@version	1.0
+*/
+sint8 m2m_wifi_get_firmware_version(tstrM2mRev *M2mRev);
 /**@}*/
 #ifdef ETH_MODE
 /** @defgroup WifiEnableMacMcastFn m2m_wifi_enable_mac_mcast
@@ -2449,14 +2511,14 @@ NMI_API sint8 m2m_wifi_set_cust_InfoElement(uint8* pau8M2mCustInfoElement);
  /**@{*/
 /*!
  * @fn             NMI_API sint8 m2m_wifi_enable_mac_mcast(uint8 *, uint8);
- * @brief
+ * @brief        
  * @param [in]     pu8MulticastMacAddress
  *                        Pointer to MAC address
  * @param [in]     u8AddRemove
  *                        A flag to add or remove the MAC ADDRESS, based on the following values:
  *                        -  0 : remove MAC address
- *                        -  1 : add MAC address
- * @attention    This function is available in bypass mode ONLY. Make sure that firmware version built with the macro @ref ETH_MODE.\n
+ *                        -  1 : add MAC address    
+ * @attention    This function is available in bypass mode ONLY. Make sure that firmware version built with the macro @ref ETH_MODE.\n  
  * @note         Maximum number of MAC addresses that could be added is 8.
  * @return       The function returns @ref M2M_SUCCESS for successful operations and a negative value otherwise.
  */

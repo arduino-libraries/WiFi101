@@ -410,6 +410,9 @@ sint8 hif_send(uint8 u8Gid,uint8 u8Opcode,uint8 *pu8CtrlBuf,uint16 u16CtrlBufSiz
 ERR1:
 	return ret;
 }
+
+volatile uint8 hif_small_xfer = 0;
+
 /**
 *	@fn		hif_isr
 *	@brief	Host interface interrupt service routine
@@ -505,6 +508,13 @@ static sint8 hif_isr(void)
 						ret = M2M_ERR_BUS_FAIL;
 						goto ERR1;
 					}
+					
+					if(hif_small_xfer)
+					{
+						/*Pause SPI transfer*/
+						return ret;
+					}
+					
 					#ifndef ENABLE_UNO_BOARD
 					if(!gu8HifSizeDone)
 					{
@@ -544,15 +554,22 @@ ERR1:
 	return ret;
 }
 
+void Socket_ReadSocketData_Small(void);
+
 /**
 *	@fn		hif_handle_isr(void)
 *	@brief	Handle interrupt received from NMC1500 firmware.
 *   @return     The function SHALL return 0 for success and a negative value otherwise.
 */
-
 sint8 hif_handle_isr(void)
 {
 	sint8 ret = M2M_SUCCESS;
+
+	if(hif_small_xfer) {
+		/*SPI protocol paused to allow small transfer*/
+		Socket_ReadSocketData_Small();
+		return ret;
+	}
 
 	while (gu8Interrupt) {
 		/*must be at that place because of the race of interrupt increment and that decrement*/
@@ -561,6 +578,9 @@ sint8 hif_handle_isr(void)
 		while(1)
 		{
 			ret = hif_isr();
+			if(hif_small_xfer) {
+				return ret;
+			}
 			if(ret == M2M_SUCCESS) {
 				/*we will try forever untill we get that interrupt*/
 				/*Fail return errors here due to bus errors (reading expected values)*/

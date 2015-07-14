@@ -20,6 +20,7 @@
 extern "C" {
 	#include "socket/include/socket.h"
 	#include "driver/include/m2m_periph.h"
+	extern uint8 hif_small_xfer;
 }
 
 #include <string.h>
@@ -99,7 +100,12 @@ int WiFiUDP::available()
 	
 	if (_socket != -1) {
 		if (_rcvSize != 0) {
-			return _rcvSize;
+			if (_head - _tail > _rcvSize) {
+				return _rcvSize;
+			}
+			else {
+				return _head - _tail;
+			}
 		}
 	}
 	return 0;
@@ -178,10 +184,10 @@ int WiFiUDP::parsePacket()
 			return _rcvSize;
 		}
 		if (_head != _tail) {
-			_rcvSize = (_buffer[_tail] << 8) + _buffer[_tail + 1];
-			_rcvPort = (_buffer[_tail + 2] << 8) + _buffer[_tail + 3];
-			_rcvIP =   (_buffer[_tail + 4] << 24) + (_buffer[_tail + 5] << 16) +
-					(_buffer[_tail + 6] << 8) + _buffer[_tail + 7];
+			_rcvSize = ((uint16_t)_buffer[_tail] << 8) + (uint16_t)_buffer[_tail + 1];
+			_rcvPort = ((uint16_t)_buffer[_tail + 2] << 8) + (uint16_t)_buffer[_tail + 3];
+			_rcvIP =   ((uint32_t)_buffer[_tail + 4] << 24) + ((uint32_t)_buffer[_tail + 5] << 16) +
+					((uint32_t)_buffer[_tail + 6] << 8) + (uint32_t)_buffer[_tail + 7];
 			_tail += SOCKET_BUFFER_UDP_HEADER_SIZE;
 			return _rcvSize;
 		}
@@ -201,7 +207,12 @@ int WiFiUDP::read()
 	if (_tail == _head) {
 		_tail = _head = 0;
 		_flag &= ~SOCKET_BUFFER_FLAG_FULL;
-		recvfrom(_socket, _buffer + SOCKET_BUFFER_UDP_HEADER_SIZE, SOCKET_BUFFER_MTU, 0);
+		if (hif_small_xfer) {
+			recvfrom(_socket, _buffer, SOCKET_BUFFER_MTU, 0);
+		}
+		else {
+			recvfrom(_socket, _buffer + SOCKET_BUFFER_UDP_HEADER_SIZE, SOCKET_BUFFER_MTU, 0);			
+		}
 		m2m_wifi_handle_events(NULL);
 	}
 	return b;
@@ -229,7 +240,12 @@ int WiFiUDP::read(unsigned char* buf, size_t size)
 	if (_tail == _head) {
 		_tail = _head = 0;
 		_flag &= ~SOCKET_BUFFER_FLAG_FULL;
-		recvfrom(_socket, _buffer + SOCKET_BUFFER_UDP_HEADER_SIZE, SOCKET_BUFFER_MTU, 0);
+		if (hif_small_xfer) {
+			recvfrom(_socket, _buffer, SOCKET_BUFFER_MTU, 0);
+		}
+		else {
+			recvfrom(_socket, _buffer + SOCKET_BUFFER_UDP_HEADER_SIZE, SOCKET_BUFFER_MTU, 0);			
+		}
 		m2m_wifi_handle_events(NULL);
 	}
 

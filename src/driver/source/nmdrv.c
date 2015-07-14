@@ -4,7 +4,7 @@
  *
  * \brief This module contains NMC1000 M2M driver APIs implementation.
  *
- * Copyright (c) 2014 Atmel Corporation. All rights reserved.
+ * Copyright (c) 2015 Atmel Corporation. All rights reserved.
  *
  * \asf_license_start
  *
@@ -22,9 +22,6 @@
  *
  * 3. The name of Atmel may not be used to endorse or promote products derived
  *    from this software without specific prior written permission.
- *
- * 4. This software may only be redistributed and used in connection with an
- *    Atmel microcontroller product.
  *
  * THIS SOFTWARE IS PROVIDED BY ATMEL "AS IS" AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -47,59 +44,55 @@
 #include "bsp/include/nm_bsp.h"
 #include "driver/source/nmdrv.h"
 #include "driver/source/nmasic.h"
+#include "driver/include/m2m_types.h"
 
 #ifdef CONF_WINC_USE_SPI
 #include "driver/source/nmspi.h"
 #endif
 
-
-#define rHAVE_SDIO_IRQ_GPIO_BIT     (NBIT0)
-#define rHAVE_USE_PMU_BIT           (NBIT1)
-#define rHAVE_SLEEP_CLK_SRC_RTC_BIT (NBIT2)
-#define rHAVE_SLEEP_CLK_SRC_XO_BIT  (NBIT3)
-#define rHAVE_EXT_PA_INV_TX_RX      (NBIT4)
-#define rHAVE_LEGACY_RF_SETTINGS    (NBIT5)
-
-
-sint8 nm_get_firmware_info(tstrM2mRev* M2mRev);
-
-
-
-
-static void chip_apply_conf(void)
+/**
+*	@fn		nm_get_firmware_info(tstrM2mRev* M2mRev)
+*	@brief	Get Firmware version info
+*	@param [out]	M2mRev
+*			    pointer holds address of structure "tstrM2mRev" that contains the firmware version parameters
+				
+*   @author		Ahmad.Mohammad.Yahya
+*   @date		27 MARCH 2013
+*	@version	1.0
+*/
+sint8 nm_get_firmware_info(tstrM2mRev* M2mRev)
 {
-	sint8 ret = M2M_SUCCESS;
+	uint16  curr_drv_ver, min_req_drv_ver,curr_firm_ver;
+	uint32	reg = 0;
+	sint8	ret = M2M_SUCCESS;
+
+	ret = nm_read_reg_with_ret(NMI_REV_REG, &reg);
+
+	M2mRev->u8DriverMajor	= M2M_GET_DRV_MAJOR(reg);
+	M2mRev->u8DriverMinor   = M2M_GET_DRV_MINOR(reg);
+	M2mRev->u8DriverPatch	= M2M_GET_DRV_PATCH(reg);
+	M2mRev->u8FirmwareMajor	= M2M_GET_FW_MAJOR(reg);
+	M2mRev->u8FirmwareMinor = M2M_GET_FW_MINOR(reg);
+	M2mRev->u8FirmwarePatch = M2M_GET_FW_PATCH(reg);
+	M2mRev->u32Chipid	= nmi_get_chipid();
 	
-	uint32 val32;
-	val32 = 0;
-#ifdef __ENABLE_PMU__
-	val32 |= rHAVE_USE_PMU_BIT;
-#endif
-#ifdef __ENABLE_SLEEP_CLK_SRC_RTC__
-	val32 |= rHAVE_SLEEP_CLK_SRC_RTC;
-#elif defined __ENABLE_SLEEP_CLK_SRC_XO__
-	val32 |= rHAVE_SLEEP_CLK_SRC_XO;
-#endif
-#ifdef __ENABLE_EXT_PA_INV_TX_RX__
-	val32 |= rHAVE_EXT_PA_INV_TX_RX;
-#endif
-#ifdef __ENABLE_LEGACY_RF_SETTINGS__
-	val32 |= rHAVE_LEGACY_RF_SETTINGS;
-#endif
-	do  {
-		nm_write_reg(rNMI_GP_REG_1, val32);
-		if(val32 != 0) {		
-			uint32 reg = 0;
-			ret = nm_read_reg_with_ret(rNMI_GP_REG_1, &reg);
-			if(ret == M2M_SUCCESS) {
-				if(reg == val32)
-					break;
-			}
-		} else {
-			break;
-		}
-	} while(1);
+	curr_firm_ver   = M2M_MAKE_VERSION(M2mRev->u8FirmwareMajor, M2mRev->u8FirmwareMinor,M2mRev->u8FirmwarePatch);
+	curr_drv_ver    = M2M_MAKE_VERSION(M2M_DRIVER_VERSION_MAJOR_NO, M2M_DRIVER_VERSION_MINOR_NO, M2M_DRIVER_VERSION_PATCH_NO);
+	min_req_drv_ver = M2M_MAKE_VERSION(M2mRev->u8DriverMajor, M2mRev->u8DriverMinor,M2mRev->u8DriverPatch);
+	if(curr_drv_ver <  min_req_drv_ver) {
+		/*The current driver version should be larger or equal 
+		than the min driver that the current firmware support  */
+		ret = M2M_ERR_FW_VER_MISMATCH;
+	}
+	if(curr_drv_ver >  curr_firm_ver) {
+		/*The current driver should be equal or less than the firmware version*/
+		ret = M2M_ERR_FW_VER_MISMATCH;
+	}
+	return ret;
 }
+
+
+
 
 /*
 *	@fn		nm_drv_init_download_mode
@@ -114,7 +107,7 @@ static void chip_apply_conf(void)
 sint8 nm_drv_init_download_mode()
 {
 	sint8 ret = M2M_SUCCESS;
-	
+
 	ret = nm_bus_iface_init(NULL);
 	if (M2M_SUCCESS != ret) {
 		M2M_ERR("[nmi start]: fail init bus\n");
@@ -128,7 +121,7 @@ sint8 nm_drv_init_download_mode()
 #endif
 
 	M2M_INFO("Chip ID %lx\n", nmi_get_chipid());
-	
+
 	/*disable all interrupt in ROM (to disable uart) in 2b0 chip*/
 	nm_write_reg(0x20300,0);
 
@@ -172,15 +165,14 @@ sint8 nm_drv_init(void * arg)
 	return;
 #endif
 	
+	
+#ifdef NO_HW_CHIP_EN
 	ret = chip_wake();
 	nm_bsp_sleep(10);
 	if (M2M_SUCCESS != ret) {
 		M2M_ERR("[nmi start]: fail chip_wakeup\n");
 		goto ERR2;
 	}
-	
-	M2M_INFO("Chip ID %lx\n", nmi_get_chipid());
-	
 	/**
 	Go...
 	**/
@@ -188,25 +180,26 @@ sint8 nm_drv_init(void * arg)
 	if (M2M_SUCCESS != ret) {
 		goto ERR2;
 	}
-
+#endif
+	M2M_INFO("Chip ID %lx\n", nmi_get_chipid());
 #ifdef CONF_WINC_USE_SPI
 	/* Must do this after global reset to set SPI data packet size. */
 	nm_spi_init();
 #endif
+#ifdef NO_HW_CHIP_EN
 	/*return power save to default value*/
 	chip_idle();
-	//M2M_INFO("Chip ID %x\n", (unsigned int)nmi_get_chipid());
 
 	ret = cpu_start();
 	if (M2M_SUCCESS != ret) {
 		goto ERR2;
 	}
-	
+#endif
 	ret = wait_for_bootrom(u8Mode);
 	if (M2M_SUCCESS != ret) {
 		goto ERR2;
 	}
-	
+		
 	ret = wait_for_firmware_start(u8Mode);
 	if (M2M_SUCCESS != ret) {
 		goto ERR2;
@@ -224,9 +217,7 @@ sint8 nm_drv_init(void * arg)
 		goto ERR2;
 	}
 	
-	chip_apply_conf();
-
-	nm_get_firmware_info(&strtmp);
+	ret = nm_get_firmware_info(&strtmp);
 
 	M2M_INFO("Firmware ver   : %u.%u.%u\n", strtmp.u8FirmwareMajor, strtmp.u8FirmwareMinor, strtmp.u8FirmwarePatch);
 	M2M_INFO("Min driver ver : %u.%u.%u\n", strtmp.u8DriverMajor, strtmp.u8DriverMinor, strtmp.u8DriverPatch);
@@ -241,7 +232,7 @@ sint8 nm_drv_init(void * arg)
 	return ret;
 ERR2:
 	nm_bus_iface_deinit();
-ERR1:	
+ERR1:
 	return ret;
 }
 
@@ -252,10 +243,10 @@ ERR1:
 *	@date	17 July 2012
 *	@version	1.0
 */
-sint8 nm_drv_deinit(void * arg) 
+sint8 nm_drv_deinit(void * arg)
 {
 	sint8 ret;
-	
+
 	ret = chip_deinit();
 	if (M2M_SUCCESS != ret) {
 		M2M_ERR("[nmi stop]: chip_deinit fail\n");
@@ -276,43 +267,4 @@ ERR1:
 	return ret;
 }
 
-/**
-*	@fn		nm_get_firmware_info(tstrM2mRev* M2mRev)
-*	@brief	Get Firmware version info
-*	@param [out]	M2mRev
-*			    pointer holds address of structure "tstrM2mRev" that contains the firmware version parameters
-				
-*   @author		Ahmad.Mohammad.Yahya
-*   @date		27 MARCH 2013
-*	@version	1.0
-*/
-sint8 nm_get_firmware_info(tstrM2mRev* M2mRev)
-{
-	uint16  curr_drv_ver, min_req_drv_ver,curr_firm_ver;
-	uint32	reg = 0;
-	sint8	ret = M2M_SUCCESS;
 
-	ret = nm_read_reg_with_ret(NMI_REV_REG, &reg);
-
-	M2mRev->u8DriverMajor	= M2M_GET_DRV_MAJOR(reg);
-	M2mRev->u8DriverMinor   = M2M_GET_DRV_MINOR(reg);
-	M2mRev->u8DriverPatch	= M2M_GET_DRV_PATCH(reg);
-	M2mRev->u8FirmwareMajor	= M2M_GET_FW_MAJOR(reg);
-	M2mRev->u8FirmwareMinor = M2M_GET_FW_MINOR(reg);
-	M2mRev->u8FirmwarePatch = M2M_GET_FW_PATCH(reg);
-	M2mRev->u32Chipid	= nmi_get_chipid();
-	
-	curr_firm_ver   = M2M_MAKE_VERSION(M2mRev->u8FirmwareMajor, M2mRev->u8FirmwareMinor,M2mRev->u8FirmwarePatch);
-	curr_drv_ver    = M2M_MAKE_VERSION(M2M_DRIVER_VERSION_MAJOR_NO, M2M_DRIVER_VERSION_MINOR_NO, M2M_DRIVER_VERSION_PATCH_NO);
-	min_req_drv_ver = M2M_MAKE_VERSION(M2mRev->u8DriverMajor, M2mRev->u8DriverMinor,M2mRev->u8DriverPatch);
-	if(curr_drv_ver <  min_req_drv_ver) {
-		/*The current driver version should be larger or equal 
-		than the min driver that the current firmware support  */
-		ret = M2M_ERR_FW_VER_MISMATCH;
-	}
-	if(curr_drv_ver >  curr_firm_ver) {
-		/*The current driver should be equal or less than the firmware version*/
-		ret = M2M_ERR_FW_VER_MISMATCH;
-	}
-	return ret;
-}

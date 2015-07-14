@@ -98,6 +98,7 @@ MACROS
 	This flag shall be passed to the socket API for SSL session.
 */
 
+
 #define TCP_SOCK_MAX										(7)
 /*!<
 	Maximum number of simultaneous TCP sockets.
@@ -112,6 +113,7 @@ MACROS
 /*!<
 	Maximum number of Sockets.
 */
+//#endif
 
 #define SOL_SOCKET												1
 /*!< 
@@ -865,7 +867,6 @@ socket operations. Socket creation is dependent on the socket type.
 @endcode
 */
 NMI_API SOCKET socket(uint16 u16Domain, uint8 u8Type, uint8 u8Flags);
-NMI_API sint8 sslSetSockOpt(SOCKET sock, uint8  u8Opt, const void *pvOptVal, uint16 u16OptLen);
 /** @} */
 /** @defgroup BindFn bind
  *  @ingroup SocketAPI
@@ -1623,13 +1624,14 @@ NMI_API uint32 nmi_inet_addr(char *pcIpAddr);
 @warning
 	Successful completion of a call to gethostbyname() does not guarantee success of the DNS request,
 	a negative return value indicates only locally-detected errors
-
-@return
+	
+@return		
 	- [SOCK_ERR_NO_ERROR](@ref SOCK_ERR_NO_ERROR)
 	- [SOCK_ERR_INVALID_ARG](@ref SOCK_ERR_INVALID_ARG)
 */
-
 NMI_API sint8 gethostbyname(uint8 * pcHostName);
+
+NMI_API sint8 sslSetSockOpt(SOCKET sock, uint8  u8Opt, const void *pvOptVal, uint16 u16OptLen);
 /** @} */
 
 /** @defgroup SetSocketOptionFn setsockopt

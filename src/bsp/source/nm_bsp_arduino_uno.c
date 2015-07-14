@@ -42,18 +42,26 @@
  *
  */
 
+#if (defined ARDUINO_ARCH_AVR)
+
 #include "bsp/include/nm_bsp.h"
 #include "common/include/nm_common.h"
-#include <Arduino.h>
+#include "Arduino.h"
 
 static tpfNmBspIsr gpfIsr;
 
-#define CONF_WINC_RESET_PIN				5
-#define CONF_WINC_INTN_PIN				7
 
-static void chip_isr(void)
+#define CONF_WINC_RESET_PIN				5
+#define CONF_WINC_INTN_PIN				7  //  PCINT23*/
+
+#define CONF_WIFI_M2M_INT_vect          PCINT2_vect
+
+//static void chip_isr(void)	//rupali
+ISR(CONF_WIFI_M2M_INT_vect)
 {
-	if (gpfIsr) {
+	//if (gpfIsr) 
+	if (!(digitalRead(CONF_WINC_INTN_PIN)) && gpfIsr) 
+	{
 		gpfIsr();
 	}
 }
@@ -70,6 +78,8 @@ static void init_chip_pins(void)
 	/* Configure RESETN D6 pins as output. */
 	pinMode(CONF_WINC_RESET_PIN, OUTPUT);
 	digitalWrite(CONF_WINC_RESET_PIN, HIGH);
+	
+	
 }
 
 /*
@@ -118,6 +128,8 @@ void nm_bsp_reset(void)
 	nm_bsp_sleep(100);
 	digitalWrite(CONF_WINC_RESET_PIN, HIGH);
 	nm_bsp_sleep(100);
+	
+
 }
 
 /*
@@ -149,7 +161,17 @@ void nm_bsp_sleep(uint32 u32TimeMsec)
 void nm_bsp_register_isr(tpfNmBspIsr pfIsr)
 {
 	gpfIsr = pfIsr;
-	attachInterrupt(CONF_WINC_INTN_PIN, chip_isr, CHANGE);
+//	#ifdef ARDUINO_ARCH_AVR
+	pinMode(CONF_WINC_INTN_PIN,INPUT_PULLUP);	//rupali
+	*digitalPinToPCMSK(CONF_WINC_INTN_PIN) |= bit (digitalPinToPCMSKbit(CONF_WINC_INTN_PIN));  // enable pin
+	PCIFR  |= bit (digitalPinToPCICRbit(CONF_WINC_INTN_PIN)); // clear any outstanding interrupt
+	PCICR  |= bit (digitalPinToPCICRbit(CONF_WINC_INTN_PIN)); // enable interrupt for the group
+	PCMSK2 = (1 << PCINT23);
+	PCICR = (1 << PCIE2);
+//#else
+	
+//	attachInterrupt(CONF_WINC_INTN_PIN, chip_isr, CHANGE);
+	//	#endif
 }
 
 /*
@@ -163,9 +185,19 @@ void nm_bsp_register_isr(tpfNmBspIsr pfIsr)
  */
 void nm_bsp_interrupt_ctrl(uint8 u8Enable)
 {
-	if (u8Enable) {
+/*	if (u8Enable) {
 		attachInterrupt(CONF_WINC_INTN_PIN, chip_isr, FALLING);
 	} else {
 		detachInterrupt(CONF_WINC_INTN_PIN);
+	}*/
+	if (u8Enable) 
+	{
+		PCMSK2 |= (1 << PCINT23);
+	} 
+	else 
+	{
+		//PCMSK2 &= ~(1 << PCINT23);
 	}
 }
+
+#endif

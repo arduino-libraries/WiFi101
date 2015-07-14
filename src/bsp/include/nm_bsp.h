@@ -46,16 +46,12 @@
 #define _NM_BSP_H_
 
 #define NMI_API
-/*!<
+/*!< 
 *        Attribute used to define memory section to map Functions in host memory.
 */
-
-#ifdef __MCF964548__
-#define CONST code
-#else
 #define CONST const
-#endif
-/*!<
+
+/*!< 
 *     Used for code portability.
 */
 
@@ -308,6 +304,10 @@ void nm_bsp_interrupt_ctrl(uint8 u8Enable);
 
 #ifdef __SAMG55J19__
 #include "bsp/include/nm_bsp_samg55.h"
+#endif
+
+#if (defined ARDUINO_ARCH_AVR)
+#include "bsp/include/nm_bsp_avr.h"
 #endif
 
 #ifdef CORTUS_APP

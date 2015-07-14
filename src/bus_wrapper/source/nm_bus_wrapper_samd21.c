@@ -42,16 +42,11 @@
  *
  */
 
-#include <Arduino.h>
-#include <SPI.h>
-
-extern "C" {
-
 #include "bsp/include/nm_bsp.h"
 #include "common/include/nm_common.h"
 #include "bus_wrapper/include/nm_bus_wrapper.h"
-
-}
+#include "bus_wrapper/include/nm_bus_wrapper_samd21.h"
+#include "Arduino.h"
 
 #define CONF_WINC_CS_PIN	10
 
@@ -62,12 +57,11 @@ tstrNmBusCapabilities egstrNmBusCapabilities =
 	NM_BUS_MAX_TRX_SZ
 };
 
-static const SPISettings wifi_SPISettings(12000000L, MSBFIRST, SPI_MODE0);
-
 static sint8 spi_rw(uint8* pu8Mosi, uint8* pu8Miso, uint16 u16Sz)
 {
 	uint8 u8Dummy = 0;
 	uint8 u8SkipMosi = 0, u8SkipMiso = 0;
+	uint16 tmp_data = 0;
 
 	if (!pu8Mosi) {
 		pu8Mosi = &u8Dummy;
@@ -81,11 +75,11 @@ static sint8 spi_rw(uint8* pu8Mosi, uint8* pu8Miso, uint16 u16Sz)
 		return M2M_ERR_BUS_FAIL;
 	}
 
-	SPI.beginTransaction(wifi_SPISettings);
 	digitalWrite(CONF_WINC_CS_PIN, LOW);
 
 	while (u16Sz) {
-		*pu8Miso = SPI.transfer(*pu8Mosi);
+		tmp_data = SPI_transfer(*pu8Mosi);
+		*pu8Miso = tmp_data;
 			
 		u16Sz--;
 		if (!u8SkipMiso)
@@ -95,12 +89,9 @@ static sint8 spi_rw(uint8* pu8Mosi, uint8* pu8Miso, uint16 u16Sz)
 	}
 
 	digitalWrite(CONF_WINC_CS_PIN, HIGH);
-	SPI.endTransaction();
 
 	return M2M_SUCCESS;
 }
-
-extern "C" {
 
 /*
 *	@fn		nm_bus_init
@@ -115,7 +106,7 @@ sint8 nm_bus_init(void *pvInitValue)
 	sint8 result = M2M_SUCCESS;
 
 	/* Configure SPI peripheral. */
-	SPI.begin();
+	SPI_begin();
 	
 	/* Configure CS PIN. */
 	pinMode(CONF_WINC_CS_PIN, OUTPUT);
@@ -169,7 +160,6 @@ sint8 nm_bus_ioctl(uint8 u8Cmd, void* pvParameter)
 */
 sint8 nm_bus_deinit(void)
 {
-	SPI.end();
 	return 0;
 }
 
@@ -187,6 +177,4 @@ sint8 nm_bus_reinit(void* config)
 {
 	return M2M_SUCCESS;
 }
-
-} // extern "C"
 

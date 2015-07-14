@@ -50,13 +50,49 @@
 #define NMI_INTR_ENABLE (NMI_INTR_REG_BASE)
 #define GET_UINT32(X,Y) (X[0+Y] + ((uint32)X[1+Y]<<8) + ((uint32)X[2+Y]<<16) +((uint32)X[3+Y]<<24))
 
-
-
-
 #define TIMEOUT				(2000)
 #define M2M_DISABLE_PS        0xD0UL
 
 static uint32 clk_status_reg_adr = 0xf; /* Assume initially it is B0 chip */
+
+sint8 chip_apply_conf(uint32 u32Conf)
+{
+	sint8 ret = M2M_SUCCESS;
+	uint32 val32 = u32Conf;
+	
+#ifdef __ENABLE_PMU__
+	val32 |= rHAVE_USE_PMU_BIT;
+#endif
+#ifdef __ENABLE_SLEEP_CLK_SRC_RTC__
+	val32 |= rHAVE_SLEEP_CLK_SRC_RTC_BIT;
+#elif defined __ENABLE_SLEEP_CLK_SRC_XO__
+	val32 |= rHAVE_SLEEP_CLK_SRC_XO_BIT;
+#endif
+#ifdef __ENABLE_EXT_PA_INV_TX_RX__
+	val32 |= rHAVE_EXT_PA_INV_TX_RX;
+#endif
+#ifdef __ENABLE_LEGACY_RF_SETTINGS__
+	val32 |= rHAVE_LEGACY_RF_SETTINGS;
+#endif
+#ifdef __DISABLE_FIRMWARE_LOGS__
+	val32 |= rHAVE_LOGS_DISABLED_BIT;
+#endif
+	do  {
+		nm_write_reg(rNMI_GP_REG_1, val32);
+		if(val32 != 0) {		
+			uint32 reg = 0;
+			ret = nm_read_reg_with_ret(rNMI_GP_REG_1, &reg);
+			if(ret == M2M_SUCCESS) {
+				if(reg == val32)
+					break;
+			}
+		} else {
+			break;
+		}
+	} while(1);
+
+	return M2M_SUCCESS;
+}
 
 /**
 *	@fn		nm_clkless_wake
@@ -70,6 +106,8 @@ sint8 nm_clkless_wake(void)
 {
 	sint8 ret = M2M_SUCCESS;
 	uint32 reg, clk_status_reg,trials = 0;
+	/* wait 1ms, spi data read */
+	nm_bsp_sleep(1);
 	ret = nm_read_reg_with_ret(0x1, &reg);
 	if(ret != M2M_SUCCESS) {
 		M2M_ERR("Bus error (1). Wake up failed\n");
@@ -84,6 +122,8 @@ sint8 nm_clkless_wake(void)
 	{
 		/* Set bit 1 */
 		nm_write_reg(0x1, reg | (1 << 1));
+		/* wait 1ms, spi data read */
+		nm_bsp_sleep(1);
 		// Check the clock status
 		ret = nm_read_reg_with_ret(clk_status_reg_adr, &clk_status_reg);
 		if( (ret != M2M_SUCCESS) || ((ret == M2M_SUCCESS) && (clk_status_reg == 0)) ) {
@@ -92,6 +132,8 @@ sint8 nm_clkless_wake(void)
 			 * then the chip is A0.
 			 */
 			clk_status_reg_adr = 0xe;
+			/* wait 1ms, spi data read */
+			nm_bsp_sleep(1);
 			ret = nm_read_reg_with_ret(clk_status_reg_adr, &clk_status_reg);
 			if(ret != M2M_SUCCESS) {
 				M2M_ERR("Bus error (2). Wake up failed\n");
@@ -105,7 +147,7 @@ sint8 nm_clkless_wake(void)
 		while( ((clk_status_reg & 0x4) == 0) && (((++trials) %3) == 0))
 		{
 			/* Wait for the chip to stabilize*/
-			nm_bsp_sleep(1);
+			nm_bsp_sleep(2);
 
 			// Make sure chip is awake. This is an extra step that can be removed
 			// later to avoid the bus access overhead
@@ -377,73 +419,6 @@ sint8 chip_reset(void)
 #endif
 	return ret;
 }
-//#define __ROM_TEST__
-#ifdef __ROM_TEST__
-#include <stdlib.h>
-#define ROM_FIRMWARE_FILE	"../../../firmware/dram_lib/Debug/wifi_release.bin"
-#define ROM_DATA_FILE	"../../../firmware/dram_lib/Debug/wifi_release_data.bin"
-
-#define CODE_SZ		(6 * 1024 - 256)
-#define CODE_BASE	(0x30100ul)
-#define DATA_BASE	(0xd0000 + CODE_SZ)
-
-void rom_test()
-{
-	uint8	*pu8TextSec;
-	FILE	*fp;
-	uint32	u32CodeSize = 0;
-
-	nm_bsp_sleep(1000);
-
-	/* Read text section.
-	*/
-	fp = fopen(ROM_FIRMWARE_FILE,"rb");
-	if(fp)
-	{
-		/* Get the code size.
-		*/
-		fseek(fp, 0L, SEEK_END);
-		u32CodeSize = ftell(fp);
-		fseek(fp, 0L, SEEK_SET);
-		pu8TextSec = (uint8*)malloc(u32CodeSize);
-		if(pu8TextSec != NULL)
-		{
-			M2M_INFO("Code Size %f\n",u32CodeSize / 1024.0);
-			fread(pu8TextSec, u32CodeSize, 1, fp);
-			nm_write_block(CODE_BASE, pu8TextSec, (uint16)u32CodeSize);
-			//nm_read_block(CODE_BASE, tmpv, sz);
-			fclose(fp);
-			free(pu8TextSec);
-		}
-	}
-#if 0
-	uint8	*pu8DataSec;
-	uint32	u32DataSize = 0;
-	/* Read data section.
-	*/
-	fp = fopen(ROM_DATA_FILE,"rb");
-	if(fp)
-	{
-		/* Get the data size.
-		*/
-		fseek(fp, 0L, SEEK_END);
-		u32DataSize = ftell(fp);
-		fseek(fp, 0L, SEEK_SET);
-		pu8DataSec = (uint8*)malloc(u32DataSize);
-		if(pu8DataSec != NULL)
-		{
-			M2M_INFO("Data Size %f\n",u32DataSize / 1024.0);
-			fread(pu8DataSec, u32DataSize, 1, fp);
-			nm_write_block(DATA_BASE, pu8DataSec, (uint16)u32DataSize);
-			fclose(fp);
-		}
-		free(pu8DataSec);
-	}
-#endif
-	nm_write_reg(0x108c, 0xdddd);
-
-}
-#endif /* __ROM_TEST__ */
 
 sint8 wait_for_bootrom(uint8 arg)
 {
@@ -485,6 +460,15 @@ sint8 wait_for_bootrom(uint8 arg)
 		/*bypass this step*/
 	}
 
+	if(REV(nmi_get_chipid()) == REV_3A0)
+	{
+		chip_apply_conf(rHAVE_USE_PMU_BIT);
+	}
+	else
+	{
+		chip_apply_conf(0);
+	}
+	
 	nm_write_reg(BOOTROM_REG,M2M_START_FIRMWARE);
 
 #ifdef __ROM_TEST__
