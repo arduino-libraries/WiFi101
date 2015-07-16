@@ -217,7 +217,7 @@ uint8_t WiFiClass::begin()
 	unsigned long start = millis();
 	while (!(_status & WL_CONNECTED) &&
 			!(_status & WL_DISCONNECTED) &&
-			millis() - start < 20000) {
+			millis() - start < 60000) {
 		m2m_wifi_handle_events(NULL);
 	}
 	if (!(_status & WL_CONNECTED)) {
@@ -266,7 +266,7 @@ uint8_t WiFiClass::startConnect(char *ssid, uint8_t u8SecType, void *pvAuthInfo)
 	unsigned long start = millis();
 	while (!(_status & WL_CONNECTED) &&
 			!(_status & WL_DISCONNECTED) &&
-			millis() - start < 20000) {
+			millis() - start < 60000) {
 		m2m_wifi_handle_events(NULL);
 	}
 	if (!(_status & WL_CONNECTED)) {
