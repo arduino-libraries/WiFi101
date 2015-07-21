@@ -86,9 +86,11 @@ uint8_t WiFiServer::begin(uint8_t opt)
 
 WiFiClient WiFiServer::available(uint8_t* status)
 {
-	uint32_t flag = _flag;
+	uint32_t flag;
 	
+	m2m_wifi_handle_events(NULL);
 	if (_flag & SOCKET_BUFFER_FLAG_SPAWN) {
+		flag = _flag;
 		_flag &= ~SOCKET_BUFFER_SERVER_SOCKET_MSK;
 		_flag &= ~SOCKET_BUFFER_FLAG_SPAWN;
 		 if (status != NULL) {
@@ -101,7 +103,8 @@ WiFiClient WiFiServer::available(uint8_t* status)
 }
 
 uint8_t WiFiServer::status() {
-	return 0;// ServerDrv::getServerState(0);
+	// Deprecated.
+	return 0;
 }
 
 // NOT IMPLEMENTED
@@ -115,18 +118,5 @@ size_t WiFiServer::write(const uint8_t *buffer, size_t size)
 {
 	size_t n = 0;
 
-	/*for (int sock = 0; sock < MAX_SOCK_NUM; sock++)
-	{
-		if (WiFiClass::_server_port[sock] != 0)
-		{
-			WiFiClient client(sock);
-
-			if (WiFiClass::_server_port[sock] == _port &&
-			client.status() == ESTABLISHED)
-			{
-				n+=client.write(buffer, size);
-			}
-		}
-	}*/
 	return n;
 }

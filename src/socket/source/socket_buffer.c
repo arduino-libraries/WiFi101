@@ -208,7 +208,7 @@ void socketBufferCb(SOCKET sock, uint8 u8Msg, void *pvMsg)
 		case SOCKET_MSG_ACCEPT:
 		{
 			tstrSocketAcceptMsg *pstrAccept = (tstrSocketAcceptMsg *)pvMsg;
-			if (pstrAccept) {
+			if (pstrAccept && pstrAccept->sock >= 0) {
 				if (*(gastrSocketBuffer[sock].flag) & SOCKET_BUFFER_FLAG_SPAWN) {
 					/* One spawn connection already waiting, discard current one. */
 					close(pstrAccept->sock);
