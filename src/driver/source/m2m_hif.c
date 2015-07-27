@@ -126,8 +126,10 @@ ERR1:
 */
 static void m2m_hif_cb(uint8 u8OpCode, uint16 u16DataSize, uint32 u32Addr)
 {
-
-
+	// Silence "unused" warning
+	(void)u8OpCode;
+	(void)u16DataSize;
+	(void)u32Addr;
 }
 /**
 *	@fn		NMI_API sint8 hif_chip_wake(void);
@@ -236,6 +238,8 @@ ERR1:
 
 sint8 hif_init(void * arg)
 {
+	(void)arg; // Silence "unused" warning
+
 	pfWifiCb = NULL;
 	pfIpCb = NULL;
 
@@ -258,6 +262,8 @@ sint8 hif_init(void * arg)
 */
 sint8 hif_deinit(void * arg)
 {
+	(void)arg; // Silence "unused" warning
+
 	sint8 ret = M2M_SUCCESS;
 #if 0
 	uint32 reg = 0, cnt=0;

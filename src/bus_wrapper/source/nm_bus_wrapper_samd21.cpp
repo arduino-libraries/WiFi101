@@ -110,7 +110,7 @@ extern "C" {
 *	@date	28 oct 2013
 *	@version	1.0
 */
-sint8 nm_bus_init(void *pvInitValue)
+sint8 nm_bus_init(void * /* pvInitValue */)
 {
 	sint8 result = M2M_SUCCESS;
 
@@ -183,7 +183,7 @@ sint8 nm_bus_deinit(void)
 *	@date		19 Sept 2012
 *	@version	1.0
 */
-sint8 nm_bus_reinit(void* config)
+sint8 nm_bus_reinit(void* /* config */)
 {
 	return M2M_SUCCESS;
 }

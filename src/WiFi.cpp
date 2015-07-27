@@ -128,7 +128,7 @@ static void wifi_cb(uint8_t u8MsgType, void *pvMsg)
 	}
 }
 
-static void resolve_cb(uint8_t *hostName, uint32_t hostIp)
+static void resolve_cb(uint8_t * /* hostName */, uint32_t hostIp)
 {
 	WiFi._resolve = hostIp;
 }

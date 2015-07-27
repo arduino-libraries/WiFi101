@@ -92,6 +92,8 @@ sint8 nm_bus_iface_reconfigure(void *ptr)
 	sint8 ret = M2M_SUCCESS;
 #ifdef CONF_WINC_USE_UART
 	ret = nm_uart_reconfigure(ptr);
+#else
+	(void)ptr; // Silence "unused" warning
 #endif
 	return ret;
 }

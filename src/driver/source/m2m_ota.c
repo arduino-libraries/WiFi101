@@ -80,6 +80,8 @@ FUNCTION PROTOTYPES
 */
 static void m2m_ota_cb(uint8 u8OpCode, uint16 u16DataSize, uint32 u32Addr)
 {
+	(void)u16DataSize; // Silence "unused" warning
+
 	sint8 ret = M2M_SUCCESS;
 	if(u8OpCode == M2M_OTA_RESP_NOTIF_UPDATE_INFO)
 	{
@@ -201,6 +203,8 @@ NMI_API sint8  m2m_ota_notif_check_for_update(void)
 */
 NMI_API sint8 m2m_ota_notif_sched(uint32 u32Period)
 {
+	(void)u32Period; // Silence "unused" warning
+
 	sint8 ret = M2M_SUCCESS;
 	ret = hif_send(M2M_REQ_GRP_OTA,M2M_OTA_REQ_NOTIF_CHECK_FOR_UPDATE,NULL,0,NULL,0,0);
 	return ret;
