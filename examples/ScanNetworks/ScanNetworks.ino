@@ -32,10 +32,6 @@ void setup() {
     while (true);
   }
 
-  String fv = WiFi.firmwareVersion();
-  if ( fv != "1.1.0" )
-    Serial.println("Please upgrade the firmware");
-
   // Print WiFi MAC address:
   printMacAddress();
 

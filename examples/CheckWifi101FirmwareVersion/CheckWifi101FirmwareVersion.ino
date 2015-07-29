@@ -48,8 +48,8 @@ void setup() {
   } else {
     Serial.println("Check result: NOT PASSED");
     Serial.println(" - The firmware version on the shield do not match the");
-    Serial.println("   required version for the library, you may experience");
-    Serial.println("   issues or malfunctions.");
+    Serial.println("   version required by the library, you may experience");
+    Serial.println("   issues or failures.");
   }
 }
 
