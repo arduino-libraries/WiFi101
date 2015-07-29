@@ -20,6 +20,8 @@
 #ifndef WIFI_H
 #define WIFI_H
 
+#define WIFI_FIRMWARE_REQUIRED "19.3.0"
+
 extern "C" {
 	#include "driver/include/m2m_wifi.h"
 	#include "socket/include/socket.h"
