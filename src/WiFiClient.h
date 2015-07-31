@@ -29,7 +29,7 @@ class WiFiClient : public Client {
 
 public:
 	WiFiClient();
-	WiFiClient(uint8_t sock);
+	WiFiClient(uint8_t sock, uint8_t parentsock = 0);
 	WiFiClient(const WiFiClient& other);
 
 	uint8_t status();
@@ -51,9 +51,10 @@ public:
 
 	using Print::write;
 
+	uint32_t _flag;
+
 private:
 	SOCKET _socket;
-	uint32_t _flag;
 	uint32_t _head;
 	uint32_t _tail;
 	uint8_t	_buffer[SOCKET_BUFFER_TCP_SIZE];

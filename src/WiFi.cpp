@@ -117,8 +117,11 @@ static void wifi_cb(uint8_t u8MsgType, void *pvMsg)
 			if (scan_ssid_len) {
 				memcpy(WiFi._scan_ssid, (const char *)pstrScanResult->au8SSID, scan_ssid_len);
 			}
+			if (WiFi._bssid) {
+				memcpy(WiFi._bssid, (const char *)pstrScanResult->au8BSSID, 6);
+			}
 			WiFi._resolve = pstrScanResult->s8rssi;
-			WiFi._req2 = pstrScanResult->u8AuthType;
+			WiFi._scan_auth = pstrScanResult->u8AuthType;
 			WiFi._status = WL_SCAN_COMPLETED;
 		}
 		break;
@@ -167,6 +170,7 @@ int WiFiClass::init()
 	_localip = 0;
 	_submask = 0;
 	_gateway = 0;
+	memset(_client, 0, sizeof(WiFiClient *) * TCP_SOCK_MAX);
 
 	// Initialize IO expander (LED control).
 	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO15, 1);
@@ -186,6 +190,10 @@ extern "C" {
 char* WiFiClass::firmwareVersion()
 {
 	tstrM2mRev rev;
+	
+	if (!_init) {
+		init();
+	}
 	nm_get_firmware_info(&rev);
 	memset(_version, 0, 9);
 	if (rev.u8FirmwareMajor != rev.u8DriverMajor && rev.u8FirmwareMinor != rev.u8DriverMinor) {
@@ -199,6 +207,10 @@ char* WiFiClass::firmwareVersion()
 
 uint8_t WiFiClass::begin()
 {
+	if (!_init) {
+		init();
+	}
+	
 	// Connect to router:
 	_localip = 0;
 	_submask = 0;
@@ -248,6 +260,10 @@ uint8_t WiFiClass::begin(char *ssid, char *key)
 
 uint8_t WiFiClass::startConnect(char *ssid, uint8_t u8SecType, void *pvAuthInfo)
 {
+	if (!_init) {
+		init();
+	}
+	
 	// Connect to router:
 	_localip = 0;
 	_submask = 0;
@@ -283,6 +299,10 @@ uint8_t WiFiClass::beginAP(char *ssid)
 uint8_t WiFiClass::beginAP(char *ssid, uint8_t channel)
 {
 	tstrM2MAPConfig strM2MAPConfig;
+
+	if (!_init) {
+		init();
+	}
 
 	// Enter Access Point mode:
 	memset(&strM2MAPConfig, 0x00, sizeof(tstrM2MAPConfig));
@@ -320,6 +340,10 @@ uint8_t WiFiClass::beginProvision(char *ssid, char *url)
 uint8_t WiFiClass::beginProvision(char *ssid, char *url, uint8_t channel)
 {
 	tstrM2MAPConfig strM2MAPConfig;
+
+	if (!_init) {
+		init();
+	}
 
 	// Enter Provision mode:
 	memset(&strM2MAPConfig, 0x00, sizeof(tstrM2MAPConfig));
@@ -456,6 +480,23 @@ char* WiFiClass::SSID()
 	}
 }
 
+uint8_t* WiFiClass::BSSID(uint8_t* bssid)
+{
+	int8_t net = scanNetworks();
+	
+	_bssid = bssid;
+	memset(bssid, 0, 6);
+	for (uint8_t i = 0; i < net; ++i) {
+		SSID(i);
+		if (strcmp(_scan_ssid, _ssid) == 0) {
+			break;
+		}
+	}
+	
+	_bssid = 0;
+	return bssid;
+}
+
 int32_t WiFiClass::RSSI()
 {
 	// Clear pending events:
@@ -479,6 +520,10 @@ int32_t WiFiClass::RSSI()
 int8_t WiFiClass::scanNetworks()
 {
 	wl_status_t tmp = _status;
+
+	if (!_init) {
+		init();
+	}
 
 	// Start scan:
 	if (m2m_wifi_request_scan(M2M_WIFI_CH_ALL) < 0) {
@@ -536,6 +581,20 @@ int32_t WiFiClass::RSSI(uint8_t pos)
 	return _resolve;
 }
 
+uint8_t WiFiClass::encryptionType()
+{ 
+	int8_t net = scanNetworks();
+
+	for (uint8_t i = 0; i < net; ++i) {
+		SSID(i);
+		if (strcmp(_scan_ssid, _ssid) == 0) {
+			break;
+		}
+	}
+
+	return _scan_auth;
+}
+
 uint8_t WiFiClass::encryptionType(uint8_t pos)
 {
 	wl_status_t tmp = _status;
@@ -553,7 +612,7 @@ uint8_t WiFiClass::encryptionType(uint8_t pos)
 	}
 
 	_status = tmp;
-	return _req2;
+	return _scan_auth;
 }
 
 uint8_t WiFiClass::status()

@@ -91,12 +91,12 @@ WiFiClient WiFiServer::available(uint8_t* status)
 	m2m_wifi_handle_events(NULL);
 	if (_flag & SOCKET_BUFFER_FLAG_SPAWN) {
 		flag = _flag;
-		_flag &= ~SOCKET_BUFFER_SERVER_SOCKET_MSK;
+		_flag &= ~SOCKET_BUFFER_FLAG_SPAWN_SOCKET_MSK;
 		_flag &= ~SOCKET_BUFFER_FLAG_SPAWN;
 		 if (status != NULL) {
 			*status = 0;
 		 }
-		return WiFiClient(flag & SOCKET_BUFFER_SERVER_SOCKET_MSK);
+		return WiFiClient(((flag & SOCKET_BUFFER_FLAG_SPAWN_SOCKET_MSK) >> SOCKET_BUFFER_FLAG_SPAWN_SOCKET_POS), _socket + 1);
 	}
 
 	return WiFiClient();
@@ -107,16 +107,23 @@ uint8_t WiFiServer::status() {
 	return 0;
 }
 
-// NOT IMPLEMENTED
 size_t WiFiServer::write(uint8_t b)
 {
 	return write(&b, 1);
 }
 
-// NOT IMPLEMENTED
 size_t WiFiServer::write(const uint8_t *buffer, size_t size)
 {
 	size_t n = 0;
+	WiFiClient *client;
 
+	for (int sock = 0; sock < TCP_SOCK_MAX; sock++) {
+		client = WiFi._client[sock];
+		if (client && client->_flag & SOCKET_BUFFER_FLAG_CONNECTED) {
+			if (((client->_flag >> SOCKET_BUFFER_FLAG_PARENT_SOCKET_POS) & 0xff) == _socket) {
+				n += client->write(buffer, size);
+			}
+		}
+	}
 	return n;
 }

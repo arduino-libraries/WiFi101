@@ -35,19 +35,25 @@ WiFiClient::WiFiClient()
 	_tail = 0;
 }
 
-WiFiClient::WiFiClient(uint8_t sock)
+WiFiClient::WiFiClient(uint8_t sock, uint8_t parentsock)
 {
 	// Spawn connected TCP client from TCP server socket:
 	_socket = sock;
 	_flag = SOCKET_BUFFER_FLAG_CONNECTED;
+	if (parentsock) {
+		_flag |= (parentsock - 1) << SOCKET_BUFFER_FLAG_PARENT_SOCKET_POS;
+	}
 	_head = 0;
 	_tail = 0;
+	WiFi._client[_socket] = this;
 	
 	// Add socket buffer handler:
 	socketBufferRegister(_socket, &_flag, &_head, &_tail, (uint8 *)_buffer);
 	
 	// Enable receive buffer:
 	recv(_socket, _buffer, SOCKET_BUFFER_MTU, 0);
+
+	m2m_wifi_handle_events(NULL);
 }
 
 WiFiClient::WiFiClient(const WiFiClient& other)
@@ -56,12 +62,15 @@ WiFiClient::WiFiClient(const WiFiClient& other)
 	_flag = other._flag;
 	_head = 0;
 	_tail = 0;
+	WiFi._client[_socket] = this;
 	
 	// Add socket buffer handler:
 	socketBufferRegister(_socket, &_flag, &_head, &_tail, (uint8 *)_buffer);
 	
 	// Enable receive buffer:
 	recv(_socket, _buffer, SOCKET_BUFFER_MTU, 0);
+
+	m2m_wifi_handle_events(NULL);
 }
 
 int WiFiClient::connectSSL(const char* host, uint16_t port)
@@ -141,6 +150,8 @@ size_t WiFiClient::write(uint8_t b)
 
 size_t WiFiClient::write(const uint8_t *buf, size_t size)
 {
+	sint16 err;
+
 	if (_socket < 0 || size == 0) {
 		setWriteError();
 		return 0;
@@ -150,12 +161,17 @@ size_t WiFiClient::write(const uint8_t *buf, size_t size)
 	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 0);
 
 	m2m_wifi_handle_events(NULL);
-
-	if (send(_socket, (void *)buf, size, 0) < 0) {
-		setWriteError();
-		// Network led OFF.
-		m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 1);
-		return 0;
+	for (uint32_t i = 0; i < size; ++i)
+		Serial.print((char)buf[i]);
+		
+	while ((err = send(_socket, (void *)buf, size, 0)) < 0) {
+		// Exit on fatal error, retry if buffer not ready.
+		if (err != SOCK_ERR_BUFFER_FULL) {
+			setWriteError();
+			m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 1);
+			return 0;
+		}
+		m2m_wifi_handle_events(NULL);
 	}
 	
 	// Network led OFF.
@@ -239,6 +255,7 @@ void WiFiClient::stop()
 	socketBufferUnregister(_socket);
 	close(_socket);
 	_socket = -1;
+	_flag = 0;
 }
 
 uint8_t WiFiClient::connected()
@@ -251,11 +268,6 @@ uint8_t WiFiClient::connected()
 
 uint8_t WiFiClient::status()
 {
-	/*if (_sock == 255) {
-		return CLOSED;
-		} else {
-		return ServerDrv::getClientState(_sock);
-	}*/
 	// Deprecated.
 	return 0;
 }

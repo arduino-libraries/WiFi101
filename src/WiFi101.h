@@ -68,11 +68,13 @@ public:
 	uint32_t _submask;
 	uint32_t _gateway;
 	uint32_t _resolve;
-	uint32_t _req2;
+	byte *_bssid;
 	wl_mode_t _mode;
 	wl_status_t _status;
 	char _scan_ssid[M2M_MAX_SSID_LEN];
+	uint8_t _scan_auth;
 	char _ssid[M2M_MAX_SSID_LEN];
+	WiFiClient *_client[TCP_SOCK_MAX];
 
     WiFiClass();
 
@@ -119,22 +121,8 @@ public:
 	uint32_t gatewayIP();
 	char* SSID();
 	int32_t RSSI();
-
-	/*
-	 * Return the Encryption Type associated with the network
-	 *
-	 * return: one value of wl_enc_type enum
-	 */
-	uint8_t encryptionType() { return 0; } // TODO
-
-	/*
-	 * Return the current BSSID associated with the network.
-	 * It is the MAC address of the Access Point
-	 *
-	 * return: pointer to uint8_t array with length WL_MAC_ADDR_LENGTH
-	 */
-	uint8_t* BSSID(uint8_t* bssid) { return NULL; } // TODO
-
+	uint8_t encryptionType();
+	uint8_t* BSSID(uint8_t* bssid);
 	int8_t scanNetworks();
 	char* SSID(uint8_t pos);
 	int32_t RSSI(uint8_t pos);

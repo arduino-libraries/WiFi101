@@ -215,8 +215,8 @@ void socketBufferCb(SOCKET sock, uint8 u8Msg, void *pvMsg)
 				}
 				else {
 					/* Use flag to store spawn TCP descriptor. */
-					*(gastrSocketBuffer[sock].flag) &= ~SOCKET_BUFFER_SERVER_SOCKET_MSK;
-					*(gastrSocketBuffer[sock].flag) |= pstrAccept->sock;
+					*(gastrSocketBuffer[sock].flag) &= ~SOCKET_BUFFER_FLAG_SPAWN_SOCKET_MSK;
+					*(gastrSocketBuffer[sock].flag) |= ((uint8)pstrAccept->sock) << SOCKET_BUFFER_FLAG_SPAWN_SOCKET_POS;
 					*(gastrSocketBuffer[sock].flag) |= SOCKET_BUFFER_FLAG_SPAWN;
 				}
 			}
