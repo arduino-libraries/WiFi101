@@ -169,7 +169,7 @@ size_t WiFiClient::write(const uint8_t *buf, size_t size)
 	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 0);
 
 	m2m_wifi_handle_events(NULL);
-		
+
 	while ((err = send(_socket, (void *)buf, size, 0)) < 0) {
 		// Exit on fatal error, retry if buffer not ready.
 		if (err != SOCK_ERR_BUFFER_FULL) {
