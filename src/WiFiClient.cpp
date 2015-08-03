@@ -25,7 +25,7 @@ extern "C" {
 #include "WiFi101.h"
 #include "WiFiClient.h"
 
-#define CONNECTED	(_flag & SOCKET_BUFFER_FLAG_CONNECTED)
+#define IS_CONNECTED	(_flag & SOCKET_BUFFER_FLAG_CONNECTED)
 
 WiFiClient::WiFiClient()
 {
@@ -45,6 +45,10 @@ WiFiClient::WiFiClient(uint8_t sock, uint8_t parentsock)
 	}
 	_head = 0;
 	_tail = 0;
+	for (int sock = 0; sock < TCP_SOCK_MAX; sock++) {
+		if (WiFi._client[sock] == this)
+			WiFi._client[sock] = 0;
+	}
 	WiFi._client[_socket] = this;
 	
 	// Add socket buffer handler:
@@ -62,6 +66,10 @@ WiFiClient::WiFiClient(const WiFiClient& other)
 	_flag = other._flag;
 	_head = 0;
 	_tail = 0;
+	for (int sock = 0; sock < TCP_SOCK_MAX; sock++) {
+		if (WiFi._client[sock] == this)
+			WiFi._client[sock] = 0;
+	}
 	WiFi._client[_socket] = this;
 	
 	// Add socket buffer handler:
@@ -131,10 +139,10 @@ int WiFiClient::connect(IPAddress ip, uint16_t port, uint8_t opt)
 	
 	// Wait for connection or timeout:
 	unsigned long start = millis();
-	while (!CONNECTED && millis() - start < 20000) {
+	while (!IS_CONNECTED && millis() - start < 20000) {
 		m2m_wifi_handle_events(NULL);
 	}
-	if (!CONNECTED) {
+	if (!IS_CONNECTED) {
 		close(_socket);
 		_socket = -1;
 		return 0;
@@ -161,8 +169,6 @@ size_t WiFiClient::write(const uint8_t *buf, size_t size)
 	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 0);
 
 	m2m_wifi_handle_events(NULL);
-	for (uint32_t i = 0; i < size; ++i)
-		Serial.print((char)buf[i]);
 		
 	while ((err = send(_socket, (void *)buf, size, 0)) < 0) {
 		// Exit on fatal error, retry if buffer not ready.
@@ -263,7 +269,7 @@ uint8_t WiFiClient::connected()
 	m2m_wifi_handle_events(NULL);
 	if (available())
 		return 1;
-	return CONNECTED;
+	return IS_CONNECTED;
 }
 
 uint8_t WiFiClient::status()
