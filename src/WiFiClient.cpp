@@ -88,7 +88,7 @@ int WiFiClient::connectSSL(const char* host, uint16_t port)
 
 int WiFiClient::connectSSL(IPAddress ip, uint16_t port)
 {
-	return connect(ip, port, SOCKET_FLAGS_SSL);
+	return connect(ip, port, SOCKET_FLAGS_SSL, 0);
 }
 
 int WiFiClient::connect(const char* host, uint16_t port)
@@ -98,19 +98,19 @@ int WiFiClient::connect(const char* host, uint16_t port)
 
 int WiFiClient::connect(IPAddress ip, uint16_t port)
 {
-	return connect(ip, port, 0);	
+	return connect(ip, port, 0, 0);	
 }
 
 int WiFiClient::connect(const char* host, uint16_t port, uint8_t opt)
 {
 	IPAddress remote_addr;
 	if (WiFi.hostByName(host, remote_addr)) {
-		return connect(remote_addr, port, opt);
+		return connect(remote_addr, port, opt, (const uint8_t *)host);
 	}
 	return 0;
 }
 
-int WiFiClient::connect(IPAddress ip, uint16_t port, uint8_t opt)
+int WiFiClient::connect(IPAddress ip, uint16_t port, uint8_t opt, const uint8_t *hostname)
 {
 	struct sockaddr_in addr;
 
@@ -125,6 +125,10 @@ int WiFiClient::connect(IPAddress ip, uint16_t port, uint8_t opt)
 	_tail = 0;
 	if ((_socket = socket(AF_INET, SOCK_STREAM, opt)) < 0) {
 		return 0;
+	}
+
+	if (opt & SOCKET_FLAGS_SSL && hostname) {
+		setsockopt(_socket, SOL_SSL_SOCKET, SO_SSL_SNI, hostname, m2m_strlen((uint8_t *)hostname));
 	}
 
 	// Add socket buffer handler:
