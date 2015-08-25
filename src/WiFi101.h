@@ -90,6 +90,9 @@ public:
 	uint8_t begin(const char *ssid);
 	uint8_t begin(const char *ssid, uint8_t key_idx, const char* key);
 	uint8_t begin(const char *ssid, const char *key);
+	uint8_t begin(const String &ssid) { return begin(ssid.c_str()); }
+	uint8_t begin(const String &ssid, uint8_t key_idx, const String &key) { return begin(ssid.c_str(), key_idx, key.c_str()); }
+	uint8_t begin(const String &ssid, const String &key) { return begin(ssid.c_str(), key.c_str()); }
 
 	/* Start Wifi in Access Point, with open security.
 	 * Only one client can connect to the AP at a time.
