@@ -18,7 +18,6 @@
 */
 
 #include "WiFi101.h"
-#include <Arduino.h>
 
 extern "C" {
   #include "bsp/include/nm_bsp.h"

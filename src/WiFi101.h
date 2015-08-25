@@ -22,6 +22,8 @@
 
 #define WIFI_FIRMWARE_REQUIRED "19.3.0"
 
+#include <Arduino.h>
+
 extern "C" {
 	#include "driver/include/m2m_wifi.h"
 	#include "socket/include/socket.h"
