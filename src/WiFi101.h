@@ -65,7 +65,7 @@ class WiFiClass
 private:
 	int _init;
 	char _version[9];
-	uint8_t startConnect(char *ssid, uint8_t u8SecType, void *pvAuthInfo);
+	uint8_t startConnect(const char *ssid, uint8_t u8SecType, const void *pvAuthInfo);
 
 public:
 	uint32_t _localip;
@@ -92,9 +92,9 @@ public:
      * param key: Key input buffer.
      */
 	uint8_t begin();
-	uint8_t begin(char *ssid);
-	uint8_t begin(char *ssid, uint8_t key_idx, const char* key);
-	uint8_t begin(char *ssid, char *key);
+	uint8_t begin(const char *ssid);
+	uint8_t begin(const char *ssid, uint8_t key_idx, const char* key);
+	uint8_t begin(const char *ssid, const char *key);
 	
     /* Start Wifi in Access Point, with open security.
      * Only one client can connect to the AP at a time.

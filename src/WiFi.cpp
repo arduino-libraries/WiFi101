@@ -236,12 +236,12 @@ uint8_t WiFiClass::begin()
 	return _status;
 }
 
-uint8_t WiFiClass::begin(char *ssid)
+uint8_t WiFiClass::begin(const char *ssid)
 {
 	return startConnect(ssid, M2M_WIFI_SEC_OPEN, (void *)0);
 }
 
-uint8_t WiFiClass::begin(char *ssid, uint8_t key_idx, const char* key)
+uint8_t WiFiClass::begin(const char *ssid, uint8_t key_idx, const char* key)
 {
 	tstrM2mWifiWepParams wep_params;
 
@@ -252,12 +252,12 @@ uint8_t WiFiClass::begin(char *ssid, uint8_t key_idx, const char* key)
 	return startConnect(ssid, M2M_WIFI_SEC_WEP, &wep_params);
 }
 
-uint8_t WiFiClass::begin(char *ssid, char *key)
+uint8_t WiFiClass::begin(const char *ssid, const char *key)
 {
 	return startConnect(ssid, M2M_WIFI_SEC_WPA_PSK, key);
 }
 
-uint8_t WiFiClass::startConnect(char *ssid, uint8_t u8SecType, void *pvAuthInfo)
+uint8_t WiFiClass::startConnect(const char *ssid, uint8_t u8SecType, const void *pvAuthInfo)
 {
 	if (!_init) {
 		init();
