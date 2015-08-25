@@ -62,11 +62,6 @@ typedef enum {
 
 class WiFiClass
 {
-private:
-	int _init;
-	char _version[9];
-	uint8_t startConnect(const char *ssid, uint8_t u8SecType, const void *pvAuthInfo);
-
 public:
 	uint32_t _localip;
 	uint32_t _submask;
@@ -80,31 +75,31 @@ public:
 	char _ssid[M2M_MAX_SSID_LEN];
 	WiFiClient *_client[TCP_SOCK_MAX];
 
-    WiFiClass();
+	WiFiClass();
 
-    int init();
+	int init();
 	
 	char* firmwareVersion();
 
-    /* Start Wifi connection with WPA/WPA2 encryption.
-     *
-     * param ssid: Pointer to the SSID string.
-     * param key: Key input buffer.
-     */
+	/* Start Wifi connection with WPA/WPA2 encryption.
+	 *
+	 * param ssid: Pointer to the SSID string.
+	 * param key: Key input buffer.
+	 */
 	uint8_t begin();
 	uint8_t begin(const char *ssid);
 	uint8_t begin(const char *ssid, uint8_t key_idx, const char* key);
 	uint8_t begin(const char *ssid, const char *key);
-	
-    /* Start Wifi in Access Point, with open security.
-     * Only one client can connect to the AP at a time.
-     *
-     * param ssid: Pointer to the SSID string.
-     * param channel: Wifi channel to use. Valid values are 1-12.
-     */
+
+	/* Start Wifi in Access Point, with open security.
+	 * Only one client can connect to the AP at a time.
+	 *
+	 * param ssid: Pointer to the SSID string.
+	 * param channel: Wifi channel to use. Valid values are 1-12.
+	 */
 	uint8_t beginAP(char *ssid);
 	uint8_t beginAP(char *ssid, uint8_t channel);
-	
+
 	uint8_t beginProvision(char *ssid, char *url);
 	uint8_t beginProvision(char *ssid, char *url, uint8_t channel);
 
@@ -119,7 +114,6 @@ public:
 
 	uint8_t *macAddress(uint8_t *mac);
 
-	
 	uint32_t localIP();
 	uint32_t subnetMask();
 	uint32_t gatewayIP();
@@ -133,11 +127,15 @@ public:
 	uint8_t encryptionType(uint8_t pos);
 
 	uint8_t status();
-	
+
 	int hostByName(const char* aHostname, IPAddress& aResult);
 
 	void refresh(void);
 
+private:
+	int _init;
+	char _version[9];
+	uint8_t startConnect(const char *ssid, uint8_t u8SecType, const void *pvAuthInfo);
 };
 
 extern WiFiClass WiFi;
