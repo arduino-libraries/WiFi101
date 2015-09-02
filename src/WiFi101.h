@@ -131,7 +131,8 @@ public:
 
 	uint8_t status();
 
-	int hostByName(const char* aHostname, IPAddress& aResult);
+	int hostByName(const char* hostname, IPAddress& result);
+	int hostByName(const String &hostname, IPAddress& result) { return hostByName(hostname.c_str(), result); }
 
 	void refresh(void);
 
