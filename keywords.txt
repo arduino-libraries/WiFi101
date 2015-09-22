@@ -36,6 +36,7 @@ getResult	KEYWORD2
 getSocket	KEYWORD2
 WiFiClient	KEYWORD2
 WiFiServer	KEYWORD2
+WiFiSSLClient	KEYWORD2
 
 #######################################
 # Constants (LITERAL1)
