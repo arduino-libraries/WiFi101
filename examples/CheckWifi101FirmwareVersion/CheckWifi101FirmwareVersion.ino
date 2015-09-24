@@ -14,10 +14,8 @@
 void setup() {
   // Initialize serial
   Serial.begin(9600);
-
-  // Wait for user to open the serial monitor
-  // (this is needed for boards with native USB serial ports)
   while (!Serial) {
+    ; // wait for serial port to connect. Needed for native USB port only
   }
 
   // Print a welcome message
