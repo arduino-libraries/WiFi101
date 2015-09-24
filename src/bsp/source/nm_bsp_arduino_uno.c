@@ -46,7 +46,7 @@
 
 #include "bsp/include/nm_bsp.h"
 #include "common/include/nm_common.h"
-#include "Arduino.h"
+#include <Arduino.h>
 
 static tpfNmBspIsr gpfIsr;
 

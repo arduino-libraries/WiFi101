@@ -22,6 +22,8 @@
 
 #define WIFI_FIRMWARE_REQUIRED "19.3.0"
 
+#include <Arduino.h>
+
 extern "C" {
 	#include "driver/include/m2m_wifi.h"
 	#include "socket/include/socket.h"
@@ -60,11 +62,6 @@ typedef enum {
 
 class WiFiClass
 {
-private:
-	int _init;
-	char _version[9];
-	uint8_t startConnect(char *ssid, uint8_t u8SecType, void *pvAuthInfo);
-
 public:
 	uint32_t _localip;
 	uint32_t _submask;
@@ -78,31 +75,34 @@ public:
 	char _ssid[M2M_MAX_SSID_LEN];
 	WiFiClient *_client[TCP_SOCK_MAX];
 
-    WiFiClass();
+	WiFiClass();
 
-    int init();
+	int init();
 	
 	char* firmwareVersion();
 
-    /* Start Wifi connection with WPA/WPA2 encryption.
-     *
-     * param ssid: Pointer to the SSID string.
-     * param key: Key input buffer.
-     */
+	/* Start Wifi connection with WPA/WPA2 encryption.
+	 *
+	 * param ssid: Pointer to the SSID string.
+	 * param key: Key input buffer.
+	 */
 	uint8_t begin();
-	uint8_t begin(char *ssid);
-	uint8_t begin(char *ssid, uint8_t key_idx, const char* key);
-	uint8_t begin(char *ssid, char *key);
-	
-    /* Start Wifi in Access Point, with open security.
-     * Only one client can connect to the AP at a time.
-     *
-     * param ssid: Pointer to the SSID string.
-     * param channel: Wifi channel to use. Valid values are 1-12.
-     */
+	uint8_t begin(const char *ssid);
+	uint8_t begin(const char *ssid, uint8_t key_idx, const char* key);
+	uint8_t begin(const char *ssid, const char *key);
+	uint8_t begin(const String &ssid) { return begin(ssid.c_str()); }
+	uint8_t begin(const String &ssid, uint8_t key_idx, const String &key) { return begin(ssid.c_str(), key_idx, key.c_str()); }
+	uint8_t begin(const String &ssid, const String &key) { return begin(ssid.c_str(), key.c_str()); }
+
+	/* Start Wifi in Access Point, with open security.
+	 * Only one client can connect to the AP at a time.
+	 *
+	 * param ssid: Pointer to the SSID string.
+	 * param channel: Wifi channel to use. Valid values are 1-12.
+	 */
 	uint8_t beginAP(char *ssid);
 	uint8_t beginAP(char *ssid, uint8_t channel);
-	
+
 	uint8_t beginProvision(char *ssid, char *url);
 	uint8_t beginProvision(char *ssid, char *url, uint8_t channel);
 
@@ -117,7 +117,6 @@ public:
 
 	uint8_t *macAddress(uint8_t *mac);
 
-	
 	uint32_t localIP();
 	uint32_t subnetMask();
 	uint32_t gatewayIP();
@@ -131,11 +130,16 @@ public:
 	uint8_t encryptionType(uint8_t pos);
 
 	uint8_t status();
-	
-	int hostByName(const char* aHostname, IPAddress& aResult);
+
+	int hostByName(const char* hostname, IPAddress& result);
+	int hostByName(const String &hostname, IPAddress& result) { return hostByName(hostname.c_str(), result); }
 
 	void refresh(void);
 
+private:
+	int _init;
+	char _version[9];
+	uint8_t startConnect(const char *ssid, uint8_t u8SecType, const void *pvAuthInfo);
 };
 
 extern WiFiClass WiFi;

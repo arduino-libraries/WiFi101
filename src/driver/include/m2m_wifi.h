@@ -830,7 +830,7 @@ NMI_API sint8 m2m_wifi_default_connect(void);
 @return	The function returns @ref M2M_SUCCESS for successful operations and a negative value otherwise.
 	
 */
-NMI_API sint8 m2m_wifi_connect(char *pcSsid, uint8 u8SsidLen, uint8 u8SecType, void *pvAuthInfo, uint16 u16Ch);
+NMI_API sint8 m2m_wifi_connect(const char *pcSsid, uint8 u8SsidLen, uint8 u8SecType, const void *pvAuthInfo, uint16 u16Ch);
  /**@}*/
 /** @defgroup WifiConnectFn m2m_wifi_connect_sc
  *   @ingroup WLANAPI
@@ -892,7 +892,7 @@ NMI_API sint8 m2m_wifi_connect(char *pcSsid, uint8 u8SsidLen, uint8 u8SecType, v
 @return	The function returns @ref M2M_SUCCESS for successful operations and a negative value otherwise.
 	
 */
- NMI_API sint8 m2m_wifi_connect_sc(char *pcSsid, uint8 u8SsidLen, uint8 u8SecType, void *pvAuthInfo, uint16 u16Ch, uint8 u8SaveCred);
+ NMI_API sint8 m2m_wifi_connect_sc(const char *pcSsid, uint8 u8SsidLen, uint8 u8SecType, const void *pvAuthInfo, uint16 u16Ch, uint8 u8SaveCred);
  /**@}*/
 /** @defgroup WifiDisconnectFn m2m_wifi_disconnect
  *   @ingroup WLANAPI

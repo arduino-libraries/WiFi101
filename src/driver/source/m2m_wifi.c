@@ -494,11 +494,11 @@ sint8 m2m_wifi_default_connect(void)
 	return hif_send(M2M_REQ_GRP_WIFI, M2M_WIFI_REQ_DEFAULT_CONNECT, NULL, 0,NULL, 0,0);
 }
 
-sint8 m2m_wifi_connect(char *pcSsid, uint8 u8SsidLen, uint8 u8SecType, void *pvAuthInfo, uint16 u16Ch)
+sint8 m2m_wifi_connect(const char *pcSsid, uint8 u8SsidLen, uint8 u8SecType, const void *pvAuthInfo, uint16 u16Ch)
 {
 	return m2m_wifi_connect_sc(pcSsid, u8SsidLen, u8SecType, pvAuthInfo,  u16Ch,0);
 }
-sint8 m2m_wifi_connect_sc(char *pcSsid, uint8 u8SsidLen, uint8 u8SecType, void *pvAuthInfo, uint16 u16Ch, uint8 u8NoSaveCred)
+sint8 m2m_wifi_connect_sc(const char *pcSsid, uint8 u8SsidLen, uint8 u8SecType, const void *pvAuthInfo, uint16 u16Ch, uint8 u8NoSaveCred)
 {
 	sint8				ret = M2M_SUCCESS;
 	tstrM2mWifiConnect	strConnect;
