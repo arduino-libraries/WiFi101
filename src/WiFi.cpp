@@ -347,7 +347,7 @@ uint8_t WiFiClass::beginProvision(char *ssid, char *url, uint8_t channel)
 	// Enter Provision mode:
 	memset(&strM2MAPConfig, 0x00, sizeof(tstrM2MAPConfig));
 	strcpy((char *)&strM2MAPConfig.au8SSID, ssid);
-	strM2MAPConfig.u8ListenChannel = 1;
+	strM2MAPConfig.u8ListenChannel = channel;
 	strM2MAPConfig.u8SecType = M2M_WIFI_SEC_OPEN;
 	strM2MAPConfig.u8SsidHide = SSID_MODE_VISIBLE;
 	strM2MAPConfig.au8DHCPServerIP[0] = 0xC0; /* 192 */
