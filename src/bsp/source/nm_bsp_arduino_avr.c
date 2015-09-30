@@ -96,7 +96,7 @@ ISR(TIMER4_OVF_vect) {
 
 // stategy 3 - start a timer and perform a sort of polling
 void attachFakeInterruptToTimer(void) {
-	TCCR4B = (1<<CS41) | (1<<CS40);
+	TCCR4B = (1<<CS41);
 	TIMSK4 = (1<<TOIE4);
     OCR4C = 0xFF;
 }
