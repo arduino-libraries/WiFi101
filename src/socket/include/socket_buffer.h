@@ -51,14 +51,10 @@
 extern "C" {
 #endif
 
-/** Define reduced buffer size for Arduino Uno. */
-#if (defined ARDUINO_ARCH_AVR)
+#if defined LIMITED_RAM_DEVICE
 #define SOCKET_BUFFER_MTU						(16u)
 #define SOCKET_BUFFER_NB						(2u)
-#endif
-
-/** Define bigger buffer size for Arduino Zero. */
-#if (defined __SAMD21J18A__) || (defined __SAMD21G18A__)
+#else
 #define SOCKET_BUFFER_MTU						(1400u)
 #define SOCKET_BUFFER_NB						(3)
 #endif

@@ -91,6 +91,7 @@ void listNetworks() {
     Serial.print(" dBm");
     Serial.print("\tEncryption: ");
     printEncryptionType(WiFi.encryptionType(thisNet));
+    Serial.flush();
   }
 }
 

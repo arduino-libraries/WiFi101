@@ -42,8 +42,6 @@
  *
  */
 
-#if (defined __SAMD21J18A__) || (defined __SAMD21G18A__)
-
 #include "bsp/include/nm_bsp.h"
 #include "common/include/nm_common.h"
 #include <Arduino.h>
@@ -52,6 +50,17 @@ static tpfNmBspIsr gpfIsr;
 
 #define CONF_WINC_RESET_PIN				5
 #define CONF_WINC_INTN_PIN				7
+
+void __attribute__((weak)) attachInterruptMultiArch(uint32_t pin, void *chip_isr, uint32_t mode)
+{
+	attachInterrupt(pin, chip_isr, mode);
+	return;
+}
+
+int __attribute__((weak)) detachInterruptMultiArch(uint32_t pin)
+{
+	detachInterrupt(pin);
+}
 
 static void chip_isr(void)
 {
@@ -151,7 +160,7 @@ void nm_bsp_sleep(uint32 u32TimeMsec)
 void nm_bsp_register_isr(tpfNmBspIsr pfIsr)
 {
 	gpfIsr = pfIsr;
-	attachInterrupt(CONF_WINC_INTN_PIN, chip_isr, CHANGE);
+	attachInterruptMultiArch(CONF_WINC_INTN_PIN, chip_isr, FALLING);
 }
 
 /*
@@ -166,10 +175,8 @@ void nm_bsp_register_isr(tpfNmBspIsr pfIsr)
 void nm_bsp_interrupt_ctrl(uint8 u8Enable)
 {
 	if (u8Enable) {
-		attachInterrupt(CONF_WINC_INTN_PIN, chip_isr, FALLING);
+		attachInterruptMultiArch(CONF_WINC_INTN_PIN, chip_isr, FALLING);
 	} else {
-		detachInterrupt(CONF_WINC_INTN_PIN);
+		detachInterruptMultiArch(CONF_WINC_INTN_PIN);
 	}
 }
-
-#endif
