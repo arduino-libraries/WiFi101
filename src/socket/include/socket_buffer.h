@@ -52,7 +52,7 @@ extern "C" {
 #endif
 
 #if defined LIMITED_RAM_DEVICE
-#define SOCKET_BUFFER_MTU						(16u)
+#define SOCKET_BUFFER_MTU						(64u)
 #define SOCKET_BUFFER_NB						(2u)
 #else
 #define SOCKET_BUFFER_MTU						(1400u)
