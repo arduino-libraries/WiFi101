@@ -99,14 +99,7 @@ int WiFiUDP::available()
 	m2m_wifi_handle_events(NULL);
 	
 	if (_socket != -1) {
-		if (_rcvSize != 0) {
-			if (_head - _tail > _rcvSize) {
-				return _rcvSize;
-			}
-			else {
-				return _head - _tail;
-			}
-		}
+		return _rcvSize;
 	}
 	return 0;
  }
