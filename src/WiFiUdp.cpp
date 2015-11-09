@@ -95,7 +95,9 @@ uint8_t WiFiUDP::begin(uint16_t port)
 /* return number of bytes available in the current packet,
    will return zero if parsePacket hasn't been called yet */
 int WiFiUDP::available()
-{	
+{
+	m2m_wifi_handle_events(NULL);
+	
 	if (_socket != -1) {
 		return _rcvSize;
 	}
