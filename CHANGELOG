@@ -1,0 +1,10 @@
+
+WiFi101 0.5.1 - 2015.10.06
+
+* Improved support for AVR Boards (Uno, Mega, Leonardo, etc.) and
+  ARM based boards (Due and Zero).
+
+WiFi101 0.5.0 - 2015.10.01
+
+* Initial release
+
