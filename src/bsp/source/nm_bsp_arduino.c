@@ -46,18 +46,27 @@
 #include "common/include/nm_common.h"
 #include <Arduino.h>
 
-static tpfNmBspIsr gpfIsr;
+/*
+ * Arduino variants may redefine those pins.
+ * If no pins are specified the following defaults are used:
+ *  RESET - pin 5
+ *  INTN  - pin 7
+ */
+#if !defined(WINC1501_RESET_PIN)
+  #define WINC1501_RESET_PIN  5
+#endif
+#if !defined(WINC1501_INTN_PIN)
+  #define WINC1501_INTN_PIN   7
+#endif
 
-#define CONF_WINC_RESET_PIN				5
-#define CONF_WINC_INTN_PIN				7
+static tpfNmBspIsr gpfIsr;
 
 void __attribute__((weak)) attachInterruptMultiArch(uint32_t pin, void *chip_isr, uint32_t mode)
 {
 	attachInterrupt(pin, chip_isr, mode);
-	return;
 }
 
-int __attribute__((weak)) detachInterruptMultiArch(uint32_t pin)
+void __attribute__((weak)) detachInterruptMultiArch(uint32_t pin)
 {
 	detachInterrupt(pin);
 }
@@ -79,8 +88,8 @@ static void chip_isr(void)
 static void init_chip_pins(void)
 {
 	/* Configure RESETN D6 pins as output. */
-	pinMode(CONF_WINC_RESET_PIN, OUTPUT);
-	digitalWrite(CONF_WINC_RESET_PIN, HIGH);
+	pinMode(WINC1501_RESET_PIN, OUTPUT);
+	digitalWrite(WINC1501_RESET_PIN, HIGH);
 }
 
 /*
@@ -125,9 +134,9 @@ sint8 nm_bsp_deinit(void)
  */
 void nm_bsp_reset(void)
 {
-	digitalWrite(CONF_WINC_RESET_PIN, LOW);
+	digitalWrite(WINC1501_RESET_PIN, LOW);
 	nm_bsp_sleep(100);
-	digitalWrite(CONF_WINC_RESET_PIN, HIGH);
+	digitalWrite(WINC1501_RESET_PIN, HIGH);
 	nm_bsp_sleep(100);
 }
 
@@ -160,7 +169,7 @@ void nm_bsp_sleep(uint32 u32TimeMsec)
 void nm_bsp_register_isr(tpfNmBspIsr pfIsr)
 {
 	gpfIsr = pfIsr;
-	attachInterruptMultiArch(CONF_WINC_INTN_PIN, chip_isr, FALLING);
+	attachInterruptMultiArch(WINC1501_INTN_PIN, chip_isr, FALLING);
 }
 
 /*
@@ -175,8 +184,8 @@ void nm_bsp_register_isr(tpfNmBspIsr pfIsr)
 void nm_bsp_interrupt_ctrl(uint8 u8Enable)
 {
 	if (u8Enable) {
-		attachInterruptMultiArch(CONF_WINC_INTN_PIN, chip_isr, FALLING);
+		attachInterruptMultiArch(WINC1501_INTN_PIN, chip_isr, FALLING);
 	} else {
-		detachInterruptMultiArch(CONF_WINC_INTN_PIN);
+		detachInterruptMultiArch(WINC1501_INTN_PIN);
 	}
 }
