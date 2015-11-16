@@ -248,7 +248,10 @@ int WiFiClient::read(uint8_t* buf, size_t size)
 
 int WiFiClient::peek()
 {
-	return read();
+	if (!available())
+		return -1;
+
+	return _buffer[_tail];
 }
 
 void WiFiClient::flush()
