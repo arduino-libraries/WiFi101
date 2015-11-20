@@ -1,4 +1,9 @@
 
+* Fixed UDP read bug on AVR Boards
+* Added missing inlcude for SSL Client
+* Fixed peek() function
+* Fixed some examples
+
 WiFi101 0.5.1 - 2015.10.06
 
 * Improved support for AVR Boards (Uno, Mega, Leonardo, etc.) and
