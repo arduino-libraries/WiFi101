@@ -99,14 +99,7 @@ int WiFiUDP::available()
 	m2m_wifi_handle_events(NULL);
 	
 	if (_socket != -1) {
-		if (_rcvSize != 0) {
-			if (_head - _tail > _rcvSize) {
-				return _rcvSize;
-			}
-			else {
-				return _head - _tail;
-			}
-		}
+		return _rcvSize;
 	}
 	return 0;
  }
@@ -199,22 +192,10 @@ int WiFiUDP::read()
 {
 	uint8_t b;
 
-	if (!available())
+	if (read(&b, sizeof(b)) == -1) {
 		return -1;
-
-	b = _buffer[_tail++];
-	_rcvSize -= 1;
-	if (_tail == _head) {
-		_tail = _head = 0;
-		_flag &= ~SOCKET_BUFFER_FLAG_FULL;
-		if (hif_small_xfer) {
-			recvfrom(_socket, _buffer, SOCKET_BUFFER_MTU, 0);
-		}
-		else {
-			recvfrom(_socket, _buffer + SOCKET_BUFFER_UDP_HEADER_SIZE, SOCKET_BUFFER_MTU, 0);			
-		}
-		m2m_wifi_handle_events(NULL);
 	}
+
 	return b;
 }
 
@@ -234,19 +215,17 @@ int WiFiUDP::read(unsigned char* buf, size_t size)
 
 	for (uint32_t i = 0; i < size_tmp; ++i) {
 		buf[i] = _buffer[_tail++];
-	}
-	_rcvSize -= size_tmp;
-	
-	if (_tail == _head) {
-		_tail = _head = 0;
-		_flag &= ~SOCKET_BUFFER_FLAG_FULL;
-		if (hif_small_xfer) {
-			recvfrom(_socket, _buffer, SOCKET_BUFFER_MTU, 0);
+		_rcvSize--;
+
+		if (_tail == _head) {
+			_tail = _head = 0;
+			_flag &= ~SOCKET_BUFFER_FLAG_FULL;
+			if (_rcvSize) {
+				// there are more bytes in the current packet to receive
+				recvfrom(_socket, _buffer, SOCKET_BUFFER_MTU, 0);
+				m2m_wifi_handle_events(NULL);
+			}
 		}
-		else {
-			recvfrom(_socket, _buffer + SOCKET_BUFFER_UDP_HEADER_SIZE, SOCKET_BUFFER_MTU, 0);			
-		}
-		m2m_wifi_handle_events(NULL);
 	}
 
 	return size_tmp;
