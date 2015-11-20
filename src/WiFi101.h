@@ -30,6 +30,7 @@ extern "C" {
 }
 
 #include "WiFiClient.h"
+#include "WiFiSSLClient.h"
 #include "WiFiServer.h"
 
 typedef enum {
