@@ -618,10 +618,6 @@ uint8_t WiFiClass::status()
 {
 	if (!_init) {
 		init();
-		if (nmi_get_chipid() == 0x1502b1) {
-			_status = WL_IDLE_STATUS;
-			return _status;
-		}
 	}
 	return _status;
 }
