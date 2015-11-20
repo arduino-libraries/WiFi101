@@ -49,8 +49,9 @@
 /*
  * Arduino variants may redefine those pins.
  * If no pins are specified the following defaults are used:
- *  RESET - pin 5
- *  INTN  - pin 7
+ *  WINC1501_RESET_PIN   - pin 5
+ *  WINC1501_INTN_PIN    - pin 7
+ *  WINC1501_CHIP_EN_PIN - not connected (tied to VCC)
  */
 #if !defined(WINC1501_RESET_PIN)
   #define WINC1501_RESET_PIN  5
@@ -90,6 +91,11 @@ static void init_chip_pins(void)
 	/* Configure RESETN D6 pins as output. */
 	pinMode(WINC1501_RESET_PIN, OUTPUT);
 	digitalWrite(WINC1501_RESET_PIN, HIGH);
+
+#if defined(WINC1501_CHIP_EN_PIN)
+	/* Configure CHIP_EN as pull-up */
+	pinMode(WINC1501_CHIP_EN_PIN, INPUT_PULLUP);
+#endif
 }
 
 /*
