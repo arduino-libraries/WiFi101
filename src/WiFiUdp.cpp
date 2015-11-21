@@ -220,11 +220,12 @@ int WiFiUDP::read(unsigned char* buf, size_t size)
 		if (_tail == _head) {
 			_tail = _head = 0;
 			_flag &= ~SOCKET_BUFFER_FLAG_FULL;
-			if (_rcvSize) {
-				// there are more bytes in the current packet to receive
+			if (hif_small_xfer) {
 				recvfrom(_socket, _buffer, SOCKET_BUFFER_MTU, 0);
-				m2m_wifi_handle_events(NULL);
+			} else {
+				recvfrom(_socket, _buffer + SOCKET_BUFFER_UDP_HEADER_SIZE, SOCKET_BUFFER_MTU, 0);
 			}
+			m2m_wifi_handle_events(NULL);
 		}
 	}
 
