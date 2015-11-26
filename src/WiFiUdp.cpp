@@ -218,13 +218,20 @@ int WiFiUDP::read(unsigned char* buf, size_t size)
 		_rcvSize--;
 
 		if (_tail == _head) {
+			// the full buffered data has been read, reset head and tail for next transfer
 			_tail = _head = 0;
+
+			// clear the buffer full flag
 			_flag &= ~SOCKET_BUFFER_FLAG_FULL;
-			if (_rcvSize) {
-				// there are more bytes in the current packet to receive
+
+			// setup buffer and buffer size to transfer the remainder of the current packet
+			// or next received packet
+			if (hif_small_xfer) {
 				recvfrom(_socket, _buffer, SOCKET_BUFFER_MTU, 0);
-				m2m_wifi_handle_events(NULL);
+			} else {
+				recvfrom(_socket, _buffer + SOCKET_BUFFER_UDP_HEADER_SIZE, SOCKET_BUFFER_MTU, 0);
 			}
+			m2m_wifi_handle_events(NULL);
 		}
 	}
 
