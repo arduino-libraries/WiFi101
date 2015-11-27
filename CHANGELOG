@@ -1,3 +1,6 @@
+WiFi101 0.6.0 - 2015.11.27
+
+* Fixed bug with AVR boards when Web Server is used
 
 * Fixed UDP read bug on AVR Boards
 * Added missing inlcude for SSL Client
