@@ -624,32 +624,40 @@ uint8_t WiFiClass::status()
 
 int WiFiClass::hostByName(const char* aHostname, IPAddress& aResult)
 {
-	// Network led ON.
-	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 0);
+	
+	// check if aHostname is already an ipaddress
+	if (aResult.fromString(aHostname)) {
+		// if fromString returns true we have an IP address ready 
+		return 1;
 
-	// Send DNS request:
-	_resolve = 0;
-	if (gethostbyname((uint8 *)aHostname) < 0) {
+	} else {
+		// Network led ON.
+		m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 0);
+	
+		// Send DNS request:
+		_resolve = 0;
+		if (gethostbyname((uint8 *)aHostname) < 0) {
+			// Network led OFF.
+			m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 1);
+			return 0;
+		}
+
+		// Wait for connection or timeout:
+		unsigned long start = millis();
+		while (_resolve == 0 && millis() - start < 20000) {
+			m2m_wifi_handle_events(NULL);
+		}
+
 		// Network led OFF.
 		m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 1);
-		return 0;
+
+		if (_resolve == 0) {
+			return 0;
+		}
+
+		aResult = _resolve;
+		return 1;
 	}
-
-	// Wait for connection or timeout:
-	unsigned long start = millis();
-	while (_resolve == 0 && millis() - start < 20000) {
-		m2m_wifi_handle_events(NULL);
-	}
-
-	// Network led OFF.
-	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 1);
-
-	if (_resolve == 0) {
-		return 0;
-	}
-
-	aResult = _resolve;
-	return 1;
 }
 
 void WiFiClass::refresh(void)
