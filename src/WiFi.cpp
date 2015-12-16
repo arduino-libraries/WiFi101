@@ -386,44 +386,17 @@ uint32_t WiFiClass::provisioned()
 
 void WiFiClass::config(IPAddress local_ip)
 {
-	tstrM2MIPConfig conf;
-
-	conf.u32DNS = 0;
-	conf.u32Gateway = 0;
-	conf.u32StaticIP = (uint32_t)local_ip;
-	conf.u32SubnetMask = 0;
-	m2m_wifi_set_static_ip(&conf);
-	_localip = conf.u32StaticIP;
-	_submask = 0;
-	_gateway = 0;
+	config(local_ip, (uint32_t)0);
 }
 
 void WiFiClass::config(IPAddress local_ip, IPAddress dns_server)
 {
-	tstrM2MIPConfig conf;
-
-	conf.u32DNS = (uint32_t)dns_server;
-	conf.u32Gateway = 0;
-	conf.u32StaticIP = (uint32_t)local_ip;
-	conf.u32SubnetMask = 0;
-	m2m_wifi_set_static_ip(&conf);
-	_localip = conf.u32StaticIP;
-	_submask = 0;
-	_gateway = 0;
+	config(local_ip, dns_server, (uint32_t)0);
 }
 
 void WiFiClass::config(IPAddress local_ip, IPAddress dns_server, IPAddress gateway)
 {
-	tstrM2MIPConfig conf;
-
-	conf.u32DNS = (uint32_t)dns_server;
-	conf.u32Gateway = (uint32_t)gateway;
-	conf.u32StaticIP = (uint32_t)local_ip;
-	conf.u32SubnetMask = 0;
-	m2m_wifi_set_static_ip(&conf);
-	_localip = conf.u32StaticIP;
-	_submask = 0;
-	_gateway = conf.u32Gateway;
+	config(local_ip, dns_server, gateway, (uint32_t)0);
 }
 
 void WiFiClass::config(IPAddress local_ip, IPAddress dns_server, IPAddress gateway, IPAddress subnet)
