@@ -67,6 +67,7 @@ public:
 	uint32_t _localip;
 	uint32_t _submask;
 	uint32_t _gateway;
+	int _dhcp;
 	uint32_t _resolve;
 	byte *_bssid;
 	wl_mode_t _mode;

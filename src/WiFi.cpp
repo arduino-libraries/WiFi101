@@ -32,7 +32,16 @@ static void wifi_cb(uint8_t u8MsgType, void *pvMsg)
 		case M2M_WIFI_RESP_CON_STATE_CHANGED:
 		{
 			tstrM2mWifiStateChanged *pstrWifiState = (tstrM2mWifiStateChanged *)pvMsg;
-			if (pstrWifiState->u8CurrState == M2M_WIFI_DISCONNECTED) {
+			if (pstrWifiState->u8CurrState == M2M_WIFI_CONNECTED) {
+				//SERIAL_PORT_MONITOR.println("wifi_cb: M2M_WIFI_RESP_CON_STATE_CHANGED: CONNECTED");
+
+				if (!WiFi._dhcp) {
+					WiFi._status = WL_CONNECTED;
+
+					// WiFi led ON.
+					m2m_periph_gpio_set_val(M2M_PERIPH_GPIO15, 0);
+				}
+			} else if (pstrWifiState->u8CurrState == M2M_WIFI_DISCONNECTED) {
 				//SERIAL_PORT_MONITOR.println("wifi_cb: M2M_WIFI_RESP_CON_STATE_CHANGED: DISCONNECTED");
 				if (WiFi._mode == WL_STA_MODE) {
 					WiFi._status = WL_DISCONNECTED;
@@ -169,6 +178,7 @@ int WiFiClass::init()
 	_localip = 0;
 	_submask = 0;
 	_gateway = 0;
+	_dhcp = 1;
 	memset(_client, 0, sizeof(WiFiClient *) * TCP_SOCK_MAX);
 
 	// Initialize IO expander (LED control).
@@ -211,9 +221,11 @@ uint8_t WiFiClass::begin()
 	}
 	
 	// Connect to router:
-	_localip = 0;
-	_submask = 0;
-	_gateway = 0;
+	if (_dhcp) {
+		_localip = 0;
+		_submask = 0;
+		_gateway = 0;
+	}
 	if (m2m_wifi_default_connect() < 0) {
 		_status = WL_CONNECT_FAILED;
 		return _status;
@@ -264,9 +276,11 @@ uint8_t WiFiClass::startConnect(const char *ssid, uint8_t u8SecType, const void 
 	}
 	
 	// Connect to router:
-	_localip = 0;
-	_submask = 0;
-	_gateway = 0;
+	if (_dhcp) {
+		_localip = 0;
+		_submask = 0;
+		_gateway = 0;
+	}
 	if (m2m_wifi_connect(ssid, strlen(ssid), u8SecType, pvAuthInfo, M2M_WIFI_CH_ALL) < 0) {
 		_status = WL_CONNECT_FAILED;
 		return _status;
@@ -403,10 +417,16 @@ void WiFiClass::config(IPAddress local_ip, IPAddress dns_server, IPAddress gatew
 {
 	tstrM2MIPConfig conf;
 
+	if (!_init) {
+		init();
+	}
+
 	conf.u32DNS = (uint32_t)dns_server;
 	conf.u32Gateway = (uint32_t)gateway;
 	conf.u32StaticIP = (uint32_t)local_ip;
 	conf.u32SubnetMask = (uint32_t)subnet;
+	_dhcp = 0;
+	m2m_wifi_enable_dhcp(0); // disable DHCP
 	m2m_wifi_set_static_ip(&conf);
 	_localip = conf.u32StaticIP;
 	_submask = conf.u32SubnetMask;
