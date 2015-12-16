@@ -64,8 +64,8 @@ WiFiClient::WiFiClient(const WiFiClient& other)
 {
 	_socket = other._socket;
 	_flag = other._flag;
-	_head = 0;
-	_tail = 0;
+	_head = other._head;
+	_tail = other._tail;
 	for (int sock = 0; sock < TCP_SOCK_MAX; sock++) {
 		if (WiFi._client[sock] == this)
 			WiFi._client[sock] = 0;
