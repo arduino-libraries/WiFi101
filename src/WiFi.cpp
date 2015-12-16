@@ -34,8 +34,7 @@ static void wifi_cb(uint8_t u8MsgType, void *pvMsg)
 			tstrM2mWifiStateChanged *pstrWifiState = (tstrM2mWifiStateChanged *)pvMsg;
 			if (pstrWifiState->u8CurrState == M2M_WIFI_CONNECTED) {
 				//SERIAL_PORT_MONITOR.println("wifi_cb: M2M_WIFI_RESP_CON_STATE_CHANGED: CONNECTED");
-
-				if (!WiFi._dhcp) {
+				if (WiFi._mode == WL_STA_MODE && !WiFi._dhcp) {
 					WiFi._status = WL_CONNECTED;
 
 					// WiFi led ON.
