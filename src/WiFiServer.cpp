@@ -93,9 +93,9 @@ WiFiClient WiFiServer::available(uint8_t* status)
 		flag = _flag;
 		_flag &= ~SOCKET_BUFFER_FLAG_SPAWN_SOCKET_MSK;
 		_flag &= ~SOCKET_BUFFER_FLAG_SPAWN;
-		 if (status != NULL) {
+		if (status != NULL) {
 			*status = 0;
-		 }
+		}
 		return WiFiClient(((flag & SOCKET_BUFFER_FLAG_SPAWN_SOCKET_MSK) >> SOCKET_BUFFER_FLAG_SPAWN_SOCKET_POS), _socket + 1);
 	}
 
