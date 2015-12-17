@@ -44,9 +44,11 @@ static void wifi_cb(uint8_t u8MsgType, void *pvMsg)
 				//SERIAL_PORT_MONITOR.println("wifi_cb: M2M_WIFI_RESP_CON_STATE_CHANGED: DISCONNECTED");
 				if (WiFi._mode == WL_STA_MODE) {
 					WiFi._status = WL_DISCONNECTED;
-					WiFi._localip = 0;
-					WiFi._submask = 0;
-					WiFi._gateway = 0;
+					if (WiFi._dhcp) {
+						WiFi._localip = 0;
+						WiFi._submask = 0;
+						WiFi._gateway = 0;
+					}
 				}
 				// WiFi led OFF.
 				m2m_periph_gpio_set_val(M2M_PERIPH_GPIO15, 1);
