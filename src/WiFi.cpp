@@ -50,8 +50,9 @@ static void wifi_cb(uint8_t u8MsgType, void *pvMsg)
 						WiFi._gateway = 0;
 					}
 				}
-				// WiFi led OFF.
+				// WiFi led OFF (rev A then rev B).
 				m2m_periph_gpio_set_val(M2M_PERIPH_GPIO15, 1);
+				m2m_periph_gpio_set_val(M2M_PERIPH_GPIO4, 1);
 			}
 		}
 		break;
@@ -66,8 +67,9 @@ static void wifi_cb(uint8_t u8MsgType, void *pvMsg)
 				
 				WiFi._status = WL_CONNECTED;
 
-				// WiFi led ON.
+				// WiFi led ON (rev A then rev B).
 				m2m_periph_gpio_set_val(M2M_PERIPH_GPIO15, 0);
+				m2m_periph_gpio_set_val(M2M_PERIPH_GPIO4, 0);
 			}
 			/*uint8_t *pu8IPAddress = (uint8_t *)pvMsg;
 			SERIAL_PORT_MONITOR.print("wifi_cb: M2M_WIFI_REQ_DHCP_CONF: IP is ");
@@ -164,9 +166,9 @@ int WiFiClass::init()
 	param.pfAppWifiCb = wifi_cb;
 	ret = m2m_wifi_init(&param);
 	if (M2M_SUCCESS != ret) {
-		// Error led ON (may not work depending on init failure origin).
+		// Error led ON (rev A then rev B).
 		m2m_periph_gpio_set_val(M2M_PERIPH_GPIO18, 0);
-		m2m_periph_gpio_set_dir(M2M_PERIPH_GPIO18, 1);
+		m2m_periph_gpio_set_dir(M2M_PERIPH_GPIO6, 1);
 		return ret;
 	}
 
@@ -182,13 +184,19 @@ int WiFiClass::init()
 	_dhcp = 1;
 	memset(_client, 0, sizeof(WiFiClient *) * TCP_SOCK_MAX);
 
-	// Initialize IO expander (LED control).
+	// Initialize IO expander LED control (rev A then rev B)..
 	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO15, 1);
 	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 1);
 	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO18, 1);
 	m2m_periph_gpio_set_dir(M2M_PERIPH_GPIO15, 1);
 	m2m_periph_gpio_set_dir(M2M_PERIPH_GPIO16, 1);
 	m2m_periph_gpio_set_dir(M2M_PERIPH_GPIO18, 1);
+	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO4, 1);
+	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO5, 1);
+	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO6, 1);
+	m2m_periph_gpio_set_dir(M2M_PERIPH_GPIO4, 1);
+	m2m_periph_gpio_set_dir(M2M_PERIPH_GPIO5, 1);
+	m2m_periph_gpio_set_dir(M2M_PERIPH_GPIO6, 1);
 
 	return ret;
 }
@@ -340,8 +348,9 @@ uint8_t WiFiClass::beginAP(char *ssid, uint8_t channel)
 	_submask = 0x00FFFFFF;
 	_gateway = _localip;
 
-	// WiFi led ON.
+	// WiFi led ON (rev A then rev B).
 	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO15, 0);
+	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO4, 0);
 
 	return _status;
 }
@@ -383,8 +392,9 @@ uint8_t WiFiClass::beginProvision(char *ssid, char *url, uint8_t channel)
 	_submask = 0x00FFFFFF;
 	_gateway = _localip;
 
-	// WiFi led ON.
+	// WiFi led ON (rev A then rev B).
 	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO15, 0);
+	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO4, 0);
 
 	return _status;
 }
@@ -438,8 +448,9 @@ void WiFiClass::disconnect()
 {
 	m2m_wifi_disconnect();
 
-	// WiFi led OFF.
+	// WiFi led OFF (rev A then rev B).
 	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO15, 1);
+	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO4, 1);
 }
 
 uint8_t *WiFiClass::macAddress(uint8_t *mac)
@@ -625,14 +636,16 @@ int WiFiClass::hostByName(const char* aHostname, IPAddress& aResult)
 		return 1;
 
 	} else {
-		// Network led ON.
+		// Network led ON (rev A then rev B).
 		m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 0);
+		m2m_periph_gpio_set_val(M2M_PERIPH_GPIO5, 0);
 	
 		// Send DNS request:
 		_resolve = 0;
 		if (gethostbyname((uint8 *)aHostname) < 0) {
-			// Network led OFF.
+			// Network led OFF (rev A then rev B).
 			m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 1);
+			m2m_periph_gpio_set_val(M2M_PERIPH_GPIO5, 1);
 			return 0;
 		}
 
@@ -642,8 +655,9 @@ int WiFiClass::hostByName(const char* aHostname, IPAddress& aResult)
 			m2m_wifi_handle_events(NULL);
 		}
 
-		// Network led OFF.
+		// Network led OFF (rev A then rev B).
 		m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 1);
+		m2m_periph_gpio_set_val(M2M_PERIPH_GPIO5, 1);
 
 		if (_resolve == 0) {
 			return 0;

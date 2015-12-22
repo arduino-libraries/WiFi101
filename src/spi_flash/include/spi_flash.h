@@ -2,7 +2,7 @@
  *
  * \file
  *
- * \brief
+ * \brief WINC1500 SPI Flash.
  *
  * Copyright (c) 2015 Atmel Corporation. All rights reserved.
  *
@@ -111,11 +111,19 @@
 #include "common/include/nm_common.h"
 #include "bus_wrapper/include/nm_bus_wrapper.h"
 #include "driver/source/nmbus.h"
+#include "driver/source/nmasic.h"
+#include "spi_flash/include/spi_flash_map.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif 
 
+/**
+ *	@fn		spi_flash_enable
+ *	@brief	Enable spi flash operations
+ *	@version	1.0
+ */
+sint8 spi_flash_enable(uint8 enable);
 /** \defgroup SPIFLASHAPI Function
  *   @ingroup SPIFLASH
  */

@@ -93,8 +93,9 @@ void socketBufferCb(SOCKET sock, uint8 u8Msg, void *pvMsg)
 		/* TCP Data receive. */
 		case SOCKET_MSG_RECV:
 		{
-			// Network led ON.
+			// Network led ON (rev A then rev B).
 			m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 0);
+			m2m_periph_gpio_set_val(M2M_PERIPH_GPIO5, 0);
 			
 			tstrSocketRecvMsg *pstrRecv = (tstrSocketRecvMsg *)pvMsg;
 			if (pstrRecv && pstrRecv->s16BufferSize > 0) {
@@ -122,16 +123,18 @@ void socketBufferCb(SOCKET sock, uint8 u8Msg, void *pvMsg)
 				close(sock);
 			}
 			
-			// Network led OFF.
+			// Network led OFF (rev A then rev B).
 			m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 1);
+			m2m_periph_gpio_set_val(M2M_PERIPH_GPIO5, 1);
 		}
 		break;
 
 		/* UDP Data receive. */
 		case SOCKET_MSG_RECVFROM:
 		{
-			// Network led ON.
+			// Network led ON (rev A then rev B).
 			m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 0);
+			m2m_periph_gpio_set_val(M2M_PERIPH_GPIO5, 0);
 			
 			tstrSocketRecvMsg *pstrRecv = (tstrSocketRecvMsg *)pvMsg;
 			if (pstrRecv && pstrRecv->s16BufferSize > 0) {
@@ -179,8 +182,9 @@ void socketBufferCb(SOCKET sock, uint8 u8Msg, void *pvMsg)
 				}
 			}
 			
-			// Network led OFF.
+			// Network led OFF (rev A then rev B).
 			m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 1);
+			m2m_periph_gpio_set_val(M2M_PERIPH_GPIO5, 1);
 		}
 		break;
 

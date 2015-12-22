@@ -142,7 +142,7 @@ NMI_API sint8  m2m_ota_init(tpfOtaUpdateCb pfOtaUpdateCb, tpfOtaNotifCb pfOtaNot
 		M2M_ERR("Invaild Ota notify cb\n");
 	}
 
-	hif_register_cb(M2M_REQ_GRP_OTA,m2m_ota_cb);
+	hif_register_cb(M2M_REQ_GROUP_OTA,m2m_ota_cb);
 
 	return ret;
 }
@@ -166,7 +166,7 @@ NMI_API sint8  m2m_ota_notif_set_url(uint8 * u8Url)
 	/*Todo: we may change it to data pkt but we need to give it higer priority
 			but the priorty is not implemnted yet in data pkt
 	*/
-	ret = hif_send(M2M_REQ_GRP_OTA,M2M_OTA_REQ_START_UPDATE,u8Url,u16UrlSize,NULL,0,0);
+	ret = hif_send(M2M_REQ_GROUP_OTA,M2M_OTA_REQ_START_UPDATE,u8Url,u16UrlSize,NULL,0,0);
 	return ret;
 
 }
@@ -184,7 +184,7 @@ NMI_API sint8  m2m_ota_notif_set_url(uint8 * u8Url)
 NMI_API sint8  m2m_ota_notif_check_for_update(void)
 {
 	sint8 ret = M2M_SUCCESS;
-	ret = hif_send(M2M_REQ_GRP_OTA,M2M_OTA_REQ_NOTIF_CHECK_FOR_UPDATE,NULL,0,NULL,0,0);
+	ret = hif_send(M2M_REQ_GROUP_OTA,M2M_OTA_REQ_NOTIF_CHECK_FOR_UPDATE,NULL,0,NULL,0,0);
 	return ret;
 }
 
@@ -206,7 +206,7 @@ NMI_API sint8 m2m_ota_notif_sched(uint32 u32Period)
 	(void)u32Period; // Silence "unused" warning
 
 	sint8 ret = M2M_SUCCESS;
-	ret = hif_send(M2M_REQ_GRP_OTA,M2M_OTA_REQ_NOTIF_CHECK_FOR_UPDATE,NULL,0,NULL,0,0);
+	ret = hif_send(M2M_REQ_GROUP_OTA,M2M_OTA_REQ_NOTIF_CHECK_FOR_UPDATE,NULL,0,NULL,0,0);
 	return ret;
 }
 
@@ -231,7 +231,7 @@ NMI_API sint8 m2m_ota_start_update(uint8 * u8DownloadUrl)
 	/*Todo: we may change it to data pkt but we need to give it higer priority
 			but the priorty is not implemnted yet in data pkt
 	*/
-	ret = hif_send(M2M_REQ_GRP_OTA,M2M_OTA_REQ_START_UPDATE,u8DownloadUrl,u16DurlSize,NULL,0,0);
+	ret = hif_send(M2M_REQ_GROUP_OTA,M2M_OTA_REQ_START_UPDATE,u8DownloadUrl,u16DurlSize,NULL,0,0);
 	return ret;
 }
 
@@ -249,7 +249,7 @@ NMI_API sint8 m2m_ota_start_update(uint8 * u8DownloadUrl)
 NMI_API sint8 m2m_ota_rollback(void)
 {
 	sint8 ret = M2M_SUCCESS;
-	ret = hif_send(M2M_REQ_GRP_OTA,M2M_OTA_REQ_ROLLBACK,NULL,0,NULL,0,0);
+	ret = hif_send(M2M_REQ_GROUP_OTA,M2M_OTA_REQ_ROLLBACK,NULL,0,NULL,0,0);
 	return ret;
 }
 
@@ -267,7 +267,28 @@ NMI_API sint8 m2m_ota_rollback(void)
 NMI_API sint8 m2m_ota_switch_firmware(void)
 {
 	sint8 ret = M2M_SUCCESS;
-	ret = hif_send(M2M_REQ_GRP_OTA,M2M_OTA_REQ_SWITCH_FIRMWARE,NULL,0,NULL,0,0);
+	ret = hif_send(M2M_REQ_GROUP_OTA,M2M_OTA_REQ_SWITCH_FIRMWARE,NULL,0,NULL,0,0);
+	return ret;
+}
+/*!
+@fn	\
+	NMI_API sint8 m2m_ota_get_firmware_version(tstrM2mRev * pstrRev);
+
+@brief
+	Get the OTA Firmware version.
+
+@return
+	The function SHALL return 0 for success and a negative value otherwise.
+*/
+NMI_API sint8 m2m_ota_get_firmware_version(tstrM2mRev * pstrRev)
+{
+	sint8 ret = M2M_SUCCESS;
+	ret = hif_chip_wake();
+	if(ret == M2M_SUCCESS)
+	{
+    	ret = nm_get_ota_firmware_info(pstrRev);
+		hif_chip_sleep();
+	}
 	return ret;
 }
 #if 0
@@ -305,7 +326,7 @@ NMI_API sint8 m2m_ota_test(void)
 			}
 			printf("page %d\n", (int)page);
 			fread(buffer,page,1,fp);
-			ret = hif_send(M2M_REQ_GRP_OTA,M2M_OTA_REQ_TEST|M2M_REQ_DATA_PKT,NULL,0,(uint8*)&buffer,page,0);
+			ret = hif_send(M2M_REQ_GROUP_OTA,M2M_OTA_REQ_TEST|M2M_REQ_DATA_PKT,NULL,0,(uint8*)&buffer,page,0);
 			if(ret != M2M_SUCCESS)
 			{
 				M2M_ERR("\n");

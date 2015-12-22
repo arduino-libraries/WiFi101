@@ -169,8 +169,9 @@ size_t WiFiClient::write(const uint8_t *buf, size_t size)
 		return 0;
 	}
 
-	// Network led ON.
+	// Network led ON (rev A then rev B).
 	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 0);
+	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO5, 0);
 
 	m2m_wifi_handle_events(NULL);
 
@@ -179,13 +180,15 @@ size_t WiFiClient::write(const uint8_t *buf, size_t size)
 		if (err != SOCK_ERR_BUFFER_FULL) {
 			setWriteError();
 			m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 1);
+			m2m_periph_gpio_set_val(M2M_PERIPH_GPIO5, 1);
 			return 0;
 		}
 		m2m_wifi_handle_events(NULL);
 	}
 	
-	// Network led OFF.
+	// Network led OFF (rev A then rev B).
 	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 1);
+	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO5, 1);
 			
 	return size;
 }

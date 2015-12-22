@@ -2,7 +2,7 @@
  *
  * \file
  *
- * \brief This module contains NMC1500 BSP APIs declarations.
+ * \brief WINC BSP API Declarations.
  *
  * Copyright (c) 2015 Atmel Corporation. All rights reserved.
  *
@@ -37,6 +37,9 @@
  *
  * \asf_license_stop
  *
+ */
+ 
+/** \defgroup nm_bsp BSP
  */
 /**@defgroup  BSPDefine Defines
  * @ingroup nm_bsp
@@ -129,6 +132,8 @@ typedef signed short	sint16;
 
 typedef signed long		sint32;
  //@}
+
+#ifndef CORTUS_APP
 
 
 #ifdef __cplusplus
@@ -245,8 +250,8 @@ void nm_bsp_register_isr(tpfNmBspIsr pfIsr);
  * @fn           void nm_bsp_interrupt_ctrl(uint8);
  * @brief        Enable/Disable interrupts
  * @param [in]   u8Enable
- *               '0' disable interrupts. '1' enable interrupts
- * @see          tpfNmBspIsr
+ *               '0' disable interrupts. '1' enable interrupts 
+ * @see          tpfNmBspIsr           
  * @note         Implementation of this function is host dependent and called by HIF layer.
  * @return       None
 
@@ -258,11 +263,6 @@ void nm_bsp_interrupt_ctrl(uint8 u8Enable);
 }
 #endif
 
-#ifdef ARDUINO_ARCH_AVR
-#define LIMITED_RAM_DEVICE
-#include "bsp/include/nm_bsp_avr.h"
-#else
-#include "bsp/include/nm_bsp_samd21.h"
 #endif
 
 #ifdef _NM_BSP_BIG_END

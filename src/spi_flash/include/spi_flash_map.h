@@ -2,7 +2,7 @@
  *
  * \file
  *
- * \brief This module contains spi flash CONTENT
+ * \brief WINC1500 SPI Flash.
  *
  * Copyright (c) 2015 Atmel Corporation. All rights reserved.
  *
@@ -39,8 +39,17 @@
  *
  */
 
+/**
+*  @file		spi_flash_map.h
+*  @brief		This module contains spi flash CONTENT
+*/
 #ifndef __SPI_FLASH_MAP_H__
 #define __SPI_FLASH_MAP_H__
+
+#define FLASH_MAP_VER_0		(0)
+#define FLAAH_MAP_VER_1		(1)
+
+#define FLASH_MAP_VERSION	FLAAH_MAP_VER_1	
 
 //#define DOWNLOAD_ROLLBACK
 //#define OTA_GEN
@@ -55,7 +64,7 @@
 /*!<Starting Address of Flash Memory
  *
  */
-#define FLASH_BLOCK_SIZE					(32UL * 1024)
+#define FLASH_BLOCK_SIZE					(32 * 1024UL)
 /*!<Block Size in Flash Memory
  */
 #define FLASH_SECTOR_SZ						(4 * 1024UL)
@@ -63,9 +72,6 @@
  */
 #define FLASH_PAGE_SZ						(256)
 /*!<Page Size in Flash Memory
- */
-#define FLASH_TOTAL_SZ						(256 * 1024UL)
-/*!<Total Size of 2M Flash Memory
  */
 #define FLASH_2M_TOTAL_SZ					(256 * 1024UL)
 /*!<Total Size of 2M Flash Memory
@@ -89,12 +95,12 @@
  * |          |       | GAIN Size = 3K        |   Gain configuration                          |
  * |   16 K   |   4 K | CERTIFICATE           | X.509 Certificate storage                     |
  * |   20 K   |   4 K | Scratch Section       | Empty Section                                 |
- * |   24 K   |   2 K | Program Firmware      |                                               |
- * |   26 K   | 194 K | Main Firmware         | Main Firmware to run WiFi Chip                |
- * |  220 K   |   8 K | HTTP Files            | Files used with Provisioning Mode             |
- * |  228 K   |   0 K | PS_Firmware           | Power Save Firmware                           |
- * |  228 K   |   4 K | Connection Parameters | Parameters for success connection to AP       |
- * |  232 K   |  24 K | Application           | Cortus App                                    |
+ * |   24 K   |   4 K | Reserved TLS Server   | Reserved                                      |
+ * |   28 K   |   8 K | HTTP Files            | Files used with Provisioning Mode             |
+ * |   36 K   |   4 K | Connection Parameters | Parameters for success connection to AP       |
+ * |   40 K   | 236 K | Main Firmware/program | Main Firmware to run WiFi Chip                |
+ * |  276 K   | 236 K | OTA Firmware          | OTA firmware                                  |
+ * |  512 K   |       |                       | Total flash size                              |
  * |__________|_______|_______________________|_______________________________________________|
  *
  *
@@ -103,17 +109,15 @@
  *    "S:xxxK" -means-> Size is  :xxxK
  */
 
-/* Boot Firmware: which used to select which firmware to run
- * starting Address L:  0 K |
- * Size				S:  4 K |
+/*
+ * Boot Firmware: which used to select which firmware to run
  *
  */
 #define M2M_BOOT_FIRMWARE_STARTING_ADDR		(FLASH_START_ADDR)
 #define M2M_BOOT_FIRMWARE_FLASH_SZ			(FLASH_SECTOR_SZ)
 
-/* Control Section: which used by Boot firmware
- * starting Address L:  4 K |
- * Size				S:  8 K |
+/*
+ * Control Section: which used by Boot firmware
  *
  */
 #define M2M_CONTROL_FLASH_OFFSET			(M2M_BOOT_FIRMWARE_STARTING_ADDR + M2M_BOOT_FIRMWARE_FLASH_SZ)
@@ -121,9 +125,8 @@
 #define M2M_CONTROL_FLASH_SEC_SZ			(FLASH_SECTOR_SZ)
 #define M2M_CONTROL_FLASH_TOTAL_SZ			(FLASH_SECTOR_SZ * 2)
 
-/* LUT for PLL and TX Gain settings:
- * starting Address L: 12 K |
- * Size				S:  4 K |
+/*
+ * LUT for PLL and TX Gain settings:
  *
  */
 #define M2M_PLL_FLASH_OFFSET				(M2M_CONTROL_FLASH_OFFSET + M2M_CONTROL_FLASH_TOTAL_SZ)
@@ -132,28 +135,53 @@
 #define M2M_GAIN_FLASH_SZ					(M2M_CONFIG_SECT_TOTAL_SZ - M2M_PLL_FLASH_SZ)
 #define M2M_CONFIG_SECT_TOTAL_SZ			(FLASH_SECTOR_SZ)
 
-/* Certificate:
- * starting Address		L: 16 K |
- * Size for CERTIFICATE	S:  3 K |
- * Size  	RESERVED	S:  1 K |
+/*
+ * Certificate:
  *
  */
 #define M2M_TLS_FLASH_ROOTCERT_CACHE_OFFSET			(M2M_PLL_FLASH_OFFSET + M2M_CONFIG_SECT_TOTAL_SZ)
 #define M2M_TLS_FLASH_ROOTCERT_CACHE_SIZE			(FLASH_SECTOR_SZ * 1)
 
-/* Scratch:
- * starting Address		L: 20 K |
- * Size for Scratch		S:  4 K |
+/*
+ * Scratch:
  *
  */
 #define M2M_TLS_FLASH_SESSION_CACHE_OFFSET		(M2M_TLS_FLASH_ROOTCERT_CACHE_OFFSET + M2M_TLS_FLASH_ROOTCERT_CACHE_SIZE)
 #define M2M_TLS_FLASH_SESSION_CACHE_SIZE		(FLASH_SECTOR_SZ * 1)
 
 /*
+ * reserved section
+ *
+ */
+#define M2M_RESERVED_FLASH_OFFSET				(M2M_TLS_FLASH_SESSION_CACHE_OFFSET + M2M_TLS_FLASH_SESSION_CACHE_SIZE)
+#define M2M_RESERVED_FLASH_SZ					(FLASH_SECTOR_SZ * 1)
+/*
+ * HTTP Files
+ *
+ */
+#define M2M_HTTP_MEM_FLASH_OFFSET				(M2M_RESERVED_FLASH_OFFSET + M2M_RESERVED_FLASH_SZ)
+#define M2M_HTTP_MEM_FLASH_SZ					(FLASH_SECTOR_SZ * 2)
+/*
+ * Saved Connection Parameters:
+ *
+ */
+#define M2M_CACHED_CONNS_FLASH_OFFSET			(M2M_HTTP_MEM_FLASH_OFFSET + M2M_HTTP_MEM_FLASH_SZ)
+#define M2M_CACHED_CONNS_FLASH_SZ				(FLASH_SECTOR_SZ * 1)
+
+/*
+ *
+ * Common section size
+ */
+
+#define M2M_COMMON_DATA_SEC						(M2M_BOOT_FIRMWARE_FLASH_SZ + M2M_CONTROL_FLASH_TOTAL_SZ + M2M_CONFIG_SECT_TOTAL_SZ + \
+												M2M_TLS_FLASH_ROOTCERT_CACHE_SIZE + M2M_TLS_FLASH_SESSION_CACHE_SIZE + \
+												M2M_HTTP_MEM_FLASH_SZ  + M2M_CACHED_CONNS_FLASH_SZ + M2M_RESERVED_FLASH_SZ)
+/*
  *
  * OTA image1 Offset
  */
-#define M2M_OTA_IMAGE1_OFFSET					(M2M_TLS_FLASH_SESSION_CACHE_OFFSET + M2M_TLS_FLASH_SESSION_CACHE_SIZE)
+
+#define M2M_OTA_IMAGE1_OFFSET					(M2M_CACHED_CONNS_FLASH_OFFSET + M2M_CACHED_CONNS_FLASH_SZ)
 /*
  * Firmware Offset
  *
@@ -168,80 +196,39 @@
 #endif
 #endif
 /*
- * To define Starting Address and size for Firmware
- *  ____________________ _____________________ ________________________
- * |--------------------| Power Save Program  |  Non Power SaveProgram |
- * |____________________|_____________________|________________________|
- * |M2M_PROGRAM_FLASH_SZ|        2 K          |          0 K           |
- * |Starting Address    |        2 K          |          0 K           |
- * |Size                |      194 K          |        196 K           |
- * |____________________|_____________________|________________________|
  *
+ * Firmware
  */
-#ifdef _PROGRAM_POWER_SAVE_
-#define M2M_PROGRAM_FLASH_SZ				(1024 * 2UL)
-#else
-#define M2M_PROGRAM_FLASH_SZ				(0UL)
-#endif	/* _PROGRAM_POWER_SAVE_ */
-#define M2M_FIRMWARE_FLASH_SZ				(196*1024UL)
-
-/* HTTP Files
- * starting Address L:204 K |
- * Size				S:  8 K |
- *
- */
-#define M2M_HTTP_MEM_FLASH_OFFSET			(M2M_FIRMWARE_FLASH_OFFSET + M2M_FIRMWARE_FLASH_SZ)
-#define M2M_HTTP_MEM_FLASH_SZ				(FLASH_SECTOR_SZ * 2)
-
-/* ps_Firmware(Power Save Firmware): App. which runs for power saving purpose
- * starting Address L:212 K |
- * Size				S: 0 K |
- *
- */
-#define M2M_PS_FIRMWARE_FLASH_OFFSET		(M2M_HTTP_MEM_FLASH_OFFSET + M2M_HTTP_MEM_FLASH_SZ)
-#define M2M_PS_FIRMWARE_FLASH_SZ			(FLASH_SECTOR_SZ * 0)
-
-/* Saved Connection Parameters:
- * starting Address L:224 K |
- * Size				S:  4 K |
- *
- */
-#define M2M_CACHED_CONNS_FLASH_OFFSET		(M2M_PS_FIRMWARE_FLASH_OFFSET + M2M_PS_FIRMWARE_FLASH_SZ)
-#define M2M_CACHED_CONNS_FLASH_SZ			(FLASH_SECTOR_SZ * 1)
-
-/* App(Cortus App): App. which runs over firmware
- * starting Address L:232 K |
- * Size for Code 	S: 20 K |
- * Size for Data	S:  4 K |
- *
- */
-#define M2M_APP_2M_MEM_FLASH_OFFSET			(M2M_CACHED_CONNS_FLASH_OFFSET + M2M_CACHED_CONNS_FLASH_SZ)
-#define M2M_APP_2M_MEM_FLASH_SZ				(FLASH_SECTOR_SZ * 6)
-#define M2M_APP_4M_MEM_FLASH_SZ				(FLASH_SECTOR_SZ * 10)
-#define M2M_APP_4M_MEM_FLASH_OFFSET			(FLASH_4M_TOTAL_SZ - M2M_APP_4M_MEM_FLASH_SZ)
+#define M2M_FIRMWARE_FLASH_SZ				(236*1024UL)
 /**
  *
  * OTA image Size
  */
-#define OTA_IMAGE_SIZE						(M2M_CACHED_CONNS_FLASH_SZ + M2M_HTTP_MEM_FLASH_SZ + M2M_FIRMWARE_FLASH_SZ)
+#define OTA_IMAGE_SIZE						(M2M_FIRMWARE_FLASH_SZ)
 /**
  *
  * Flash Total size
  */
-#define FLASH_IMAGE1_CONTENT_SZ 			(M2M_BOOT_FIRMWARE_FLASH_SZ + M2M_CONTROL_FLASH_TOTAL_SZ + M2M_CONFIG_SECT_TOTAL_SZ + \
-											M2M_TLS_FLASH_ROOTCERT_CACHE_SIZE + M2M_TLS_FLASH_SESSION_CACHE_SIZE + OTA_IMAGE_SIZE + \
-											M2M_PS_FIRMWARE_FLASH_SZ + M2M_APP_2M_MEM_FLASH_SZ)
+#define FLASH_IMAGE1_CONTENT_SZ 			(M2M_COMMON_DATA_SEC  +  OTA_IMAGE_SIZE)
+									
 /**
  *
  * OTA image 2 offset
  */
 #define M2M_OTA_IMAGE2_OFFSET				(FLASH_IMAGE1_CONTENT_SZ)
 
+/*
+ * App(Cortus App 4M): App. which runs over firmware
+ *
+ */
+#define M2M_APP_4M_MEM_FLASH_SZ				(FLASH_SECTOR_SZ * 10)
+#define M2M_APP_4M_MEM_FLASH_OFFSET			(FLASH_4M_TOTAL_SZ - M2M_APP_4M_MEM_FLASH_SZ)
+
 /* Check if total size of content
  *  don't exceed total size of memory allowed
  **/
-#if (FLASH_IMAGE1_CONTENT_SZ > FLASH_TOTAL_SZ)
-#error "Exceed Flash Size"
+#if (M2M_COMMON_DATA_SEC  +  (OTA_IMAGE_SIZE *2)> FLASH_4M_TOTAL_SZ)
+#error "Excced 4M Flash Size"
 #endif /* (FLASH_CONTENT_SZ > FLASH_TOTAL_SZ) */
 
 

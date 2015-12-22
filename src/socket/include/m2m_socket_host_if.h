@@ -171,8 +171,17 @@ MACROS
 */
 
 
-#define SOCKET_CMD_SSL_SET_SOCK_OPT		0x51
+#define SOCKET_CMD_SSL_SET_SOCK_OPT			0x51
 
+
+#define SOCKET_CMD_PING						0x52
+
+#define SOCKET_CMD_SSL_SET_CS_LIST			0x53
+
+
+#define PING_ERR_SUCCESS					0
+#define PING_ERR_DEST_UNREACH				1
+#define PING_ERR_TIMEOUT					2
 
 /*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
 DATA TYPES
@@ -288,7 +297,11 @@ typedef struct{
 typedef struct{
 	SOCKET		sock;
 	sint8		s8Error;
-	uint16		u16SessionID;
+	uint16		u16AppDataOffset;
+	/*!<
+		In further packet send requests the host interface should put the user application
+		data at this offset in the allocated shared data packet.
+	*/
 }tstrConnectReply;
 
 
@@ -374,6 +387,32 @@ typedef struct{
 	uint8		au8OptVal[SSL_MAX_OPT_LEN];
 }tstrSSLSetSockOptCmd;
 
+
+/*!
+*/
+typedef struct{
+	uint32	u32DestIPAddr;
+	uint32	u32CmdPrivate;
+	uint16	u16PingCount;
+	uint8	u8TTL;
+	uint8	__PAD8__;
+}tstrPingCmd;
+
+
+typedef struct{
+	uint32	u32IPAddr;
+	uint32	u32CmdPrivate;
+	uint32	u32RTT;
+	uint16	u16Success;
+	uint16	u16Fail;
+	uint8	u8ErrorCode;
+	uint8	__PAD24__[3];
+}tstrPingReply;
+
+
+typedef struct{
+	uint32	u32CsBMP;
+}tstrSslSetActiveCsList;
 
 #ifdef  __cplusplus
 }

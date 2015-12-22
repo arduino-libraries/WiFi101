@@ -115,49 +115,56 @@ MACROS
 */
 //#endif
 
-#define SOL_SOCKET												1
+#define SOL_SOCKET											1
 /*!< 
 	Socket option.
-	Used with the @ref setsocketopt function
+	Used with the @ref setsockopt function
 */
 
-#define	SO_SET_UDP_SEND_CALLBACK								0x00
-/*!<
-	Socket option used by the application to enable/disable
-	the use of UDP send callbacks. 
-	Used with the @ref setsocketopt function.
-*/
-
-#define IP_ADD_MEMBERSHIP										0x01
-/*!< 
-	Set Socket Option Add Membership command value.
-	Used with the @ref setsocketopt function.
-*/
-
-	
-#define IP_DROP_MEMBERSHIP										0x02
-/*!< 
-	Set Socket Option Drop Membership command value.
-	Used with the @ref setsocketopt function.
-*/
-
-//@}
-
-
-/** @defgroup  SSLSocketOptions Defines
- * @ingroup SocketHeader
- * The following list of macros are used to define SSL Socket options.
- * @{
- */
-
-#define SOL_SSL_SOCKET											2
+#define SOL_SSL_SOCKET										2
 /*!< 
 	SSL Socket option level.
-	Used with the @ref setsocketopt function
+	Used with the @ref setsockopt function
+*/
+
+#define	SO_SET_UDP_SEND_CALLBACK							0x00
+/*!<
+	Socket option used by the application to enable/disable
+	the use of UDP send callbacks.
+	Used with the @ref setsockopt function.
+*/
+
+#define IP_ADD_MEMBERSHIP									0x01
+/*!<
+	Set Socket Option Add Membership command value.
+	Used with the @ref setsockopt function.
 */
 
 
-#define SO_SSL_BYPASS_X509_VERIF								0x01
+#define IP_DROP_MEMBERSHIP									0x02
+/*!<
+	Set Socket Option Drop Membership command value.
+	Used with the @ref setsockopt function.
+*/
+ //@}
+
+
+
+/**
+ * @defgroup  TLSDefines TLS Defines
+ * @ingroup SocketDefines
+ */
+
+
+
+/** @defgroup  SSLSocketOptions TLS Socket Options
+ * @ingroup TLSDefines
+ * The following list of macros are used to define SSL Socket options.
+ * @{
+ * @sa setsockopt
+ */
+
+#define SO_SSL_BYPASS_X509_VERIF							0x01
 /*!<
 	Allow an opened SSL socket to bypass the X509 certificate 
 	verification process.
@@ -169,15 +176,82 @@ MACROS
 */
 
 
-#define SO_SSL_SNI												0x02
+#define SO_SSL_SNI											0x02
 /*!<
 	Set the Server Name Indicator (SNI) for an SSL socket. The
 	SNI is a NULL terminated string containing the server name
 	assocated with the connection. It must not exceed the size
 	of HOSTNAME_MAX_SIZE.
 */
+
+
+#define SO_SSL_ENABLE_SESSION_CACHING						0x03
+/*!<
+	This option allow the TLS to cache the session information for fast
+	TLS session establishment in future connections using the
+	TLS Protocol session resume features.
+*/
+
+//@}
+
+
+
+/** @defgroup  SSLCipherSuiteConfiguration TLS Cipher Suite Configurations
+ * @ingroup TLSDefines
+ * The following list of macros are used to define SSL Ciphersuite Configuration.
+ * @sa sslSetActiveCipherSuites
+ * @{
+ */
+
+#define SSL_ENABLE_ALL_SUITES                               0xfffffffful
+/*!<
+	Enable all possible supported cipher suites.
+*/
+
+#define SSL_ENABLE_RSA_SHA_SUITES							0x01
+/*!<
+	Enable RSA Hmac_SHA based Ciphersuites. For example,
+		TLS_RSA_WITH_AES_128_CBC_SHA
+*/
+
+
+#define SSL_ENABLE_RSA_SHA256_SUITES						0x02
+/*!<
+	Enable RSA Hmac_SHA256 based Ciphersuites. For example,
+		TLS_RSA_WITH_AES_128_CBC_SHA256
+*/
+
+
+#define SSL_ENABLE_DHE_SHA_SUITES							0x04
+/*!<
+	Enable DHE Hmac_SHA based Ciphersuites. For example,
+		TLS_DHE_RSA_WITH_AES_128_CBC_SHA
+*/
+
+
+#define SSL_ENABLE_DHE_SHA256_SUITES						0x08
+/*!<
+	Enable DHE Hmac_SHA256 based Ciphersuites. For example,
+		TLS_DHE_RSA_WITH_AES_128_CBC_SHA256
+*/
+
+
+#define SSL_ENABLE_RSA_GCM_SUITES							0x10
+/*!<
+	Enable RSA AEAD based Ciphersuites. For example,
+		TLS_RSA_WITH_AES_128_GCM_SHA256
+*/
+
+
+#define SSL_ENABLE_DHE_GCM_SUITES							0x20
+/*!<
+	Enable DHE AEAD based Ciphersuites. For example,
+		TLS_DHE_RSA_WITH_AES_128_GCM_SHA256
+*/
+
  //@}
-		
+
+
 /**************
 Socket Errors
 **************/
@@ -653,7 +727,31 @@ typedef void (*tpfAppSocketCb) (SOCKET sock, uint8 u8Msg, void * pvMsg);
 				Server IPv4 address encoded in NW byte order format. If it is Zero, then the DNS resolution failed.
 */
 typedef void (*tpfAppResolveCb) (uint8* pu8DomainName, uint32 u32ServerIP);
- /**@}*/
+
+/*!
+@typedef \
+	tpfPingCb
+
+@brief	PING Callback
+
+	The function delivers the ping statistics for the sent ping triggered by calling 
+	m2m_ping_req.
+
+@param [in]	u32IPAddr
+				Destination IP.
+
+@param [in]	u32RTT
+				Round Trip Time.
+
+@param [in]	u8ErrorCode
+				Ping error code. It may be one of:
+				- PING_ERR_SUCCESS
+				- PING_ERR_DEST_UNREACH
+				- PING_ERR_TIMEOUT
+*/
+typedef void (*tpfPingCb)(uint32 u32IPAddr, uint32 u32RTT, uint8 u8ErrorCode);
+ 
+ /**@}*/ 
 /*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
 FUNCTION PROTOTYPES
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*/
@@ -1631,7 +1729,46 @@ NMI_API uint32 nmi_inet_addr(char *pcIpAddr);
 */
 NMI_API sint8 gethostbyname(uint8 * pcHostName);
 
-NMI_API sint8 sslSetSockOpt(SOCKET sock, uint8  u8Opt, const void *pvOptVal, uint16 u16OptLen);
+
+
+/** @} */
+/** @defgroup sslSetActiveCipherSuitesFn sslSetActiveCipherSuites
+ *  @ingroup SocketAPI
+ *   Overrides the default active SSL ciphers in the SSL module with a certain combination of ciphers selected by the caller using
+ *   a bitmap containing the required ciphers list.
+ *   There API is required only if the will not change the default ciphersuites, otherwise, it is not recommended to use.
+ */
+ /**@{*/
+/*!
+@fn	\
+	NMI_API sint8 sslSetActiveCipherSuites(uint32 u32SslCsBMP);
+
+@param [in]	u32SslCsBMP
+<p>A non-zero 32-bit integer bitmap containing the bitwise OR of the desired ciphers to be enabled 
+for the SSL module. The ciphersuites are defined in groups as follows:</p>
+<ul>
+	<li>@ref SSL_ENABLE_ALL_SUITES</li>
+	<li>@ref SSL_ENABLE_RSA_SHA_SUITES</li>
+	<li>@ref SSL_ENABLE_RSA_SHA256_SUITES</li>
+	<li>@ref SSL_ENABLE_DHE_SHA_SUITES</li>
+	<li>@ref SSL_ENABLE_DHE_SHA256_SUITES</li>
+	<li>@ref SSL_ENABLE_RSA_GCM_SUITES</li>
+	<li>@ref SSL_ENABLE_DHE_GCM_SUITES</li>
+</ul>
+@return		
+	Possible return values are [SOCK_ERR_NO_ERROR](@ref SOCK_ERR_NO_ERROR) if case of success 
+	or [SOCK_ERR_INVALID_ARG](@ref SOCK_ERR_INVALID_ARG) if the map is zero.
+@remarks
+The default supported ciphersuites are the combination of all the above groups. The caller can override the default with any desired combination. 
+For example, to disable SHA based ciphers the function should be called with this syntax:
+\code
+	sslSetActiveCipherSuites(SSL_ENABLE_ALL_SUITES & ~(SSL_ENABLE_RSA_SHA_SUITES|SSL_ENABLE_DHE_SHA_SUITES));
+\endcode
+@note Passing the u32SslCsBMP as zero <strong>will not</strong> change the current active list.
+*/
+NMI_API sint8 sslSetActiveCipherSuites(uint32 u32SslCsBMP);
+
+
 /** @} */
 
 /** @defgroup SetSocketOptionFn setsockopt
@@ -1713,6 +1850,34 @@ NMI_API sint8 setsockopt(SOCKET socket, uint8 u8Level, uint8 option_name,
 */
 NMI_API sint8 getsockopt(SOCKET sock, uint8 u8Level, uint8 u8OptName, const void *pvOptValue, uint8* pu8OptLen);
 /** @} */
+
+/**@}*/
+/** @defgroup PingFn m2m_ping_req
+ *   @ingroup SocketAPI
+ *  	The function request to send ping request to the given IP Address.
+ */
+ /**@{*/
+/*!
+ * @fn             NMI_API sint8 m2m_ping_req(uint32 u32DstIP, uint8 u8TTL);
+ * @param [in]  u32DstIP
+ *					Target Destination IP Address for the ping request. It must be represented in Network
+ *					byte order.
+ *					The function nmi_inet_addr could be used to translate the dotted decimal notation IP
+ *					to its Network bytes order integer represntative.
+ * 
+ * @param [in]	u8TTL
+ *					IP TTL value for the ping request. If set to ZERO, the dfault value SHALL be used.
+ *
+ * @param [in]	fpPingCb
+ *					Callback will be called to deliver the ping statistics.
+ *
+ * @see           nmi_inet_addr       
+ * @return        The function returns @ref M2M_SUCCESS for successful operations and a negative value otherwise.
+ */
+NMI_API sint8 m2m_ping_req(uint32 u32DstIP, uint8 u8TTL, tpfPingCb fpPingCb);
+/**@}*/
+
+
 #ifdef  __cplusplus
 }
 #endif /* __cplusplus */

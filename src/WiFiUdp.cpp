@@ -148,8 +148,9 @@ size_t WiFiUDP::write(const uint8_t *buffer, size_t size)
 {
 	struct sockaddr_in addr;
 
-	// Network led ON.
+	// Network led ON (rev A then rev B).
 	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 0);
+	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO5, 0);
 
 	addr.sin_family = AF_INET;
 	addr.sin_port = _htons(_sndPort);
@@ -157,13 +158,15 @@ size_t WiFiUDP::write(const uint8_t *buffer, size_t size)
 
 	if (sendto(_socket, (void *)buffer, size, 0,
 			(struct sockaddr *)&addr, sizeof(addr)) < 0) {
-		// Network led OFF.
+		// Network led OFF (rev A then rev B).
 		m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 1);
+		m2m_periph_gpio_set_val(M2M_PERIPH_GPIO5, 1);
 		return 0;
 	}
 
-	// Network led OFF.
+	// Network led OFF (rev A then rev B).
 	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 1);
+	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO5, 1);
 
 	return size;
 }

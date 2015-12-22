@@ -2,7 +2,7 @@
  *
  * \file
  *
- * \brief This module contains common APIs declarations.
+ * \brief WINC Driver Common API Declarations.
  *
  * Copyright (c) 2015 Atmel Corporation. All rights reserved.
  *
@@ -43,6 +43,7 @@
 #define _NM_COMMON_H_
 
 #include "bsp/include/nm_bsp.h"
+#include "common/include/nm_debug.h"
 
 /**@defgroup  CommonDefines CommonDefines
  * @ingroup WlanDefines
@@ -116,73 +117,6 @@ Invalid argument
 #define NBIT1				(0x00000002)
 #define NBIT0				(0x00000001)
 
-
-#define M2M_LOG_NONE									0
-#define M2M_LOG_ERROR									1
-#define M2M_LOG_INFO									2
-#define M2M_LOG_REQ										3
-#define M2M_LOG_DBG										4
-
-#if (defined __APP_APS3_CORTUS__)
-#define M2M_LOG_LEVEL									M2M_LOG_ERROR
-#else
-#define M2M_LOG_LEVEL									M2M_LOG_REQ
-#endif
-
-/**/
-#if !((defined __MSP430FR5739)||(defined __MCF964548__))
-
-#define M2M_ERR(...)
-#define M2M_INFO(...)
-#define M2M_REQ(...)
-#define M2M_DBG(...)
-
-#if (CONF_WINC_DEBUG == 1)
-#define M2M_PRINT(...)							do{CONF_WINC_PRINTF(__VA_ARGS__);CONF_WINC_PRINTF("\r");}while(0)
-	#if (M2M_LOG_LEVEL >= M2M_LOG_ERROR)
-	#undef M2M_ERR
-	#define M2M_ERR(...)							do{CONF_WINC_PRINTF("(APP)(ERR)[%s][%d]",__FUNCTION__,__LINE__); CONF_WINC_PRINTF(__VA_ARGS__);CONF_WINC_PRINTF("\r");}while(0)
-		#if (M2M_LOG_LEVEL >= M2M_LOG_INFO)
-		#undef M2M_INFO
-		#define M2M_INFO(...)							do{CONF_WINC_PRINTF("(APP)(INFO)"); CONF_WINC_PRINTF(__VA_ARGS__);CONF_WINC_PRINTF("\r");}while(0)
-			#if (M2M_LOG_LEVEL >= M2M_LOG_REQ)
-			#undef M2M_REQ
-			#define M2M_REQ(...)							do{CONF_WINC_PRINTF("(APP)(R)"); CONF_WINC_PRINTF(__VA_ARGS__);CONF_WINC_PRINTF("\r");}while(0)
-				#if (M2M_LOG_LEVEL >= M2M_LOG_DBG)
-				#undef M2M_DBG
-				#define M2M_DBG(...)							do{CONF_WINC_PRINTF("(APP)(DBG)[%s][%d]",__FUNCTION__,__LINE__); CONF_WINC_PRINTF(__VA_ARGS__);CONF_WINC_PRINTF("\r");}while(0)
-				#endif
-			#endif
-		#endif
-	#endif
-#else
-#define M2M_ERR(...)
-#define M2M_DBG(...)
-#define M2M_INFO(...)
-#define M2M_PRINT(...)
-#endif
-#else
-#if (!defined  __MCF964548__)||(!defined __SAMD21J18A__)
-static void M2M_ERR(const char *_format, ...) //__attribute__ ((__format__ (M2M_ERR, 1, 2)))
-{
-}
-static void M2M_DBG(const char *_format, ...) //__attribute__ ((__format__ (M2M_DBG, 1, 2)))
-{
-}
-static void M2M_INFO(const char *_format, ...) // __attribute__ ((__format__ (M2M_INFO, 1, 2)))
-{
-
-}
-static void M2M_PRINT(const char *_format, ...) // __attribute__ ((__format__ (M2M_INFO, 1, 2)))
-{
-
-}
-static void CONF_WINC_PRINTF(const char *_format, ...)
-{
-}
-#endif
-#endif
-
 #define M2M_MAX(A,B)					((A) > (B) ? (A) : (B))
 #define M2M_SEL(x,m1,m2,m3)				((x>1)?((x>2)?(m3):(m2)):(m1))
 #define WORD_ALIGN(val) 				(((val) & 0x03) ? ((val) + 4 - ((val) & 0x03)) : (val))
@@ -203,16 +137,6 @@ static void CONF_WINC_PRINTF(const char *_format, ...)
 #define BYTE_3(word)   					((uint8)(((word) >> 0 	) & 0x000000FFUL))
 #endif
 
-
-typedef enum{
-	M2M_REQ_GRP_MAIN = 0, M2M_REQ_GRP_WIFI, M2M_REQ_GRP_IP, M2M_REQ_GRP_HIF, M2M_REQ_GRP_OTA
-}tenuM2mReqGrp;
-
-
-typedef enum{
-	M2M_REQ_CONFIG_PKT,
-	M2M_REQ_DATA_PKT = NBIT7
-}tenuM2mReqPkt;
 /**@}*/
 #ifdef __cplusplus
      extern "C" {

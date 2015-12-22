@@ -2,7 +2,7 @@
  *
  * \file
  *
- * \brief
+ * \brief WINC1500 SPI Flash.
  *
  * Copyright (c) 2015 Atmel Corporation. All rights reserved.
  *
@@ -42,12 +42,8 @@
 #ifdef PROFILING
 #include "windows.h"
 #endif
-#include <driver/include/spi_flash.h>
-#include <driver/include/spi_flash_map.h>
+#include "spi_flash/include/spi_flash.h"
 #define DUMMY_REGISTER	(0x1084)
-#include <stdint.h>
-
-#define u32(x) ((uint32_t)x)
 
 #define TIMEOUT (-1) /*MS*/
 
@@ -77,15 +73,12 @@ SPI Flash DMA
 /*********************************************/
 
 /**
- *	@fn			spi_flash_read_status_reg
- *	@brief		Read status register
- *	@param[OUT]	val
- *					value of status reg
- *	@return		Status of execution
- *	@note		Compatible with MX25L6465E
- *	@author		M. Abdelmawla
- *	@version	1.0
- */ 
+*	@fn			spi_flash_read_status_reg
+*	@brief		Read status register
+*	@param[OUT]	val
+					value of status reg
+*	@return		Status of execution
+*/ 
 static sint8 spi_flash_read_status_reg(uint8 * val)
 {
 	sint8 ret = M2M_SUCCESS;
@@ -107,19 +100,16 @@ static sint8 spi_flash_read_status_reg(uint8 * val)
 	while(reg != 1);
 
 	reg = (M2M_SUCCESS == ret)?(nm_read_reg(DUMMY_REGISTER)):(0);
-	*val = reg & 0xff;
+	*val = (uint8)(reg & 0xff);
 	return ret;
 }
 
 #ifdef DISABLE_UNSED_FLASH_FUNCTIONS
 /**
- *	@fn			spi_flash_read_security_reg
- *	@brief		Read security register
- *	@return		Security register value
- *	@note		Compatible with MX25L6465E
- *	@author		M. Abdelmawla
- *	@version	1.0
- */ 
+*	@fn			spi_flash_read_security_reg
+*	@brief		Read security register
+*	@return		Security register value
+*/ 
 static uint8 spi_flash_read_security_reg(void)
 {
 	uint8	cmd[1];
@@ -145,12 +135,9 @@ static uint8 spi_flash_read_security_reg(void)
 }
 
 /**
- *	@fn			spi_flash_gang_unblock
- *	@brief		Unblock all flash area
- *	@note		Compatible with MX25L6465E
- *	@author		M. Abdelmawla
- *	@version	1.0
- */ 
+*	@fn			spi_flash_gang_unblock
+*	@brief		Unblock all flash area
+*/ 
 static sint8 spi_flash_gang_unblock(void)
 {
 	uint8	cmd[1];
@@ -175,12 +162,9 @@ static sint8 spi_flash_gang_unblock(void)
 }
 
 /**
- *	@fn			spi_flash_clear_security_flags
- *	@brief		Clear all security flags
- *	@note		Compatible with MX25L6465E
- *	@author		M. Abdelmawla
- *	@version	1.0
- */ 
+*	@fn			spi_flash_clear_security_flags
+*	@brief		Clear all security flags
+*/ 
 static sint8 spi_flash_clear_security_flags(void)
 {
 	uint8 cmd[1];
@@ -206,19 +190,16 @@ static sint8 spi_flash_clear_security_flags(void)
 #endif
 
 /**
- *	@fn			spi_flash_load_to_cortus_mem
- *	@brief		Load data from SPI flash into cortus memory
- *	@param[IN]	u32MemAdr
- *					Cortus load address. It must be set to its AHB access address
- *	@param[IN]	u32FlashAdr
- *					Address to read from at the SPI flash
- *	@param[IN]	u32Sz
- *					Data size
- *	@return		Status of execution
- *	@note		Compatible with MX25L6465E and should be working with other types
- *	@author		M. Abdelmawla
- *	@version	1.0
- */ 
+*	@fn			spi_flash_load_to_cortus_mem
+*	@brief		Load data from SPI flash into cortus memory
+*	@param[IN]	u32MemAdr
+*					Cortus load address. It must be set to its AHB access address
+*	@param[IN]	u32FlashAdr
+*					Address to read from at the SPI flash
+*	@param[IN]	u32Sz
+*					Data size
+*	@return		Status of execution
+*/ 
 static sint8 spi_flash_load_to_cortus_mem(uint32 u32MemAdr, uint32 u32FlashAdr, uint32 u32Sz)
 {
 	uint8 cmd[5];
@@ -232,7 +213,7 @@ static sint8 spi_flash_load_to_cortus_mem(uint32 u32MemAdr, uint32 u32FlashAdr, 
 	cmd[4] = 0xA5;
 
 	ret += nm_write_reg(SPI_FLASH_DATA_CNT, u32Sz);
-	ret += nm_write_reg(SPI_FLASH_BUF1, u32(cmd[0])|u32(cmd[1]<<8)|u32(cmd[2]<<16)|u32(cmd[3]<<24));
+	ret += nm_write_reg(SPI_FLASH_BUF1, cmd[0]|(cmd[1]<<8)|(cmd[2]<<16)|(cmd[3]<<24));
 	ret += nm_write_reg(SPI_FLASH_BUF2, cmd[4]);
 	ret += nm_write_reg(SPI_FLASH_BUF_DIR, 0x1f);
 	ret += nm_write_reg(SPI_FLASH_DMA_ADDR, u32MemAdr);
@@ -248,15 +229,12 @@ static sint8 spi_flash_load_to_cortus_mem(uint32 u32MemAdr, uint32 u32FlashAdr, 
 }
 
 /**
- *	@fn			spi_flash_sector_erase
- *	@brief		Erase sector (4KB)
- *	@param[IN]	u32FlashAdr
- *					Any memory address within the sector
- *	@return		Status of execution
- *	@note		Compatible with MX25L6465E and should be working with other types
- *	@author		M. Abdelmawla
- *	@version	1.0
- */ 
+*	@fn			spi_flash_sector_erase
+*	@brief		Erase sector (4KB)
+*	@param[IN]	u32FlashAdr
+*					Any memory address within the sector
+*	@return		Status of execution
+*/ 
 static sint8 spi_flash_sector_erase(uint32 u32FlashAdr)
 {
 	uint8 cmd[4];
@@ -269,7 +247,7 @@ static sint8 spi_flash_sector_erase(uint32 u32FlashAdr)
 	cmd[3] = (uint8)(u32FlashAdr);
 
 	ret += nm_write_reg(SPI_FLASH_DATA_CNT, 0);
-	ret += nm_write_reg(SPI_FLASH_BUF1, u32(cmd[0])|u32(cmd[1]<<8)|u32(cmd[2]<<16)|u32(cmd[3]<<24));
+	ret += nm_write_reg(SPI_FLASH_BUF1, cmd[0]|(cmd[1]<<8)|(cmd[2]<<16)|(cmd[3]<<24));
 	ret += nm_write_reg(SPI_FLASH_BUF_DIR, 0x0f);
 	ret += nm_write_reg(SPI_FLASH_DMA_ADDR, 0);
 	ret += nm_write_reg(SPI_FLASH_CMD_CNT, 4 | (1<<7));
@@ -284,13 +262,10 @@ static sint8 spi_flash_sector_erase(uint32 u32FlashAdr)
 }
 
 /**
- *	@fn			spi_flash_write_enable
- *	@brief		Send write enable command to SPI flash
- *	@return		Status of execution
- *	@note		Compatible with MX25L6465E and should be working with other types
- *	@author		M. Abdelmawla
- *	@version	1.0
- */ 
+*	@fn			spi_flash_write_enable
+*	@brief		Send write enable command to SPI flash
+*	@return		Status of execution
+*/ 
 static sint8 spi_flash_write_enable(void)
 {
 	uint8 cmd[1];
@@ -315,12 +290,9 @@ static sint8 spi_flash_write_enable(void)
 }
 
 /**
- *	@fn			spi_flash_write_disable
- *	@brief		Send write disable command to SPI flash
- *	@note		Compatible with MX25L6465E and should be working with other types
- *	@author		M. Abdelmawla
- *	@version	1.0
- */
+*	@fn			spi_flash_write_disable
+*	@brief		Send write disable command to SPI flash
+*/
 static sint8 spi_flash_write_disable(void)
 {
 	uint8 cmd[1];
@@ -344,18 +316,15 @@ static sint8 spi_flash_write_disable(void)
 }
 
 /**
- *	@fn			spi_flash_page_program
- *	@brief		Write data (less than page size) from cortus memory to SPI flash
- *	@param[IN]	u32MemAdr
- *					Cortus data address. It must be set to its AHB access address
- *	@param[IN]	u32FlashAdr
- *					Address to write to at the SPI flash
- *	@param[IN]	u32Sz
- *					Data size
- *	@note		Compatible with MX25L6465E and should be working with other types
- *	@author		M. Abdelmawla
- *	@version	1.0
- */ 
+*	@fn			spi_flash_page_program
+*	@brief		Write data (less than page size) from cortus memory to SPI flash
+*	@param[IN]	u32MemAdr
+*					Cortus data address. It must be set to its AHB access address
+*	@param[IN]	u32FlashAdr
+*					Address to write to at the SPI flash
+*	@param[IN]	u32Sz
+*					Data size
+*/ 
 static sint8 spi_flash_page_program(uint32 u32MemAdr, uint32 u32FlashAdr, uint32 u32Sz)
 {
 	uint8 cmd[4];
@@ -368,7 +337,7 @@ static sint8 spi_flash_page_program(uint32 u32MemAdr, uint32 u32FlashAdr, uint32
 	cmd[3] = (uint8)(u32FlashAdr);
 
 	ret += nm_write_reg(SPI_FLASH_DATA_CNT, 0);
-	ret += nm_write_reg(SPI_FLASH_BUF1, u32(cmd[0])|u32(cmd[1]<<8)|u32(cmd[2]<<16)|u32(cmd[3]<<24));
+	ret += nm_write_reg(SPI_FLASH_BUF1, cmd[0]|(cmd[1]<<8)|(cmd[2]<<16)|(cmd[3]<<24));
 	ret += nm_write_reg(SPI_FLASH_BUF_DIR, 0x0f);
 	ret += nm_write_reg(SPI_FLASH_DMA_ADDR, u32MemAdr);
 	ret += nm_write_reg(SPI_FLASH_CMD_CNT, 4 | (1<<7) | ((u32Sz & 0xfffff) << 8));
@@ -383,18 +352,15 @@ static sint8 spi_flash_page_program(uint32 u32MemAdr, uint32 u32FlashAdr, uint32
 }
 
 /**
- *	@fn			spi_flash_read_internal
- *	@brief		Read from data from SPI flash
- *	@param[OUT]	pu8Buf
- *					Pointer to data buffer
- *	@param[IN]	u32Addr
- *					Address to read from at the SPI flash
- *	@param[IN]	u32Sz
- *					Data size
- *	@note		Data size must be < 64KB (limitation imposed by the bus wrapper)
- *	@author		M. Abdelmawla
- *	@version	1.0
- */ 
+*	@fn			spi_flash_read_internal
+*	@brief		Read from data from SPI flash
+*	@param[OUT]	pu8Buf
+*					Pointer to data buffer
+*	@param[IN]	u32Addr
+*					Address to read from at the SPI flash
+*	@param[IN]	u32Sz
+*					Data size
+*/ 
 static sint8 spi_flash_read_internal(uint8 *pu8Buf, uint32 u32Addr, uint32 u32Sz)
 {
 	sint8 ret = M2M_SUCCESS;
@@ -407,44 +373,40 @@ ERR:
 } 
 
 /**
- *	@fn			spi_flash_pp
- *	@brief		Program data of size less than a page (256 bytes) at the SPI flash
- *	@param[IN]	u32Offset
- *					Address to write to at the SPI flash
- *	@param[IN]	pu8Buf
- *					Pointer to data buffer
- *	@param[IN]	u32Sz
- *					Data size
- *	@return		Status of execution
- *	@author		M. Abdelmawla
- *	@version	1.0
- */
+*	@fn			spi_flash_pp
+*	@brief		Program data of size less than a page (256 bytes) at the SPI flash
+*	@param[IN]	u32Offset
+*					Address to write to at the SPI flash
+*	@param[IN]	pu8Buf
+*					Pointer to data buffer
+*	@param[IN]	u32Sz
+*					Data size
+*	@return		Status of execution
+*/
 static sint8 spi_flash_pp(uint32 u32Offset, uint8 *pu8Buf, uint16 u16Sz)
 {
 	sint8 ret = M2M_SUCCESS;
 	uint8 tmp;
 	spi_flash_write_enable();
 	/* use shared packet memory as temp mem */
-	ret = nm_write_block(HOST_SHARE_MEM_BASE, pu8Buf, u16Sz);
-	ret = spi_flash_page_program(HOST_SHARE_MEM_BASE, u32Offset, u16Sz);
-	if(M2M_SUCCESS != ret) goto ERR;
+	ret += nm_write_block(HOST_SHARE_MEM_BASE, pu8Buf, u16Sz);
+	ret += spi_flash_page_program(HOST_SHARE_MEM_BASE, u32Offset, u16Sz);
+	ret += spi_flash_read_status_reg(&tmp);
 	do
 	{
-		if(ret == M2M_ERR_BUS_FAIL) goto ERR;
-	}
-	while((ret = spi_flash_read_status_reg(&tmp))& 0x01);
-	ret = spi_flash_write_disable();
+		if(ret != M2M_SUCCESS) goto ERR;
+		ret += spi_flash_read_status_reg(&tmp);
+	}while(tmp & 0x01);
+	ret += spi_flash_write_disable();
 ERR:
 	return ret;
 }
 
 /**
- *	@fn			spi_flash_rdid
- *	@brief		Read SPI Flash ID
- *	@return		SPI FLash ID
- *	@author		M.S.M
- *	@version	1.0
- */
+*	@fn			spi_flash_rdid
+*	@brief		Read SPI Flash ID
+*	@return		SPI FLash ID
+*/
 static uint32 spi_flash_rdid(void)
 {
 	unsigned char cmd[1];
@@ -476,11 +438,9 @@ static uint32 spi_flash_rdid(void)
 }
 
 /**
- *	@fn			spi_flash_unlock
- *	@brief		Unlock SPI Flash
- *	@author		M.S.M
- *	@version	1.0
- */
+*	@fn			spi_flash_unlock
+*	@brief		Unlock SPI Flash
+*/
 #if 0
 static void spi_flash_unlock(void)
 {
@@ -494,25 +454,81 @@ static void spi_flash_unlock(void)
 	}
 }
 #endif
+static void spi_flash_enter_low_power_mode(void) {
+	volatile unsigned long tmp;
+	unsigned char* cmd = (unsigned char*) &tmp;
 
+	cmd[0] = 0xb9;
+
+	nm_write_reg(SPI_FLASH_DATA_CNT, 0);
+	nm_write_reg(SPI_FLASH_BUF1, cmd[0]);
+	nm_write_reg(SPI_FLASH_BUF_DIR, 0x1);
+	nm_write_reg(SPI_FLASH_DMA_ADDR, 0);
+	nm_write_reg(SPI_FLASH_CMD_CNT, 1 | (1 << 7));
+	while(nm_read_reg(SPI_FLASH_TR_DONE) != 1);
+}
+
+
+static void spi_flash_leave_low_power_mode(void) {
+	volatile unsigned long tmp;
+	unsigned char* cmd = (unsigned char*) &tmp;
+
+	cmd[0] = 0xab;
+
+	nm_write_reg(SPI_FLASH_DATA_CNT, 0);
+	nm_write_reg(SPI_FLASH_BUF1, cmd[0]);
+	nm_write_reg(SPI_FLASH_BUF_DIR, 0x1);
+	nm_write_reg(SPI_FLASH_DMA_ADDR, 0);
+	nm_write_reg(SPI_FLASH_CMD_CNT,  1 | (1 << 7));
+	while(nm_read_reg(SPI_FLASH_TR_DONE) != 1);
+}
 /*********************************************/
 /* GLOBAL FUNCTIONS							 */
 /*********************************************/
-
 /**
- *	@fn			spi_flash_read
- *	@brief		Read from data from SPI flash
- *	@param[OUT]	pu8Buf
- *					Pointer to data buffer
- *	@param[IN]	u32offset
- *					Address to read from at the SPI flash
- *	@param[IN]	u32Sz
- *					Data size
- *	@return		Status of execution
- *	@note		Data size is limited by the SPI flash size only
- *	@author		M. Abdelmawla
- *	@version	1.0
- */ 
+ *	@fn		spi_flash_enable
+ *	@brief	Enable spi flash operations
+ */
+sint8 spi_flash_enable(uint8 enable)
+{
+	sint8 s8Ret = M2M_SUCCESS;
+	if(REV(nmi_get_chipid()) >= REV_3A0) {		
+		uint32 u32Val;
+		
+		/* Enable pinmux to SPI flash. */
+		s8Ret = nm_read_reg_with_ret(0x1410, &u32Val);
+		if(s8Ret != M2M_SUCCESS) {
+			goto ERR1;
+		}
+		/* GPIO15/16/17/18 */
+		u32Val &= ~((0x7777ul) << 12);
+		u32Val |= ((0x1111ul) << 12);
+		nm_write_reg(0x1410, u32Val);
+		if(enable) {
+			spi_flash_leave_low_power_mode();
+		} else {
+			spi_flash_enter_low_power_mode();
+		}
+		/* Disable pinmux to SPI flash to minimize leakage. */
+		u32Val &= ~((0x7777ul) << 12);
+		u32Val |= ((0x0010ul) << 12);
+		nm_write_reg(0x1410, u32Val);
+	}
+ERR1:
+	return s8Ret;
+}
+/**
+*	@fn			spi_flash_read
+*	@brief		Read from data from SPI flash
+*	@param[OUT]	pu8Buf
+*					Pointer to data buffer
+*	@param[IN]	u32offset
+*					Address to read from at the SPI flash
+*	@param[IN]	u32Sz
+*					Data size
+*	@return		Status of execution
+*	@note		Data size is limited by the SPI flash size only
+*/ 
 sint8 spi_flash_read(uint8 *pu8Buf, uint32 u32offset, uint32 u32Sz)
 {
 	sint8 ret = M2M_SUCCESS;
@@ -535,18 +551,16 @@ ERR:
 }
 
 /**
- *	@fn			spi_flash_write
- *	@brief		Proram SPI flash
- *	@param[IN]	pu8Buf
- *					Pointer to data buffer
- *	@param[IN]	u32Offset
- *					Address to write to at the SPI flash
- *	@param[IN]	u32Sz
- *					Data size
- *	@return		Status of execution
- *	@author		M. Abdelmawla
- *	@version	1.0
- */ 
+*	@fn			spi_flash_write
+*	@brief		Proram SPI flash
+*	@param[IN]	pu8Buf
+*					Pointer to data buffer
+*	@param[IN]	u32Offset
+*					Address to write to at the SPI flash
+*	@param[IN]	u32Sz
+*					Data size
+*	@return		Status of execution
+*/ 
 sint8 spi_flash_write(uint8* pu8Buf, uint32 u32Offset, uint32 u32Sz)
 {
 #ifdef PROFILING
@@ -613,17 +627,15 @@ ERR:
 }
 
 /**
- *	@fn			spi_flash_erase
- *	@brief		Erase from data from SPI flash
- *	@param[IN]	u32Offset
- *					Address to write to at the SPI flash
- *	@param[IN]	u32Sz
- *					Data size
- *	@return		Status of execution
- *	@note		Data size is limited by the SPI flash size only
- *	@author		M. Abdelmawla
- *	@version	1.0
- */ 
+*	@fn			spi_flash_erase
+*	@brief		Erase from data from SPI flash
+*	@param[IN]	u32Offset
+*					Address to write to at the SPI flash
+*	@param[IN]	u32Sz
+*					Data size
+*	@return		Status of execution
+*	@note		Data size is limited by the SPI flash size only
+*/ 
 sint8 spi_flash_erase(uint32 u32Offset, uint32 u32Sz)
 {
 	uint32 i = 0;
@@ -656,12 +668,10 @@ ERR:
 }
 
 /**
- *	@fn			spi_flash_get_size
- *	@brief		Get size of SPI Flash
- *	@return		Size of Flash
- *	@author		M.S.M
- *	@version	1.0
- */
+*	@fn			spi_flash_get_size
+*	@brief		Get size of SPI Flash
+*	@return		Size of Flash
+*/
 uint32 spi_flash_get_size(void)
 {
 	uint32 u32FlashId = 0, u32FlashPwr = 0;

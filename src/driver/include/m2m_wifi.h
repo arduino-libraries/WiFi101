@@ -85,7 +85,11 @@ typedef enum {
 	DATA_BASICTYPE        = 0x08,
 	/*!< Wi-Fi Data frame.
 	*/
-	RESERVED              = 0x0C
+	RESERVED              = 0x0C,
+
+	M2M_WIFI_FRAME_TYPE_ANY	= 0xFF
+/*!< Set monitor mode to receive any of the frames types
+*/
 }tenuWifiFrameType;
 
 
@@ -146,7 +150,10 @@ typedef enum {
 	QOS_DATA_POLL_ACK     = 0xB8,
 	QOS_NULL_FRAME        = 0xC8,
 	QOS_CFPOLL            = 0xE8,
-	QOS_CFPOLL_ACK        = 0xF8
+	QOS_CFPOLL_ACK        = 0xF8,
+	M2M_WIFI_FRAME_SUB_TYPE_ANY = 0xFF
+	/*!< Set monitor mode to receive any of the frames types
+	*/
 }tenuSubTypes;
 
 
@@ -562,6 +569,12 @@ typedef struct {
 	/*!<
 		Size of Receive Buffer for Ethernet Packet
 	*/
+	uint8 u8EthernetEnable;
+	/*!<
+		Enable Ethernet mode flag
+	*/
+	uint8 __PAD8__;
+	
 } tstrEthInitParam;
 /*!
 @struct	\
@@ -2501,7 +2514,7 @@ sint8 m2m_wifi_set_battery_voltage(uint16 u16BattVoltx100);
 *			    pointer holds address of structure "tstrM2mRev" that contains the firmware version parameters
 *	@version	1.0
 */
-sint8 m2m_wifi_get_firmware_version(tstrM2mRev *M2mRev);
+sint8 m2m_wifi_get_firmware_version(tstrM2mRev *pstrRev);
 /**@}*/
 #ifdef ETH_MODE
 /** @defgroup WifiEnableMacMcastFn m2m_wifi_enable_mac_mcast
@@ -2545,9 +2558,18 @@ NMI_API sint8 m2m_wifi_enable_mac_mcast(uint8* pu8MulticastMacAddress, uint8 u8A
  */
 NMI_API sint8 m2m_wifi_set_receive_buffer(void* pvBuffer,uint16 u16BufferLen);
 /**@}*/
-#endif
-
-
+#endif /* ETH_MODE */
+/*!
+ * @fn                  sint8 m2m_wifi_prng_get_random_bytes(uint8 * pu8PRNGBuff,uint16 u16PRNGSize)
+ * @param [in]      pu8PrngBuff
+ *                 		Pointer to Buffer to receive data.
+ *		    		Size greater than the maximum specified (@ref M2M_BUFFER_MAX_SIZE - sizeof(tstrPrng))
+ *				causes a negative error @ref M2M_ERR_FAIL.
+ * @param [in]      u16PrngSize
+ 					request size in bytes  
+ * @return       The function returns @ref M2M_SUCCESS for successful operations and a negative value otherwise.
+ */
+sint8 m2m_wifi_prng_get_random_bytes(uint8 * pu8PrngBuff,uint16 u16PrngSize);
 #ifdef __cplusplus
 }
 #endif
