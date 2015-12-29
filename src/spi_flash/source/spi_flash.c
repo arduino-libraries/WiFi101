@@ -45,6 +45,8 @@
 #include "spi_flash/include/spi_flash.h"
 #define DUMMY_REGISTER	(0x1084)
 
+#define u32(x) ((uint32)x)
+
 #define TIMEOUT (-1) /*MS*/
 
 //#define DISABLE_UNSED_FLASH_FUNCTIONS
@@ -213,7 +215,7 @@ static sint8 spi_flash_load_to_cortus_mem(uint32 u32MemAdr, uint32 u32FlashAdr, 
 	cmd[4] = 0xA5;
 
 	ret += nm_write_reg(SPI_FLASH_DATA_CNT, u32Sz);
-	ret += nm_write_reg(SPI_FLASH_BUF1, cmd[0]|(cmd[1]<<8)|(cmd[2]<<16)|(cmd[3]<<24));
+	ret += nm_write_reg(SPI_FLASH_BUF1, u32(cmd[0])|u32(cmd[1]<<8)|u32(cmd[2]<<16)|u32(cmd[3]<<24));
 	ret += nm_write_reg(SPI_FLASH_BUF2, cmd[4]);
 	ret += nm_write_reg(SPI_FLASH_BUF_DIR, 0x1f);
 	ret += nm_write_reg(SPI_FLASH_DMA_ADDR, u32MemAdr);
@@ -247,7 +249,7 @@ static sint8 spi_flash_sector_erase(uint32 u32FlashAdr)
 	cmd[3] = (uint8)(u32FlashAdr);
 
 	ret += nm_write_reg(SPI_FLASH_DATA_CNT, 0);
-	ret += nm_write_reg(SPI_FLASH_BUF1, cmd[0]|(cmd[1]<<8)|(cmd[2]<<16)|(cmd[3]<<24));
+	ret += nm_write_reg(SPI_FLASH_BUF1, u32(cmd[0])|u32(cmd[1]<<8)|u32(cmd[2]<<16)|u32(cmd[3]<<24));
 	ret += nm_write_reg(SPI_FLASH_BUF_DIR, 0x0f);
 	ret += nm_write_reg(SPI_FLASH_DMA_ADDR, 0);
 	ret += nm_write_reg(SPI_FLASH_CMD_CNT, 4 | (1<<7));
@@ -337,7 +339,7 @@ static sint8 spi_flash_page_program(uint32 u32MemAdr, uint32 u32FlashAdr, uint32
 	cmd[3] = (uint8)(u32FlashAdr);
 
 	ret += nm_write_reg(SPI_FLASH_DATA_CNT, 0);
-	ret += nm_write_reg(SPI_FLASH_BUF1, cmd[0]|(cmd[1]<<8)|(cmd[2]<<16)|(cmd[3]<<24));
+	ret += nm_write_reg(SPI_FLASH_BUF1, u32(cmd[0])|u32(cmd[1]<<8)|u32(cmd[2]<<16)|u32(cmd[3]<<24));
 	ret += nm_write_reg(SPI_FLASH_BUF_DIR, 0x0f);
 	ret += nm_write_reg(SPI_FLASH_DMA_ADDR, u32MemAdr);
 	ret += nm_write_reg(SPI_FLASH_CMD_CNT, 4 | (1<<7) | ((u32Sz & 0xfffff) << 8));
