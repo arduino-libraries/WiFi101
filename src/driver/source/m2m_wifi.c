@@ -331,7 +331,8 @@ static sint8 m2m_validate_ap_parameters(CONST tstrM2MAPConfig* pstrM2MAPConfig)
 		goto ERR1;
 	}
 	/* Check for Channel */
-	if(pstrM2MAPConfig->u8ListenChannel > M2M_WIFI_CH_14 || pstrM2MAPConfig->u8ListenChannel < M2M_WIFI_CH_1)
+	int listenChannel = pstrM2MAPConfig->u8ListenChannel;
+	if(listenChannel > M2M_WIFI_CH_14 || listenChannel < M2M_WIFI_CH_1)
 	{
 		M2M_ERR("INVALID CH\n");
 		s8Ret = M2M_ERR_FAIL;
@@ -411,7 +412,8 @@ static sint8 m2m_validate_scan_options(tstrM2MScanOption* ptstrM2MScanOption)
 		s8Ret = M2M_ERR_FAIL;
 	}	
 	/* Check for valid No of probe requests per slot */
-	 if((ptstrM2MScanOption->u8ProbesPerSlot < 0)||(ptstrM2MScanOption->u8ProbesPerSlot > M2M_SCAN_DEFAULT_NUM_PROBE))
+	int probesPerSlot = ptstrM2MScanOption->u8ProbesPerSlot;
+	if((probesPerSlot < 0)||(probesPerSlot > M2M_SCAN_DEFAULT_NUM_PROBE))
 	{
 		M2M_ERR("INVALID No of probe requests per scan slot\n");
 		s8Ret = M2M_ERR_FAIL;
@@ -736,7 +738,8 @@ sint8 m2m_wifi_request_scan(uint8 ch)
 
 	if(!gu8scanInProgress)
 	{
-		if(((ch >= M2M_WIFI_CH_1) && (ch <= M2M_WIFI_CH_14)) || (ch == M2M_WIFI_CH_ALL))
+		int channel = ch;
+		if(((channel >= M2M_WIFI_CH_1) && (channel <= M2M_WIFI_CH_14)) || (channel == M2M_WIFI_CH_ALL))
 		{
 			tstrM2MScan strtmp;
 			strtmp.u8ChNum = ch;
