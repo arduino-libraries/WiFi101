@@ -104,7 +104,7 @@ void attachFakeInterruptToTimer(void) {
 #endif
 
 // strategy 1 - attach external interrupt to change pin (works on 328)
-void attachInterruptToChangePin(uint32_t pin) {
+void attachInterruptToChangePin(int pin) {
 	pinMode(pin, INPUT_PULLUP);
 	_receiveBitMask = digitalPinToBitMask(pin);
 	uint8_t port = digitalPinToPort(pin);
@@ -121,13 +121,13 @@ void attachInterruptToChangePin(uint32_t pin) {
 	*_pcint_maskreg |= _BV(digitalPinToPCMSKbit(pin));
 }
 
-void detachInterruptToChangePin(uint32_t pin) {
+void detachInterruptToChangePin(int pin) {
     *_pcint_maskreg &= ~(_BV(digitalPinToPCMSKbit(pin)));
 }
 
 void attachInterruptMultiArch(uint32_t pin, void *chip_isr, uint32_t mode)
 {
-	int32_t pin_irq = (int32_t)pin;
+	int pin_irq;
 	gpfIsr = chip_isr;
 
 	// stategy 0 - attach external interrupt to pin (works on 32u4)
@@ -143,13 +143,15 @@ void attachInterruptMultiArch(uint32_t pin, void *chip_isr, uint32_t mode)
 
 void detachInterruptMultiArch(uint32_t pin)
 {
-	pin = digitalPinToInterrupt(pin);
-	if (pin == NOT_AN_INTERRUPT) {
+	int pin_irq;
+
+	pin_irq = digitalPinToInterrupt(pin);
+	if (pin_irq == NOT_AN_INTERRUPT) {
 		detachInterruptToChangePin(pin);
 		return;
 	}
 
-	detachInterrupt(pin);
+	detachInterrupt(pin_irq);
 }
 
 #endif
