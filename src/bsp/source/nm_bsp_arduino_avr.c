@@ -52,7 +52,6 @@ static tpfNmBspIsr gpfIsr;
 
 volatile uint8_t *_receivePortRegister;
 volatile uint8_t *_pcint_maskreg;
-uint8_t _receivePin;
 uint8_t _receiveBitMask;
 uint8_t _pcint_maskvalue;
 volatile uint8_t prev_pin_read = 1;
@@ -112,7 +111,7 @@ void attachInterruptToChangePin(uint32_t pin) {
 	uint8_t port = digitalPinToPort(pin);
 	_receivePortRegister = portInputRegister(port);
 
-	if (!digitalPinToPCICR(_receivePin)) {
+	if (!digitalPinToPCICR(pin)) {
 		//need to fallback to strategy 2
 		attachFakeInterruptToTimer();
 		return;
