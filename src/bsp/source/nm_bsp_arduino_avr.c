@@ -53,7 +53,6 @@ static tpfNmBspIsr gpfIsr;
 volatile uint8_t *_receivePortRegister;
 volatile uint8_t *_pcint_maskreg;
 uint8_t _receiveBitMask;
-uint8_t _pcint_maskvalue;
 volatile uint8_t prev_pin_read = 1;
 
 uint8_t rx_pin_read()
@@ -119,12 +118,11 @@ void attachInterruptToChangePin(uint32_t pin) {
 
 	*digitalPinToPCICR(pin) |= _BV(digitalPinToPCICRbit(pin));
 	_pcint_maskreg = digitalPinToPCMSK(pin);
-	_pcint_maskvalue = _BV(digitalPinToPCMSKbit(pin));
-	*_pcint_maskreg |= _pcint_maskvalue;
+	*_pcint_maskreg |= _BV(digitalPinToPCMSKbit(pin));
 }
 
 void detachInterruptToChangePin(uint32_t pin) {
-    *_pcint_maskreg &= ~_pcint_maskvalue;
+    *_pcint_maskreg &= ~(_BV(digitalPinToPCMSKbit(pin)));
 }
 
 void attachInterruptMultiArch(uint32_t pin, void *chip_isr, uint32_t mode)
