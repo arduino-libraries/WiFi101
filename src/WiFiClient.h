@@ -47,7 +47,9 @@ public:
 	virtual void flush();
 	virtual void stop();
 	virtual uint8_t connected();
+	virtual void setMembersAndWiFiCache(const WiFiClient& other);
 	virtual operator bool();
+	virtual WiFiClient& operator =(const WiFiClient& other);
 
 	using Print::write;
 

@@ -62,6 +62,11 @@ WiFiClient::WiFiClient(uint8_t sock, uint8_t parentsock)
 
 WiFiClient::WiFiClient(const WiFiClient& other)
 {
+	setMembersAndWiFiCache(other);
+}
+
+void WiFiClient::setMembersAndWiFiCache(const WiFiClient& other)
+{
 	_socket = other._socket;
 	_flag = other._flag;
 	_head = other._head;
@@ -284,4 +289,9 @@ uint8_t WiFiClient::status()
 WiFiClient::operator bool()
 {
 	return _socket != -1;
+}
+
+WiFiClient& WiFiClient::operator =(const WiFiClient& other)
+{
+	setMembersAndWiFiCache(other);
 }
