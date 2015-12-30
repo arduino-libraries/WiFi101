@@ -594,7 +594,7 @@ sint8 m2m_wifi_connect_sc(const char *pcSsid, uint8 u8SsidLen, uint8 u8SecType, 
 			ret = M2M_ERR_FAIL;
 			goto ERR1;
 		}
-		pstrWep->u8KeySz = pstrWepParams->u8KeySz-1;
+		pstrWep->u8KeySz = pstrWepParams->u8KeySz;
 		if ((pstrWep->u8KeySz != WEP_40_KEY_STRING_SIZE)&& (pstrWep->u8KeySz != WEP_104_KEY_STRING_SIZE))
 		{
 			M2M_ERR("Invalid Wep key length %d\n", pstrWep->u8KeySz);
