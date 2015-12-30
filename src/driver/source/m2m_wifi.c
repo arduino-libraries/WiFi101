@@ -586,7 +586,7 @@ sint8 m2m_wifi_connect_sc(const char *pcSsid, uint8 u8SsidLen, uint8 u8SecType, 
 	{
 		tstrM2mWifiWepParams	* pstrWepParams = (tstrM2mWifiWepParams*)pvAuthInfo;
 		tstrM2mWifiWepParams	*pstrWep = &pstrAuthInfo->uniAuth.strWepInfo;
-		pstrWep->u8KeyIndx =pstrWepParams->u8KeyIndx-1;
+		pstrWep->u8KeyIndx =pstrWepParams->u8KeyIndx;
 
 		if(pstrWep->u8KeyIndx >= WEP_KEY_MAX_INDEX)
 		{
