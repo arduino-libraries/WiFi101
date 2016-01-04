@@ -294,4 +294,6 @@ WiFiClient::operator bool()
 WiFiClient& WiFiClient::operator =(const WiFiClient& other)
 {
 	setMembersAndWiFiCache(other);
+
+	return *this;
 }
