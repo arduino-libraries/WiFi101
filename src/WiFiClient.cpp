@@ -75,13 +75,16 @@ void WiFiClient::setMembersAndWiFiCache(const WiFiClient& other)
 		if (WiFi._client[sock] == this)
 			WiFi._client[sock] = 0;
 	}
-	WiFi._client[_socket] = this;
-	
-	// Add socket buffer handler:
-	socketBufferRegister(_socket, &_flag, &_head, &_tail, (uint8 *)_buffer);
-	
-	// Enable receive buffer:
-	recv(_socket, _buffer, SOCKET_BUFFER_MTU, 0);
+
+	if (_socket > -1) {
+		WiFi._client[_socket] = this;
+		
+		// Add socket buffer handler:
+		socketBufferRegister(_socket, &_flag, &_head, &_tail, (uint8 *)_buffer);
+		
+		// Enable receive buffer:
+		recv(_socket, _buffer, SOCKET_BUFFER_MTU, 0);
+	}
 
 	m2m_wifi_handle_events(NULL);
 }
