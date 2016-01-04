@@ -71,6 +71,10 @@ void WiFiClient::setMembersAndWiFiCache(const WiFiClient& other)
 	_flag = other._flag;
 	_head = other._head;
 	_tail = other._tail;
+	if (_head > _tail) {
+		memcpy(_buffer + _tail, other._buffer + _tail, (_head - _tail));
+	}
+
 	for (int sock = 0; sock < TCP_SOCK_MAX; sock++) {
 		if (WiFi._client[sock] == this)
 			WiFi._client[sock] = 0;
