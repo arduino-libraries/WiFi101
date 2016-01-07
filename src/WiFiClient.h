@@ -48,6 +48,7 @@ public:
 	virtual void stop();
 	virtual uint8_t connected();
 	virtual operator bool();
+	virtual WiFiClient& operator =(const WiFiClient& other);
 
 	using Print::write;
 
@@ -60,6 +61,7 @@ private:
 	uint8_t	_buffer[SOCKET_BUFFER_TCP_SIZE];
 	int connect(const char* host, uint16_t port, uint8_t opt);
 	int connect(IPAddress ip, uint16_t port, uint8_t opt, const uint8_t *hostname);
+	void copyFrom(const WiFiClient& other);
 
 };
 

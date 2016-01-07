@@ -62,21 +62,33 @@ WiFiClient::WiFiClient(uint8_t sock, uint8_t parentsock)
 
 WiFiClient::WiFiClient(const WiFiClient& other)
 {
+	copyFrom(other);
+}
+
+void WiFiClient::copyFrom(const WiFiClient& other)
+{
 	_socket = other._socket;
 	_flag = other._flag;
 	_head = other._head;
 	_tail = other._tail;
+	if (_head > _tail) {
+		memcpy(_buffer + _tail, other._buffer + _tail, (_head - _tail));
+	}
+
 	for (int sock = 0; sock < TCP_SOCK_MAX; sock++) {
 		if (WiFi._client[sock] == this)
 			WiFi._client[sock] = 0;
 	}
-	WiFi._client[_socket] = this;
-	
-	// Add socket buffer handler:
-	socketBufferRegister(_socket, &_flag, &_head, &_tail, (uint8 *)_buffer);
-	
-	// Enable receive buffer:
-	recv(_socket, _buffer, SOCKET_BUFFER_MTU, 0);
+
+	if (_socket > -1) {
+		WiFi._client[_socket] = this;
+		
+		// Add socket buffer handler:
+		socketBufferRegister(_socket, &_flag, &_head, &_tail, (uint8 *)_buffer);
+		
+		// Enable receive buffer:
+		recv(_socket, _buffer, SOCKET_BUFFER_MTU, 0);
+	}
 
 	m2m_wifi_handle_events(NULL);
 }
@@ -284,4 +296,11 @@ uint8_t WiFiClient::status()
 WiFiClient::operator bool()
 {
 	return _socket != -1;
+}
+
+WiFiClient& WiFiClient::operator =(const WiFiClient& other)
+{
+	copyFrom(other);
+
+	return *this;
 }
