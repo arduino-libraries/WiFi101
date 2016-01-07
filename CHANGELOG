@@ -1,7 +1,17 @@
+WiFi101 0.7.0
+
+* Added support for WiFi Firmware 19.4.4
+* WiFi.hostByName(...) will not try resolve the domain name if it's already a numeric IP
+* Fixed manual IP configuration (no DHCP)
+* Fixed WiFiServer.available(), now follows API specification
+* Fixed WEP key connection
+* Fixed WiFiClient copy constructor and assignment operator. This improves stability when
+  Client objects are assigned or returned from functions.
+* Control pins are now configurable through defines from variant.
+
 WiFi101 0.6.0 - 2015.11.27
 
 * Fixed bug with AVR boards when Web Server is used
-
 * Fixed UDP read bug on AVR Boards
 * Added missing inlcude for SSL Client
 * Fixed peek() function
