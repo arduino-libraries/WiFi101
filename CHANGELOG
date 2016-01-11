@@ -1,4 +1,4 @@
-WiFi101 0.7.0
+WiFi101 0.7.0 - 2015.01.11
 
 * Added support for WiFi Firmware 19.4.4
 * WiFi.hostByName(...) will not try resolve the domain name if it's already a numeric IP
