@@ -51,7 +51,7 @@
 #define NMI_INTR_ENABLE				(NMI_INTR_REG_BASE)
 #define GET_UINT32(X,Y)				(X[0+Y] + ((uint32)X[1+Y]<<8) + ((uint32)X[2+Y]<<16) +((uint32)X[3+Y]<<24))
 
-#define TIMEOUT						(0xfffffffful)
+#define TIMEOUT						(2000)
 #define M2M_DISABLE_PS				(0xd0ul)
 
 static uint32 clk_status_reg_adr = 0xf; /* Assume initially it is B0 chip */
