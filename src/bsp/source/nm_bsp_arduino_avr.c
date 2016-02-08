@@ -61,7 +61,7 @@ uint8_t rx_pin_read()
 }
 
 #if defined(PCINT0_vect)
-ISR(PCINT0_vect)
+__attribute__((weak)) ISR(PCINT0_vect)
 {
 	if (!rx_pin_read() && gpfIsr)
 	{
