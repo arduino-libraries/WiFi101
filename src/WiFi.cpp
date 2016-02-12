@@ -456,6 +456,13 @@ void WiFiClass::disconnect()
 uint8_t *WiFiClass::macAddress(uint8_t *mac)
 {
 	m2m_wifi_get_mac_address(mac);
+	byte tmpMac[6], i;
+	
+	m2m_wifi_get_mac_address(tmpMac);
+	
+	for(i = 0; i < 6; i++)
+		mac[i] = tmpMac[5-i];
+		
 	return mac;
 }
 
