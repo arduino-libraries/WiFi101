@@ -1,4 +1,4 @@
-WiFi101 0.8.0
+WiFi101 0.8.0 - 2016.02.15
 
 * Added example for Access Point web server (thanks @ladyada)
 * Fixed MAC Address printed in reverse order
