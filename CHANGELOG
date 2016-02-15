@@ -1,3 +1,7 @@
+WiFi101 0.8.0
+
+* Added example for AP web server (thanks @ladyada)
+
 WiFi101 0.7.0 - 2015.01.11
 
 * Added support for WiFi Firmware 19.4.4
