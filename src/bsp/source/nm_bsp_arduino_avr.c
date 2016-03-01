@@ -137,8 +137,8 @@ void attachInterruptMultiArch(uint32_t pin, void *chip_isr, uint32_t mode)
 	gpfIsr = chip_isr;
 
 	// stategy 0 - attach external interrupt to pin (works on 32u4)
-	pin_irq = digitalPinToInterrupt(pin);
-	if (pin_irq == NOT_AN_INTERRUPT) {
+	pin_irq = digitalPinToInterrupt((int)pin);
+	if (pin_irq == (int)NOT_AN_INTERRUPT) {
 		attachInterruptToChangePin(pin);
 		return;
 	}
@@ -151,8 +151,8 @@ void detachInterruptMultiArch(uint32_t pin)
 {
 	int pin_irq;
 
-	pin_irq = digitalPinToInterrupt(pin);
-	if (pin_irq == NOT_AN_INTERRUPT) {
+	pin_irq = digitalPinToInterrupt((int)pin);
+	if (pin_irq == (int)NOT_AN_INTERRUPT) {
 		detachInterruptToChangePin(pin);
 		return;
 	}
