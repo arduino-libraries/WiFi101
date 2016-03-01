@@ -48,6 +48,8 @@
 #include "common/include/nm_common.h"
 #include <Arduino.h>
 
+#define IS_MEGA (defined(ARDUINO_AVR_MEGA) || defined(ARDUINO_AVR_MEGA2560))
+
 static tpfNmBspIsr gpfIsr;
 
 volatile uint8_t *_receivePortRegister;
@@ -59,6 +61,8 @@ uint8_t rx_pin_read()
 {
   return *_receivePortRegister & _receiveBitMask;
 }
+
+#if !IS_MEGA
 
 #if defined(PCINT0_vect)
 ISR(PCINT0_vect)
@@ -81,6 +85,8 @@ ISR(PCINT2_vect, ISR_ALIASOF(PCINT0_vect));
 #if defined(PCINT3_vect)
 ISR(PCINT3_vect, ISR_ALIASOF(PCINT0_vect));
 #endif
+
+#endif // !IS_MEGA
 
 #if defined(TIMER4_OVF_vect)
 ISR(TIMER4_OVF_vect) {
