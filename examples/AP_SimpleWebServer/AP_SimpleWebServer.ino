@@ -19,7 +19,7 @@
 #include <SPI.h>
 #include <WiFi101.h>
 
-int led = PIN_LED;
+int led =  LED_BUILTIN;
 
 char ssid[] = "wifi101-network"; // created AP name
 char pass[] = "hackme";          // (not supported yet)
