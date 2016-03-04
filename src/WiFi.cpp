@@ -352,10 +352,14 @@ uint8_t WiFiClass::startAP(const char *ssid, uint8_t u8SecType, const void *pvAu
 		init();
 	}
 
+	if (channel == 0) {
+		channel = 1; // channel 1 is the minium channel
+	}
+
 	// Enter Access Point mode:
 	memset(&strM2MAPConfig, 0x00, sizeof(tstrM2MAPConfig));
 	strcpy((char *)&strM2MAPConfig.au8SSID, ssid);
-	strM2MAPConfig.u8ListenChannel = channel;
+	strM2MAPConfig.u8ListenChannel = channel - 1;
 	strM2MAPConfig.u8SecType = u8SecType;
 	strM2MAPConfig.au8DHCPServerIP[0] = 0xC0; /* 192 */
 	strM2MAPConfig.au8DHCPServerIP[1] = 0xA8; /* 168 */
