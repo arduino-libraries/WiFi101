@@ -22,16 +22,18 @@
 int led =  LED_BUILTIN;
 
 char ssid[] = "wifi101-network"; // created AP name
-char pass[] = "hackme";          // (not supported yet)
+char pass[] = "0000000000";      // AP password (needed only for WEP, must be exactly 10 or 26 characters in length)
+int keyIndex = 0;                // your network key Index number (needed only for WEP)
 
 int status = WL_IDLE_STATUS;
 WiFiServer server(80);
 
 void setup() {
-
-  while (!Serial);
-  delay(1000);
-  Serial.begin(9600);      // initialize serial communication
+  //Initialize serial and wait for port to open:
+  Serial.begin(9600);
+  while (!Serial) {
+    ; // wait for serial port to connect. Needed for native USB port only
+  }
 
   Serial.println("Access Point Web Server");
 
@@ -40,17 +42,29 @@ void setup() {
   // check for the presence of the shield:
   if (WiFi.status() == WL_NO_SHIELD) {
     Serial.println("WiFi shield not present");
-    while (true);       // don't continue
+    // don't continue
+    while (true);
   }
 
-  // Connect to WPA/WPA2 network. Change this line if using open or WEP network:
-  Serial.print("Creating Network named: ");
-  Serial.println(ssid);                   // print the network name (SSID);
-  status = WiFi.beginAP(ssid);
+  // print the network name (SSID);
+  Serial.print("Creating access point named: ");
+  Serial.println(ssid);
+
+  // Create WEP network. Change this line if you want to create an open network:
+  if (WiFi.beginAP(ssid, keyIndex, pass) != WL_CONNECTED) {
+    Serial.println("Creating access point failed");
+    // don't continue
+    while (true);
+  }
+
   // wait 10 seconds for connection:
   delay(10000);
-  server.begin();                           // start the web server on port 80
-  printWifiStatus();                        // you're connected now, so print out the status
+
+  // start the web server on port 80
+  server.begin();
+
+  // you're connected now, so print out the status
+  printWifiStatus();
 }
 
 
