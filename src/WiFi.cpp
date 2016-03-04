@@ -320,6 +320,32 @@ uint8_t WiFiClass::beginAP(char *ssid)
 
 uint8_t WiFiClass::beginAP(char *ssid, uint8_t channel)
 {
+	return startAP(ssid, M2M_WIFI_SEC_OPEN, NULL, channel);
+}
+
+uint8_t WiFiClass::beginAP(const char *ssid, uint8_t key_idx, const char* key)
+{
+	return beginAP(ssid, key_idx, key, 1);
+}
+
+uint8_t WiFiClass::beginAP(const char *ssid, uint8_t key_idx, const char* key, uint8_t channel)
+{
+	tstrM2mWifiWepParams wep_params;
+
+	if (key_idx == 0) {
+		key_idx = 1; // 1 is the minimum key index
+	}
+
+	memset(&wep_params, 0, sizeof(tstrM2mWifiWepParams));
+	wep_params.u8KeyIndx = key_idx;
+	wep_params.u8KeySz = strlen(key);
+	strcpy((char *)&wep_params.au8WepKey[0], key);
+
+	return startAP(ssid, M2M_WIFI_SEC_WEP, &wep_params, channel);
+}
+
+uint8_t WiFiClass::startAP(const char *ssid, uint8_t u8SecType, const void *pvAuthInfo, uint8_t channel)
+{
 	tstrM2MAPConfig strM2MAPConfig;
 
 	if (!_init) {
@@ -330,11 +356,20 @@ uint8_t WiFiClass::beginAP(char *ssid, uint8_t channel)
 	memset(&strM2MAPConfig, 0x00, sizeof(tstrM2MAPConfig));
 	strcpy((char *)&strM2MAPConfig.au8SSID, ssid);
 	strM2MAPConfig.u8ListenChannel = channel;
-	strM2MAPConfig.u8SecType = M2M_WIFI_SEC_OPEN;
+	strM2MAPConfig.u8SecType = u8SecType;
 	strM2MAPConfig.au8DHCPServerIP[0] = 0xC0; /* 192 */
 	strM2MAPConfig.au8DHCPServerIP[1] = 0xA8; /* 168 */
 	strM2MAPConfig.au8DHCPServerIP[2] = 0x01; /* 1 */
 	strM2MAPConfig.au8DHCPServerIP[3] = 0x01; /* 1 */
+
+	if (u8SecType == M2M_WIFI_SEC_WEP) {
+		tstrM2mWifiWepParams* wep_params = (tstrM2mWifiWepParams*)pvAuthInfo;
+
+		strM2MAPConfig.u8KeyIndx = wep_params->u8KeyIndx;
+		strM2MAPConfig.u8KeySz = wep_params->u8KeySz;
+		strcpy((char*)strM2MAPConfig.au8WepKey, (char *)wep_params->au8WepKey);
+	}
+
 	if (m2m_wifi_enable_ap(&strM2MAPConfig) < 0) {
 		_status = WL_CONNECT_FAILED;
 		return _status;
