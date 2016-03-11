@@ -25,6 +25,7 @@ flush	KEYWORD2
 stop	KEYWORD2
 connected	KEYWORD2
 begin	KEYWORD2
+beginMulti	KEYWORD2
 disconnect	KEYWORD2
 macAddress	KEYWORD2
 localIP	KEYWORD2

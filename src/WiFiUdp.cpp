@@ -92,6 +92,19 @@ uint8_t WiFiUDP::begin(uint16_t port)
 	return 1;
 }
 
+uint8_t WiFiUDP::beginMulti(IPAddress ip, uint16_t port)
+{
+	uint32_t multiIp = ip;
+
+	if (!begin(port)) {
+		return 0;
+	}
+
+	setsockopt(_socket, SOL_SOCKET, IP_ADD_MEMBERSHIP, &multiIp, sizeof(multiIp));
+
+	return 1;
+}
+
 /* return number of bytes available in the current packet,
    will return zero if parsePacket hasn't been called yet */
 int WiFiUDP::available()
