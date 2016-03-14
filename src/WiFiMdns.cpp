@@ -20,8 +20,9 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
 #include "Arduino.h"
-#include "Adafruit_WINC1500MDNS.h"
+#include "WiFiMdns.h"
 
 // Important RFC's for reference:
 // - DNS request and response: http://www.ietf.org/rfc/rfc1035.txt
@@ -36,14 +37,13 @@
 #define IP_OFFSET 10
 
 
-MDNSResponder::MDNSResponder(Adafruit_WINC1500* wifi)
+MDNSResponder::MDNSResponder()
   : _expected(NULL)
   , _expectedLen(0)
+  , _index(0)
   , _response(NULL)
   , _responseLen(0)
-  , _index(0)
   , _mdnsSocket()
-  , _wifi(wifi)
 { }
 
 MDNSResponder::~MDNSResponder() {
@@ -74,7 +74,7 @@ bool MDNSResponder::begin(const char* domain, uint32_t ttlSeconds)
   }
   _expected[0] = (uint8_t)n;
   // Copy in domain characters as lowercase
-  for (int i = 0; i < n; ++i) {
+  for (unsigned int i = 0; i < n; ++i) {
     _expected[1+i] = tolower(domain[i]);
   }
   // Values for:
@@ -134,7 +134,7 @@ bool MDNSResponder::begin(const char* domain, uint32_t ttlSeconds)
   memcpy(records + TTL_OFFSET, ttl, 4);
   memcpy(records + A_RECORD_SIZE + 2 + TTL_OFFSET, ttl, 4);
   // Add IP address to response
-  uint32_t ipAddress = _wifi->localIP();
+  uint32_t ipAddress = WiFi.localIP();
   records[IP_OFFSET]     = (uint8_t) ipAddress;
   records[IP_OFFSET + 1] = (uint8_t)(ipAddress >> 8);
   records[IP_OFFSET + 2] = (uint8_t)(ipAddress >> 16);
@@ -142,7 +142,7 @@ bool MDNSResponder::begin(const char* domain, uint32_t ttlSeconds)
 
   // Open the MDNS UDP listening socket on port 5353 with multicast address
   // 224.0.0.251 (0xE00000FB)
-  if (!_mdnsSocket.begin(5353, 0xE00000FB)) {
+  if (!_mdnsSocket.beginMulti(IPAddress(224, 0, 0, 251), 5353)) {
     return false;
   }
 

@@ -20,15 +20,16 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-#ifndef ADAFRUIT_WINC1500MDNS_H
-#define ADAFRUIT_WINC1500MDNS_H
 
-#include "Adafruit_WINC1500.h"
-#include "Adafruit_WINC1500Udp.h"
+#ifndef WIFIMDNS_H
+#define WIFIMDNS_H
+
+#include "WiFi101.h"
+#include "WiFiUdp.h"
 
 class MDNSResponder {
 public:
-  MDNSResponder(Adafruit_WINC1500* wifi);
+  MDNSResponder();
   ~MDNSResponder();
   bool begin(const char* domain, uint32_t ttlSeconds = 3600);
   void update();
@@ -46,9 +47,7 @@ private:
   uint8_t* _response;
   int _responseLen;
   // UDP socket for receiving/sending MDNS data.
-  Adafruit_WINC1500UDP _mdnsSocket;
-  // Reference to WINC1500 wifi object, used to get IP address.
-  Adafruit_WINC1500* _wifi;
+  WiFiUDP _mdnsSocket;
 };
 
 #endif

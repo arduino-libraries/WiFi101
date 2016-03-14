@@ -2,15 +2,15 @@
  MDNS WiFi Web Server
 
  A simple web server that shows the value of the analog input pins,
- and exposes itself on the MDNS name 'winc1500.local'.
+ and exposes itself on the MDNS name 'wifi101.local'.
 
  On Linux (like Ubuntu 15.04) or OSX you can access the web page
- on the device in a browser at 'http://winc1500.local/'.
+ on the device in a browser at 'http://wifi101.local/'.
 
  On Windows you'll first need to install the Bonjour Printer Services
  from:
    https://support.apple.com/kb/dl999?locale=en_US
- Then you can access the device in a browser at 'http://winc1500.local/'.
+ Then you can access the device in a browser at 'http://wifi101.local/'.
 
  This example is written for a network using WPA encryption. For
  WEP or WPA, change the Wifi.begin() call accordingly.
@@ -29,51 +29,26 @@
 */
 
 #include <SPI.h>
-#include <Adafruit_WINC1500.h>
-#include <Adafruit_WINC1500MDNS.h>
-
-// Define the MDNS name that the board will respond to:
-#define MDNS_NAME "winc1500"
-// Note that the actual MDNS name will have '.local' after
-// the name above, so "winc1500" will be accessible on
-// the MDNS name "winc1500.local".
-
-// Define the WINC1500 board connections below.
-// If you're following the Adafruit WINC1500 board
-// guide you don't need to modify these:
-#define WINC_CS   8
-#define WINC_IRQ  7
-#define WINC_RST  4
-#define WINC_EN   2     // or, tie EN to VCC and comment this out
-// The SPI pins of the WINC1500 (SCK, MOSI, MISO) should be
-// connected to the hardware SPI port of the Arduino.
-// On an Uno or compatible these are SCK = #13, MISO = #12, MOSI = #11.
-// On an Arduino Zero use the 6-pin ICSP header, see:
-//   https://www.arduino.cc/en/Reference/SPI
-
-// Setup the WINC1500 connection with the pins above and the default hardware SPI.
-Adafruit_WINC1500 WiFi(WINC_CS, WINC_IRQ, WINC_RST);
-
-// Or just use hardware SPI (SCK/MOSI/MISO) and defaults, SS -> #10, INT -> #7, RST -> #5, EN -> 3-5V
-//Adafruit_WINC1500 WiFi;
+#include <WiFi101.h>
+#include <WifiMdns.h>
 
 char ssid[] = "yourNetwork";      // your network SSID (name)
 char pass[] = "secretPassword";   // your network password
 int keyIndex = 0;                 // your network key Index number (needed only for WEP)
 
+char mdnsName[] = "wifi101"; // the MDNS name that the board will respond to
+// Note that the actual MDNS name will have '.local' after
+// the name above, so "wifi101" will be accessible on
+// the MDNS name "wifi101.local".
+
 int status = WL_IDLE_STATUS;
 
 // Create a MDNS responder to listen and respond to MDNS name requests.
-MDNSResponder mdns(&WiFi);  // Need to pass in a reference to the WiFi class above.
+MDNSResponder mdns;
 
-Adafruit_WINC1500Server server(80);
+WiFiServer server(80);
 
 void setup() {
-#ifdef WINC_EN
-  pinMode(WINC_EN, OUTPUT);
-  digitalWrite(WINC_EN, HIGH);
-#endif
-
   //Initialize serial and wait for port to open:
   Serial.begin(9600);
   while (!Serial) {
@@ -105,13 +80,13 @@ void setup() {
   // Setup the MDNS responder to listen to the configured name.
   // NOTE: You _must_ call this _after_ connecting to the WiFi network and
   // being assigned an IP address.
-  if (!mdns.begin(MDNS_NAME)) {
+  if (!mdns.begin(mdnsName)) {
     Serial.println("Failed to start MDNS responder!");
     while(1);
   }
 
   Serial.print("Server listening at http://");
-  Serial.print(MDNS_NAME);
+  Serial.print(mdnsName);
   Serial.println(".local/");
 }
 
@@ -122,7 +97,7 @@ void loop() {
   mdns.update();
 
   // listen for incoming clients
-  Adafruit_WINC1500Client client = server.available();
+  WiFiClient client = server.available();
   if (client) {
     Serial.println("new client");
     // an http request ends with a blank line
