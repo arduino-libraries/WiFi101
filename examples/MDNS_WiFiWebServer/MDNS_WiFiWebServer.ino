@@ -94,7 +94,7 @@ void setup() {
 void loop() {
   // Call the update() function on the MDNS responder every loop iteration to
   // make sure it can detect and respond to name requests.
-  mdns.update();
+  mdns.poll();
 
   // listen for incoming clients
   WiFiClient client = server.available();

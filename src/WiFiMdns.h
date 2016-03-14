@@ -31,23 +31,21 @@ class MDNSResponder {
 public:
   MDNSResponder();
   ~MDNSResponder();
-  bool begin(const char* domain, uint32_t ttlSeconds = 3600);
-  void update();
+  bool begin(const char* _name, uint32_t _ttlSeconds = 3600);
+  void poll();
 
 private:
-  void _broadcastResponse();
+  bool parseRequest();
+  void replyToRequest();
 
-  // Expected query values
-  static uint8_t _queryHeader[];
-  uint8_t* _expected;
-  int _expectedLen;
-  // Current parsing state
-  int _index;
-  // Response data
-  uint8_t* _response;
-  int _responseLen;
+private:
+  String name;
+  uint32_t ttlSeconds;
+
+  int expectedRequestLength;
+
   // UDP socket for receiving/sending MDNS data.
-  WiFiUDP _mdnsSocket;
+  WiFiUDP udpSocket;
 };
 
 #endif
