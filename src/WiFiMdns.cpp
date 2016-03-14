@@ -155,7 +155,7 @@ bool MDNSResponder::parseRequest()
         requestDomainLength == sizeof(domain) &&                                 // domain length match
         memcmp_P(requestDomain, domain, requestDomainLength) == 0 &&             // suffix match
         requestQtype == 0x0001 &&                                                // request QType match
-        (requestQclass == 0x0001 || requestQclass == 0x8001) ) {                 // request QClass match
+        requestQclass == 0x0001) {                                               // request QClass match
 
       return true;
     }
