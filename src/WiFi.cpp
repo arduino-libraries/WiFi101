@@ -670,6 +670,9 @@ uint8_t WiFiClass::status()
 	if (!_init) {
 		init();
 	}
+
+	m2m_wifi_handle_events(NULL);
+
 	return _status;
 }
 
