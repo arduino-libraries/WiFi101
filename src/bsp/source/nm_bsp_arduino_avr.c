@@ -48,6 +48,8 @@
 #include "common/include/nm_common.h"
 #include <Arduino.h>
 
+#define IS_MEGA (defined(ARDUINO_AVR_MEGA) || defined(ARDUINO_AVR_MEGA2560))
+
 static tpfNmBspIsr gpfIsr;
 
 volatile uint8_t *_receivePortRegister;
@@ -60,8 +62,10 @@ uint8_t rx_pin_read()
   return *_receivePortRegister & _receiveBitMask;
 }
 
+#if !IS_MEGA
+
 #if defined(PCINT0_vect)
-__attribute__((weak)) ISR(PCINT0_vect)
+ISR(PCINT0_vect)
 {
 	if (!rx_pin_read() && gpfIsr)
 	{
@@ -71,16 +75,18 @@ __attribute__((weak)) ISR(PCINT0_vect)
 #endif
 
 #if defined(PCINT1_vect)
-__attribute__((weak)) ISR(PCINT1_vect, ISR_ALIASOF(PCINT0_vect));
+ISR(PCINT1_vect, ISR_ALIASOF(PCINT0_vect));
 #endif
 
 #if defined(PCINT2_vect)
-__attribute__((weak)) ISR(PCINT2_vect, ISR_ALIASOF(PCINT0_vect));
+ISR(PCINT2_vect, ISR_ALIASOF(PCINT0_vect));
 #endif
 
 #if defined(PCINT3_vect)
-__attribute__((weak)) ISR(PCINT3_vect, ISR_ALIASOF(PCINT0_vect));
+ISR(PCINT3_vect, ISR_ALIASOF(PCINT0_vect));
 #endif
+
+#endif // !IS_MEGA
 
 #if defined(TIMER4_OVF_vect)
 ISR(TIMER4_OVF_vect) {
@@ -131,8 +137,8 @@ void attachInterruptMultiArch(uint32_t pin, void *chip_isr, uint32_t mode)
 	gpfIsr = chip_isr;
 
 	// stategy 0 - attach external interrupt to pin (works on 32u4)
-	pin_irq = digitalPinToInterrupt(pin);
-	if (pin_irq == NOT_AN_INTERRUPT) {
+	pin_irq = digitalPinToInterrupt((int)pin);
+	if (pin_irq == (int)NOT_AN_INTERRUPT) {
 		attachInterruptToChangePin(pin);
 		return;
 	}
@@ -145,8 +151,8 @@ void detachInterruptMultiArch(uint32_t pin)
 {
 	int pin_irq;
 
-	pin_irq = digitalPinToInterrupt(pin);
-	if (pin_irq == NOT_AN_INTERRUPT) {
+	pin_irq = digitalPinToInterrupt((int)pin);
+	if (pin_irq == (int)NOT_AN_INTERRUPT) {
 		detachInterruptToChangePin(pin);
 		return;
 	}
