@@ -25,6 +25,7 @@ flush	KEYWORD2
 stop	KEYWORD2
 connected	KEYWORD2
 begin	KEYWORD2
+beginMulti	KEYWORD2
 disconnect	KEYWORD2
 macAddress	KEYWORD2
 localIP	KEYWORD2
@@ -36,9 +37,11 @@ RSSI	KEYWORD2
 encryptionType	KEYWORD2
 getResult	KEYWORD2
 getSocket	KEYWORD2
+poll	KEYWORD2
 WiFiClient	KEYWORD2
 WiFiServer	KEYWORD2
 WiFiSSLClient	KEYWORD2
+WifiMdns	KEYWORD2
 
 #######################################
 # Constants (LITERAL1)

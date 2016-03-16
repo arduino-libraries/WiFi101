@@ -92,12 +92,25 @@ uint8_t WiFiUDP::begin(uint16_t port)
 	return 1;
 }
 
+uint8_t WiFiUDP::beginMulti(IPAddress ip, uint16_t port)
+{
+	uint32_t multiIp = ip;
+
+	if (!begin(port)) {
+		return 0;
+	}
+
+	setsockopt(_socket, SOL_SOCKET, IP_ADD_MEMBERSHIP, &multiIp, sizeof(multiIp));
+
+	return 1;
+}
+
 /* return number of bytes available in the current packet,
    will return zero if parsePacket hasn't been called yet */
 int WiFiUDP::available()
 {
 	m2m_wifi_handle_events(NULL);
-	
+
 	if (_socket != -1) {
 		return _rcvSize;
 	}
@@ -109,7 +122,7 @@ void WiFiUDP::stop()
 {
 	if (_socket < 0)
 		return;
-	
+
 	socketBufferUnregister(_socket);
 	close(_socket);
 	_socket = -1;
@@ -130,7 +143,7 @@ int WiFiUDP::beginPacket(IPAddress ip, uint16_t port)
 {
 	_sndIP = ip;
 	_sndPort = port;
-	
+
 	return 1;
 }
 
@@ -174,7 +187,7 @@ size_t WiFiUDP::write(const uint8_t *buffer, size_t size)
 int WiFiUDP::parsePacket()
 {
 	m2m_wifi_handle_events(NULL);
-	
+
 	if (_socket != -1) {
 		if (_rcvSize != 0) {
 			return _rcvSize;
@@ -207,11 +220,11 @@ int WiFiUDP::read(unsigned char* buf, size_t size)
 	// sizeof(size_t) is architecture dependent
 	// but we need a 16 bit data type here
 	uint16_t size_tmp = available();
-	
+
 	if (size_tmp == 0) {
 		return -1;
 	}
-	
+
 	if (size < size_tmp) {
 		size_tmp = size;
 	}
