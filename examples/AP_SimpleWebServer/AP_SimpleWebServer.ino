@@ -22,7 +22,7 @@
 int led =  LED_BUILTIN;
 
 char ssid[] = "wifi101-network"; // created AP name
-char pass[] = "0000000000";      // AP password (needed only for WEP, must be exactly 10 or 26 characters in length)
+char pass[] = "1234567890";      // AP password (needed only for WEP, must be exactly 10 or 26 characters in length)
 int keyIndex = 0;                // your network key Index number (needed only for WEP)
 
 int status = WL_IDLE_STATUS;
