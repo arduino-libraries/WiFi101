@@ -593,7 +593,11 @@ SOCKET socket(uint16 u16Domain, uint8 u8Type, uint8 u8Flags)
 				{
 					tstrSSLSocketCreateCmd	strSSLCreate;
 					strSSLCreate.sslSock = sock;
+#ifdef ARDUINO
+					pstrSock->u8SSLFlags = SSL_FLAGS_ACTIVE;
+#else
 					pstrSock->u8SSLFlags = SSL_FLAGS_ACTIVE | SSL_FLAGS_NO_TX_COPY;
+#endif
 					SOCKET_REQUEST(SOCKET_CMD_SSL_CREATE, (uint8*)&strSSLCreate, sizeof(tstrSSLSocketCreateCmd), 0, 0, 0);
 				}
 				break;
@@ -804,7 +808,11 @@ sint16 send(SOCKET sock, void *pvSendBuffer, uint16 u16SendLength, uint16 flags)
 		if(gastrSockets[sock].u8SSLFlags & SSL_FLAGS_ACTIVE)
 		{
 			u8Cmd			= SOCKET_CMD_SSL_SEND;
+#ifdef ARDUINO
+			u16DataOffset	= SSL_TX_PACKET_OFFSET;
+#else
 			u16DataOffset	= gastrSockets[sock].u16DataOffset;
+#endif
 		}
 
 		s16Ret =  SOCKET_REQUEST(u8Cmd|M2M_REQ_DATA_PKT, (uint8*)&strSend, sizeof(tstrSendCmd), pvSendBuffer, u16SendLength, u16DataOffset);
