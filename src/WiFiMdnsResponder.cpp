@@ -24,7 +24,7 @@
 #include <avr/pgmspace.h>
 
 #include "Arduino.h"
-#include "WiFiMdns.h"
+#include "WiFiMdnsResponder.h"
 
 // Important RFC's for reference:
 // - DNS request and response: http://www.ietf.org/rfc/rfc1035.txt
@@ -76,16 +76,16 @@ const uint8_t nsecRecord[] PROGMEM = {
 
 const uint8_t domain[] PROGMEM = { 'l', 'o', 'c', 'a', 'l' };
 
-MDNSResponder::MDNSResponder() :
+WiFiMDNSResponder::WiFiMDNSResponder() :
   expectedRequestLength(0)
 {
 }
 
-MDNSResponder::~MDNSResponder()
+WiFiMDNSResponder::~WiFiMDNSResponder()
 {
 }
 
-bool MDNSResponder::begin(const char* _name, uint32_t _ttlSeconds)
+bool WiFiMDNSResponder::begin(const char* _name, uint32_t _ttlSeconds)
 {
   int nameLength = strlen(_name);
 
@@ -110,14 +110,14 @@ bool MDNSResponder::begin(const char* _name, uint32_t _ttlSeconds)
   return true;
 }
 
-void MDNSResponder::poll()
+void WiFiMDNSResponder::poll()
 {
   if (parseRequest()) {
     replyToRequest();
   }
 }
 
-bool MDNSResponder::parseRequest()
+bool WiFiMDNSResponder::parseRequest()
 {
   if (udpSocket.parsePacket()) {
     // check if parsed packet matches expected request length
@@ -164,7 +164,7 @@ bool MDNSResponder::parseRequest()
   return false;
 }
 
-void MDNSResponder::replyToRequest()
+void WiFiMDNSResponder::replyToRequest()
 {
   int nameLength = name.length();
   int domainLength = sizeof(domain);

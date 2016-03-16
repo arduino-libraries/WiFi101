@@ -41,7 +41,7 @@ poll	KEYWORD2
 WiFiClient	KEYWORD2
 WiFiServer	KEYWORD2
 WiFiSSLClient	KEYWORD2
-WifiMdns	KEYWORD2
+WiFiMDNSResponder	KEYWORD2
 
 #######################################
 # Constants (LITERAL1)

@@ -21,16 +21,16 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-#ifndef WIFIMDNS_H
-#define WIFIMDNS_H
+#ifndef WIFIMDNSRESPONDER_H
+#define WIFIMDNSRESPONDER_H
 
 #include "WiFi101.h"
 #include "WiFiUdp.h"
 
-class MDNSResponder {
+class WiFiMDNSResponder {
 public:
-  MDNSResponder();
-  ~MDNSResponder();
+  WiFiMDNSResponder();
+  ~WiFiMDNSResponder();
   bool begin(const char* _name, uint32_t _ttlSeconds = 3600);
   void poll();
 

@@ -30,7 +30,7 @@
 
 #include <SPI.h>
 #include <WiFi101.h>
-#include <WifiMdns.h>
+#include <WiFiMDNSResponder.h>
 
 char ssid[] = "yourNetwork";      // your network SSID (name)
 char pass[] = "secretPassword";   // your network password
@@ -44,7 +44,7 @@ char mdnsName[] = "wifi101"; // the MDNS name that the board will respond to
 int status = WL_IDLE_STATUS;
 
 // Create a MDNS responder to listen and respond to MDNS name requests.
-MDNSResponder mdns;
+WiFiMDNSResponder mdnsResponder;
 
 WiFiServer server(80);
 
@@ -80,7 +80,7 @@ void setup() {
   // Setup the MDNS responder to listen to the configured name.
   // NOTE: You _must_ call this _after_ connecting to the WiFi network and
   // being assigned an IP address.
-  if (!mdns.begin(mdnsName)) {
+  if (!mdnsResponder.begin(mdnsName)) {
     Serial.println("Failed to start MDNS responder!");
     while(1);
   }
@@ -94,7 +94,7 @@ void setup() {
 void loop() {
   // Call the update() function on the MDNS responder every loop iteration to
   // make sure it can detect and respond to name requests.
-  mdns.poll();
+  mdnsResponder.poll();
 
   // listen for incoming clients
   WiFiClient client = server.available();
