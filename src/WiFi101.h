@@ -104,6 +104,8 @@ public:
 	 */
 	uint8_t beginAP(char *ssid);
 	uint8_t beginAP(char *ssid, uint8_t channel);
+	uint8_t beginAP(const char *ssid, uint8_t key_idx, const char* key);
+	uint8_t beginAP(const char *ssid, uint8_t key_idx, const char* key, uint8_t channel);
 
 	uint8_t beginProvision(char *ssid, char *url);
 	uint8_t beginProvision(char *ssid, char *url, uint8_t channel);
@@ -142,6 +144,7 @@ private:
 	int _init;
 	char _version[9];
 	uint8_t startConnect(const char *ssid, uint8_t u8SecType, const void *pvAuthInfo);
+	uint8_t startAP(const char *ssid, uint8_t u8SecType, const void *pvAuthInfo, uint8_t channel);
 };
 
 extern WiFiClass WiFi;
