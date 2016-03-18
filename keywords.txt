@@ -44,6 +44,11 @@ WiFiServer	KEYWORD2
 WiFiSSLClient	KEYWORD2
 WiFiMDNSResponder	KEYWORD2
 
+lowPowerMode	KEYWORD2
+noLowPowerMode	KEYWORD2
+sleepFor	KEYWORD2
+isAwake	KEYWORD2
+
 #######################################
 # Constants (LITERAL1)
 #######################################

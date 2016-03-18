@@ -771,6 +771,37 @@ void WiFiClass::refresh(void)
 	m2m_wifi_handle_events(NULL);
 }
 
+void WiFiClass::lowPowerMode(void)
+{
+  m2m_wifi_set_sleep_mode(M2M_PS_DEEP_AUTOMATIC, true);
+}
+
+void WiFiClass::noLowPowerMode(void)
+{
+	m2m_wifi_set_sleep_mode(M2M_NO_PS, false);
+}
+
+void WiFiClass::sleepFor(uint32_t thisTime)
+{
+  m2m_wifi_set_sleep_mode(M2M_PS_MANUAL, false);
+  _sleepTime = thisTime + 150; //150 ms must elapse for complete awakening
+  _startSleepTime = millis();
+  m2m_wifi_request_sleep(thisTime);
+}
+
+bool WiFiClass::isAwake(void)
+{
+  if (_sleepTime == 0)
+    return true;
+
+  if (millis() - _startSleepTime > _sleepTime) {
+    _sleepTime = 0;
+    return true;
+  }
+  else
+    return false;
+}
+
 uint8_t WiFiClass::ping(const char* hostname, uint8_t ttl)
 {
 	IPAddress ip;
