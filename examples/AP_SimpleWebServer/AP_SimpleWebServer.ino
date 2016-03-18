@@ -50,8 +50,8 @@ void setup() {
   Serial.print("Creating access point named: ");
   Serial.println(ssid);
 
-  // Create WEP network. Change this line if you want to create an open network:
-  if (WiFi.beginAP(ssid, keyIndex, pass) != WL_CONNECTED) {
+  // Create open network. Change this line if you want to create an WEP network:
+  if (WiFi.beginAP(ssid) != WL_CONNECTED) {
     Serial.println("Creating access point failed");
     // don't continue
     while (true);
