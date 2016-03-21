@@ -1,4 +1,4 @@
-WiFi101 ??? - ???
+WiFi101 0.9.0 - 2016.03.21
 
  * Fixed WiFi.status() hanging when shield is not present
  * Fixed MAC address returning 00:00:00:00:00:00 with firmware version 19.3.0
