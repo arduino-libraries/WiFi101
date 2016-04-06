@@ -92,6 +92,9 @@ static void init_chip_pins(void)
 	pinMode(WINC1501_RESET_PIN, OUTPUT);
 	digitalWrite(WINC1501_RESET_PIN, HIGH);
 
+	/* Configure INTN D7 pins as pinput. */
+	pinMode(WINC1501_INTN_PIN, INPUT);
+
 #if defined(WINC1501_CHIP_EN_PIN)
 	/* Configure CHIP_EN as pull-up */
 	pinMode(WINC1501_CHIP_EN_PIN, INPUT_PULLUP);
