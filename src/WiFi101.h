@@ -79,6 +79,8 @@ public:
 
 	WiFiClass();
 
+	void setPins(int8_t cs, int8_t irq, int8_t rst, int8_t en = -1);
+
 	int init();
 	
 	char* firmwareVersion();
