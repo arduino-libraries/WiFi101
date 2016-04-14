@@ -1,14 +1,18 @@
+WiFi101
+
+* Increased compatibility with 3rd party boards and architectures.
+
 WiFi101 0.9.0 - 2016.03.21
 
- * Fixed WiFi.status() hanging when shield is not present
- * Fixed MAC address returning 00:00:00:00:00:00 with firmware version 19.3.0
- * Fixed SSL write functionality with firmware version 19.3.0
- * Fixed previous version of the library not working on the Uno and other boards that used PCINT's
- * Added beginAP(...) API's to create access point with WEP passwords
- * Fixed beginAP(...) channel off by one error
- * Fixed WiFi.status() always returning WL_CONNECTED once connected, even if access point is disconnected later
- * Added beginMulti API for Multicast UDP support
- * Added WiFiMDNSResponder class and MDNS Web server example
+* Fixed WiFi.status() hanging when shield is not present
+* Fixed MAC address returning 00:00:00:00:00:00 with firmware version 19.3.0
+* Fixed SSL write functionality with firmware version 19.3.0
+* Fixed previous version of the library not working on the Uno and other boards that used PCINT's
+* Added beginAP(...) API's to create access point with WEP passwords
+* Fixed beginAP(...) channel off by one error
+* Fixed WiFi.status() always returning WL_CONNECTED once connected, even if access point is disconnected later
+* Added beginMulti API for Multicast UDP support
+* Added WiFiMDNSResponder class and MDNS Web server example
 
 WiFi101 0.8.0 - 2016.02.15
 
