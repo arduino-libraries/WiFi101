@@ -27,7 +27,7 @@
 #endif
 
 #include "Arduino.h"
-#include "WiFiMdnsResponder.h"
+#include "WiFiMDNSResponder.h"
 
 // Important RFC's for reference:
 // - DNS request and response: http://www.ietf.org/rfc/rfc1035.txt
