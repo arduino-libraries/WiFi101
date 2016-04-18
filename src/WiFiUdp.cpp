@@ -41,6 +41,7 @@ WiFiUDP::WiFiUDP()
 	_rcvSize = 0;
 	_rcvPort = 0;
 	_rcvIP = 0;
+	_sndSize = 0;
 }
 
 /* Start WiFiUDP socket, listening at local port PORT */
@@ -55,6 +56,7 @@ uint8_t WiFiUDP::begin(uint16_t port)
 	_rcvSize = 0;
 	_rcvPort = 0;
 	_rcvIP = 0;
+	_sndSize = 0;
 
 	// Initialize socket address structure.
 	addr.sin_family = AF_INET;
@@ -67,7 +69,7 @@ uint8_t WiFiUDP::begin(uint16_t port)
 	}
 
 	// Add socket buffer handler:
-	socketBufferRegister(_socket, &_flag, &_head, &_tail, (uint8 *)_buffer);
+	socketBufferRegister(_socket, &_flag, &_head, &_tail, (uint8 *)_recvBuffer);
 	setsockopt(_socket, SOL_SOCKET, SO_SET_UDP_SEND_CALLBACK, &u32EnableCallbacks, 0);
 
 	// Bind socket:
@@ -134,6 +136,7 @@ int WiFiUDP::beginPacket(const char *host, uint16_t port)
 	if (WiFi.hostByName(host, ip)) {
 		_sndIP = ip;
 		_sndPort = port;
+		_sndSize = 0;
 	}
 
 	return 0;
@@ -143,21 +146,12 @@ int WiFiUDP::beginPacket(IPAddress ip, uint16_t port)
 {
 	_sndIP = ip;
 	_sndPort = port;
+	_sndSize = 0;
 
 	return 1;
 }
 
 int WiFiUDP::endPacket()
-{
-	return 1;
-}
-
-size_t WiFiUDP::write(uint8_t byte)
-{
-  return write(&byte, 1);
-}
-
-size_t WiFiUDP::write(const uint8_t *buffer, size_t size)
 {
 	struct sockaddr_in addr;
 
@@ -169,7 +163,7 @@ size_t WiFiUDP::write(const uint8_t *buffer, size_t size)
 	addr.sin_port = _htons(_sndPort);
 	addr.sin_addr.s_addr = _sndIP;
 
-	if (sendto(_socket, (void *)buffer, size, 0,
+	if (sendto(_socket, (void *)_sndBuffer, _sndSize, 0,
 			(struct sockaddr *)&addr, sizeof(addr)) < 0) {
 		// Network led OFF (rev A then rev B).
 		m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 1);
@@ -180,6 +174,24 @@ size_t WiFiUDP::write(const uint8_t *buffer, size_t size)
 	// Network led OFF (rev A then rev B).
 	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 1);
 	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO5, 1);
+
+	return 1;
+}
+
+size_t WiFiUDP::write(uint8_t byte)
+{
+  return write(&byte, 1);
+}
+
+size_t WiFiUDP::write(const uint8_t *buffer, size_t size)
+{
+	if ((size + _sndSize) > sizeof(_sndBuffer)) {
+		size = sizeof(_sndBuffer) - _sndSize;
+	}
+
+	memcpy(_sndBuffer + _sndSize, buffer, size);
+
+	_sndSize += size;
 
 	return size;
 }
@@ -193,10 +205,10 @@ int WiFiUDP::parsePacket()
 			return _rcvSize;
 		}
 		if (_head != _tail) {
-			_rcvSize = ((uint16_t)_buffer[_tail] << 8) + (uint16_t)_buffer[_tail + 1];
-			_rcvPort = ((uint16_t)_buffer[_tail + 2] << 8) + (uint16_t)_buffer[_tail + 3];
-			_rcvIP =   ((uint32_t)_buffer[_tail + 4] << 24) + ((uint32_t)_buffer[_tail + 5] << 16) +
-					((uint32_t)_buffer[_tail + 6] << 8) + (uint32_t)_buffer[_tail + 7];
+			_rcvSize = ((uint16_t)_recvBuffer[_tail] << 8) + (uint16_t)_recvBuffer[_tail + 1];
+			_rcvPort = ((uint16_t)_recvBuffer[_tail + 2] << 8) + (uint16_t)_recvBuffer[_tail + 3];
+			_rcvIP =   ((uint32_t)_recvBuffer[_tail + 4] << 24) + ((uint32_t)_recvBuffer[_tail + 5] << 16) +
+					((uint32_t)_recvBuffer[_tail + 6] << 8) + (uint32_t)_recvBuffer[_tail + 7];
 			_tail += SOCKET_BUFFER_UDP_HEADER_SIZE;
 			return _rcvSize;
 		}
@@ -230,7 +242,7 @@ int WiFiUDP::read(unsigned char* buf, size_t size)
 	}
 
 	for (uint32_t i = 0; i < size_tmp; ++i) {
-		buf[i] = _buffer[_tail++];
+		buf[i] = _recvBuffer[_tail++];
 		_rcvSize--;
 
 		if (_tail == _head) {
@@ -243,9 +255,9 @@ int WiFiUDP::read(unsigned char* buf, size_t size)
 			// setup buffer and buffer size to transfer the remainder of the current packet
 			// or next received packet
 			if (hif_small_xfer) {
-				recvfrom(_socket, _buffer, SOCKET_BUFFER_MTU, 0);
+				recvfrom(_socket, _recvBuffer, SOCKET_BUFFER_MTU, 0);
 			} else {
-				recvfrom(_socket, _buffer + SOCKET_BUFFER_UDP_HEADER_SIZE, SOCKET_BUFFER_MTU, 0);
+				recvfrom(_socket, _recvBuffer + SOCKET_BUFFER_UDP_HEADER_SIZE, SOCKET_BUFFER_MTU, 0);
 			}
 			m2m_wifi_handle_events(NULL);
 		}
@@ -259,7 +271,7 @@ int WiFiUDP::peek()
 	if (!available())
 		return -1;
 
-	return _buffer[_tail];
+	return _recvBuffer[_tail];
 }
 
 void WiFiUDP::flush()

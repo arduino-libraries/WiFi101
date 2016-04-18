@@ -2,6 +2,7 @@ WiFi101
 
 * Increased compatibility with 3rd party boards and architectures.
 * Rename WiFiMdnsResponder.h/cpp to WiFiMDNSResponder.h/cpp
+* Fixed buffering of UDP packet
 
 WiFi101 0.9.0 - 2016.03.21
 
