@@ -1,4 +1,4 @@
-WiFi101
+WiFi101 0.9.1 - 2016.04.19
 
 * Increased compatibility with 3rd party boards and architectures.
 * Rename WiFiMdnsResponder.h/cpp to WiFiMDNSResponder.h/cpp
