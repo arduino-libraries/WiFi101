@@ -118,6 +118,7 @@ public:
 	void config(IPAddress local_ip, IPAddress dns_server, IPAddress gateway, IPAddress subnet);
 
 	void disconnect();
+	void end();
 
 	uint8_t *macAddress(uint8_t *mac);
 
