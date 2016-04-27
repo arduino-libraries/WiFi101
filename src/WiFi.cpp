@@ -313,12 +313,12 @@ uint8_t WiFiClass::startConnect(const char *ssid, uint8_t u8SecType, const void 
 	return _status;
 }
 
-uint8_t WiFiClass::beginAP(char *ssid)
+uint8_t WiFiClass::beginAP(const char *ssid)
 {
 	return beginAP(ssid, 1);
 }
 
-uint8_t WiFiClass::beginAP(char *ssid, uint8_t channel)
+uint8_t WiFiClass::beginAP(const char *ssid, uint8_t channel)
 {
 	return startAP(ssid, M2M_WIFI_SEC_OPEN, NULL, channel);
 }
