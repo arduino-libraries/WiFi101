@@ -15,6 +15,16 @@
   You should have received a copy of the GNU Lesser General Public
   License along with this library; if not, write to the Free Software
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
+  Portions of this file are Copyright (C) 2016 Asad Zia.
+
+  These portions may be used under the terms of the GNU Lesser
+  General Public License version 2.1 as published by the Free Software
+  Foundation and appearing in the file LICENSE.LGPL included in the
+  packaging of this file.  Please review the following information to
+  ensure the GNU Lesser General Public License version 2.1 requirements
+  will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+  USE OF THESE PORTIONS UNDER ANY OTHER LICENSE IS NOT PERMITTED.
 */
 
 #include "WiFi101.h"
@@ -34,7 +44,7 @@ static void wifi_cb(uint8_t u8MsgType, void *pvMsg)
 			tstrM2mWifiStateChanged *pstrWifiState = (tstrM2mWifiStateChanged *)pvMsg;
 			if (pstrWifiState->u8CurrState == M2M_WIFI_CONNECTED) {
 				//SERIAL_PORT_MONITOR.println("wifi_cb: M2M_WIFI_RESP_CON_STATE_CHANGED: CONNECTED");
-				if (WiFi._mode == WL_STA_MODE && !WiFi._dhcp) {
+				if ((WiFi._mode == WL_STA_MODE || WiFi._mode == WL_P2P_MODE) && !WiFi._dhcp) {
 					WiFi._status = WL_CONNECTED;
 
 					// WiFi led ON.
@@ -42,7 +52,7 @@ static void wifi_cb(uint8_t u8MsgType, void *pvMsg)
 				}
 			} else if (pstrWifiState->u8CurrState == M2M_WIFI_DISCONNECTED) {
 				//SERIAL_PORT_MONITOR.println("wifi_cb: M2M_WIFI_RESP_CON_STATE_CHANGED: DISCONNECTED");
-				if (WiFi._mode == WL_STA_MODE) {
+				if (WiFi._mode == WL_STA_MODE || WiFi._mode == WL_P2P_MODE) {
 					WiFi._status = WL_DISCONNECTED;
 					if (WiFi._dhcp) {
 						WiFi._localip = 0;
@@ -59,7 +69,7 @@ static void wifi_cb(uint8_t u8MsgType, void *pvMsg)
 
 		case M2M_WIFI_REQ_DHCP_CONF:
 		{
-			if (WiFi._mode == WL_STA_MODE) {
+			if (WiFi._mode == WL_STA_MODE || WiFi._mode == WL_P2P_MODE) {
 				tstrM2MIPConfig *pstrIPCfg = (tstrM2MIPConfig *)pvMsg;
 				WiFi._localip = pstrIPCfg->u32StaticIP;
 				WiFi._submask = pstrIPCfg->u32SubnetMask;
@@ -310,6 +320,53 @@ uint8_t WiFiClass::startConnect(const char *ssid, uint8_t u8SecType, const void 
 
 	memset(_ssid, 0, M2M_MAX_SSID_LEN);
 	memcpy(_ssid, ssid, strlen(ssid));
+	return _status;
+}
+
+uint8_t WiFiClass::beginP2P(const char *name)
+{
+	return beginP2P(name, 6);
+}
+
+uint8_t WiFiClass::beginP2P(const char *name, uint8_t channel)
+{
+	if (!_init) {
+		init();
+	}
+
+	// Connect to router:
+	if (_dhcp) {
+		_localip = 0;
+		_submask = 0;
+		_gateway = 0;
+	}
+
+	/* Set device name to be shown in peer device. */
+	if(m2m_wifi_set_device_name((uint8_t *)name, strlen(name)) < 0){
+		_status = WL_CONNECT_FAILED;
+		return _status;
+	}
+
+	if (m2m_wifi_p2p(channel) < 0) {
+		_status = WL_CONNECT_FAILED;
+		return _status;
+	}
+	_status = WL_IDLE_STATUS;
+	_mode = WL_P2P_MODE;
+
+	// Wait for connection or timeout:
+	unsigned long start = millis();
+	while (!(_status & WL_CONNECTED) &&
+			!(_status & WL_DISCONNECTED) &&
+			millis() - start < 60000) {
+		m2m_wifi_handle_events(NULL);
+	}
+	if (!(_status & WL_CONNECTED)) {
+		_mode = WL_RESET_MODE;
+	}
+
+	memset(_p2pname, 0, M2M_MAX_SSID_LEN);
+	memcpy(_p2pname, name, strlen(name));
 	return _status;
 }
 
