@@ -325,7 +325,7 @@ uint8_t WiFiClass::startConnect(const char *ssid, uint8_t u8SecType, const void 
 
 uint8_t WiFiClass::beginP2P(const char *name)
 {
-	return beginP2P(name, 6);
+	return beginP2P(name, M2M_WIFI_CH_6);
 }
 
 uint8_t WiFiClass::beginP2P(const char *name, uint8_t channel)
@@ -341,13 +341,17 @@ uint8_t WiFiClass::beginP2P(const char *name, uint8_t channel)
 		_gateway = 0;
 	}
 
+	sint8 status = m2m_wifi_set_device_name((uint8_t *)name, strlen(name));
+
 	/* Set device name to be shown in peer device. */
-	if(m2m_wifi_set_device_name((uint8_t *)name, strlen(name)) < 0){
+	if( status < 0){
 		_status = WL_CONNECT_FAILED;
 		return _status;
 	}
 
-	if (m2m_wifi_p2p(channel) < 0) {
+	status = m2m_wifi_p2p(channel);
+
+	if (status < 0) {
 		_status = WL_CONNECT_FAILED;
 		return _status;
 	}

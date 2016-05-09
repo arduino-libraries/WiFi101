@@ -35,26 +35,27 @@ void setup() {
     while (true);
   }
 
-  // attempt to connect to Wifi-Direct:
-  while ( status != WL_CONNECTED) {
-    Serial.print("Waiting for P2P connect with ID: ");
-    Serial.println(name);
-    status = WiFi.beginP2P(name);
+  Serial.print("Waiting for P2P connect with ID: ");
+  Serial.println(name);
 
-    // wait 10 seconds for connection:
-    delay(10000);
+  // attempt to connect to Wifi-Direct:
+  if ( WiFi.beginP2P(name) != WL_CONNECTED) {
+    Serial.println("WiFi Direct connection failed.");
+    // don't continue:
+    while (true);
+
   }
 
   // you're connected now, so print out the data:
-  Serial.print("You're connected to the network");
+  Serial.println("You're connected to the WiFi-Direct");
   printCurrentNet();
-  printWifiData();  
+  printWifiData();
 }
 
 void loop() {
   // check the network connection once every 10 seconds:
   delay(10000);
-  printCurrentNet();  
+  printCurrentNet();
 }
 
 
@@ -84,11 +85,8 @@ void printWifiData() {
 }
 
 void printCurrentNet() {
-  // print the SSID of the network you're attached to:
-  Serial.print("SSID: ");
-  Serial.println(WiFi.SSID());
 
-  // print the MAC address of the router you're attached to:
+  // print the MAC address of the peer you're attached to:
   byte bssid[6];
   WiFi.BSSID(bssid);
   Serial.print("BSSID: ");

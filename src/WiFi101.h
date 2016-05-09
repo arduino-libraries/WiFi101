@@ -112,7 +112,7 @@ public:
 	 * Start Wifi as P2P device. P2P is also known as Wi-Fi Direct.
      *
 	 * param name: Set your device name which will be shown in the peer device.
-	 * param channel: Wifi channel to use. Valid values are 1-12.	 *
+	 * param channel: Wifi channel to use. Valid values are 0, 5 and 10.	 *
 	 */
 	uint8_t beginP2P(const char *name);
 	uint8_t beginP2P(const char *name, uint8_t channel);
