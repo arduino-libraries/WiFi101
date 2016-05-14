@@ -147,6 +147,16 @@ static void resolve_cb(uint8_t * /* hostName */, uint32_t hostIp)
 	WiFi._resolve = hostIp;
 }
 
+static void ping_cb(uint32 u32IPAddr, uint32 u32RTT, uint8 u8ErrorCode) {
+  if (u8ErrorCode == 0)
+    if (WiFi._resolve == u32IPAddr)
+      WiFi._resolve = WL_PING_SUCCESS;
+    else
+      WiFi._resolve = WL_PING_DEST_UNREACHABLE;
+  else
+    WiFi._resolve = u8ErrorCode;
+};
+
 WiFiClass::WiFiClass()
 {
 	_mode = WL_RESET_MODE;
@@ -722,5 +732,55 @@ void WiFiClass::refresh(void)
 	// Update state machine:
 	m2m_wifi_handle_events(NULL);
 }
+
+uint8_t WiFiClass::ping(const char* hostname, uint8_t ttl){
+	IPAddress ip;
+	if (hostByName(hostname, ip) > 0)
+		return ping(ip, ttl);
+	else
+		return WL_PING_ERROR;
+};
+
+uint8_t WiFiClass::ping(const String &hostname, uint8_t ttl){
+	return ping(hostname.c_str(), ttl);
+};
+
+uint8_t WiFiClass::ping(IPAddress host, uint8_t ttl) {
+
+  // Network led ON (rev A then rev B).
+  m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 0);
+  m2m_periph_gpio_set_val(M2M_PERIPH_GPIO5, 0);
+
+  uint32_t dstHost = (uint32_t)host;
+  _resolve = dstHost;
+
+  if (m2m_ping_req((uint32_t)host, ttl, &ping_cb) < 0) {
+    // Network led OFF (rev A then rev B).
+    m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 1);
+    m2m_periph_gpio_set_val(M2M_PERIPH_GPIO5, 1);
+    //  Error sending ping request
+    return WL_PING_ERROR;
+  };
+
+  // Wait for connection or timeout:
+  unsigned long start = millis();
+  while (_resolve == dstHost && millis() - start < 5000) {
+    m2m_wifi_handle_events(NULL);
+  };
+
+  // Network led OFF (rev A then rev B).
+  m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 1);
+  m2m_periph_gpio_set_val(M2M_PERIPH_GPIO5, 1);
+
+  if (_resolve == dstHost)
+    return WL_PING_TIMEOUT;
+  else
+    return _resolve;
+};
+
+uint8_t WiFiClass::pingGateway(){
+	return ping(_gateway);
+	
+};
 
 WiFiClass WiFi;
