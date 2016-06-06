@@ -102,8 +102,8 @@ public:
 	 * param ssid: Pointer to the SSID string.
 	 * param channel: Wifi channel to use. Valid values are 1-12.
 	 */
-	uint8_t beginAP(char *ssid);
-	uint8_t beginAP(char *ssid, uint8_t channel);
+	uint8_t beginAP(const char *ssid);
+	uint8_t beginAP(const char *ssid, uint8_t channel);
 	uint8_t beginAP(const char *ssid, uint8_t key_idx, const char* key);
 	uint8_t beginAP(const char *ssid, uint8_t key_idx, const char* key, uint8_t channel);
 
@@ -118,6 +118,7 @@ public:
 	void config(IPAddress local_ip, IPAddress dns_server, IPAddress gateway, IPAddress subnet);
 
 	void disconnect();
+	void end();
 
 	uint8_t *macAddress(uint8_t *mac);
 

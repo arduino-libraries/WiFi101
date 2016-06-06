@@ -313,12 +313,12 @@ uint8_t WiFiClass::startConnect(const char *ssid, uint8_t u8SecType, const void 
 	return _status;
 }
 
-uint8_t WiFiClass::beginAP(char *ssid)
+uint8_t WiFiClass::beginAP(const char *ssid)
 {
 	return beginAP(ssid, 1);
 }
 
-uint8_t WiFiClass::beginAP(char *ssid, uint8_t channel)
+uint8_t WiFiClass::beginAP(const char *ssid, uint8_t channel)
 {
 	return startAP(ssid, M2M_WIFI_SEC_OPEN, NULL, channel);
 }
@@ -486,6 +486,23 @@ void WiFiClass::config(IPAddress local_ip, IPAddress dns_server, IPAddress gatew
 void WiFiClass::disconnect()
 {
 	m2m_wifi_disconnect();
+
+	// WiFi led OFF (rev A then rev B).
+	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO15, 1);
+	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO4, 1);
+}
+
+void WiFiClass::end()
+{
+	if (_mode == WL_AP_MODE) {
+		m2m_wifi_disable_ap();
+	} else {
+		if (_mode == WL_PROV_MODE) {
+			m2m_wifi_stop_provision_mode();
+		}
+
+		m2m_wifi_disconnect();
+	}
 
 	// WiFi led OFF (rev A then rev B).
 	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO15, 1);
