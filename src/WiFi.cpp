@@ -148,13 +148,31 @@ static void resolve_cb(uint8_t * /* hostName */, uint32_t hostIp)
 }
 
 static void ping_cb(uint32 u32IPAddr, uint32 u32RTT, uint8 u8ErrorCode) {
-  if (u8ErrorCode == 0)
-    if (WiFi._resolve == u32IPAddr)
-      WiFi._resolve = WL_PING_SUCCESS;
-    else
-      WiFi._resolve = WL_PING_DEST_UNREACHABLE;
-  else
-    WiFi._resolve = u8ErrorCode;
+	switch(u8ErrorCode){
+		
+		// PING_ERR_SUCCESS
+		case 0: {
+			// Ensure that reply IP address matches requested IP address
+			if (WiFi._resolve == u32IPAddr)
+			  WiFi._resolve = WL_PING_SUCCESS;
+			else
+			  // Another network device replied to the our ICMP request
+			  WiFi._resolve = WL_PING_DEST_UNREACHABLE;			
+		}; break;
+		
+		// PING_ERR_DEST_UNREACH
+		case 1: {
+			WiFi._resolve = WL_PING_DEST_UNREACHABLE;
+		}; break;
+		
+		// PING_ERR_TIMEOUT
+		case 2: {
+			WiFi._resolve = WL_PING_TIMEOUT;
+		}; break;
+		
+		// Unknown error codes
+		default: WiFi._resolve = WL_PING_ERROR;
+	};
 };
 
 WiFiClass::WiFiClass()
@@ -733,19 +751,19 @@ void WiFiClass::refresh(void)
 	m2m_wifi_handle_events(NULL);
 }
 
-uint8_t WiFiClass::ping(const char* hostname, uint8_t ttl){
+wl_ping_result_t WiFiClass::ping(const char* hostname, uint8_t ttl){
 	IPAddress ip;
 	if (hostByName(hostname, ip) > 0)
 		return ping(ip, ttl);
 	else
-		return WL_PING_ERROR;
+		return WL_PING_UNKNOWN_HOST;
 };
 
-uint8_t WiFiClass::ping(const String &hostname, uint8_t ttl){
+wl_ping_result_t WiFiClass::ping(const String &hostname, uint8_t ttl){
 	return ping(hostname.c_str(), ttl);
 };
 
-uint8_t WiFiClass::ping(IPAddress host, uint8_t ttl) {
+wl_ping_result_t WiFiClass::ping(IPAddress host, uint8_t ttl) {
 
   // Network led ON (rev A then rev B).
   m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 0);
@@ -775,12 +793,7 @@ uint8_t WiFiClass::ping(IPAddress host, uint8_t ttl) {
   if (_resolve == dstHost)
     return WL_PING_TIMEOUT;
   else
-    return _resolve;
-};
-
-uint8_t WiFiClass::pingGateway(){
-	return ping(_gateway);
-	
+    return (wl_ping_result_t)_resolve;
 };
 
 WiFiClass WiFi;

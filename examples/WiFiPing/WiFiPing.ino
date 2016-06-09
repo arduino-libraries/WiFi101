@@ -10,7 +10,7 @@
 
  created 13 July 2010
  by dlf (Metodo2 srl)
- modified 13 May 2016
+ modified 09 June 2016
  by Petar Georgiev
  */
 #include <SPI.h>
@@ -64,14 +64,10 @@ void loop() {
   pingResult = WiFi.ping(hostName);
   
   if (pingResult == WL_PING_SUCCESS){
-    Serial.println("SUCCESS");
+    Serial.println("SUCCESS!");
   } else {
-    switch (pingResult){
-      case WL_PING_DEST_UNREACHABLE: { Serial.println("Destination host unreachable"); }; break;
-      case WL_PING_TIMEOUT: { Serial.println("Request Timed Out"); }; break;
-      case WL_PING_UNKNOWN_HOST: { Serial.println("Unable to resolve hostname to IP Address"); }; break;
-      case WL_PING_ERROR: { Serial.println("Internal error"); }; break;  
-    };      
+	Serial.print("FAILED! Error code: ");
+	Serial.println(pingResult);     
   };
   
   delay(3000);
