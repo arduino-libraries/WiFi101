@@ -146,9 +146,9 @@ public:
 	int hostByName(const char* hostname, IPAddress& result);
 	int hostByName(const String &hostname, IPAddress& result) { return hostByName(hostname.c_str(), result); }
 
-	wl_ping_result_t ping(const char* hostname, uint8_t ttl = 128);
-	wl_ping_result_t ping(const String &hostname, uint8_t ttl = 128);
-	wl_ping_result_t ping(IPAddress host, uint8_t ttl = 128);
+	uint8_t ping(const char* hostname, uint8_t ttl = 128);
+	uint8_t ping(const String &hostname, uint8_t ttl = 128);
+	uint8_t ping(IPAddress host, uint8_t ttl = 128);
 	
 	void refresh(void);
 

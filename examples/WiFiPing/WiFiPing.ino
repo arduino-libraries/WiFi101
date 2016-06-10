@@ -3,7 +3,7 @@
  This example connects to a encrypted Wifi network (WPA/WPA2).
  Then it prints the  MAC address of the Wifi shield,
  the IP address obtained, and other network details.
- Then it continuously pings given IP Address.
+ Then it continuously pings given host specified by IP Address or name.
 
  Circuit:
  * WiFi shield attached / MKR1000
@@ -20,11 +20,12 @@ char ssid[] = "yourNetwork";     //  your network SSID (name)
 char pass[] = "secretPassword";  // your network password
 int status = WL_IDLE_STATUS;     // the Wifi radio's status
 
+// Specify IP address or hostname
 String hostName = "www.google.com";
 byte pingResult;
 
 void setup() {
-  //Initialize serial and wait for port to open:
+  // Initialize serial and wait for port to open:
   Serial.begin(9600);
   while (!Serial) {
     ; // wait for serial port to connect. Needed for native USB port only
@@ -63,11 +64,11 @@ void loop() {
   
   pingResult = WiFi.ping(hostName);
   
-  if (pingResult == WL_PING_SUCCESS){
+  if (pingResult == WL_PING_SUCCESS) {
     Serial.println("SUCCESS!");
   } else {
-	Serial.print("FAILED! Error code: ");
-	Serial.println(pingResult);     
+    Serial.print("FAILED! Error code: ");
+    Serial.println(pingResult);     
   };
   
   delay(3000);
