@@ -45,6 +45,7 @@ script:
   - buildExampleSketch ScanNetworks
   - buildExampleSketch SimpleWebServerWiFi
   - buildExampleSketch WiFiChatServer
+  - buildExampleSketch WiFiPing
   - buildExampleSketch WiFiSSLClient
   - buildExampleSketch WiFiUdpNtpClient
   - buildExampleSketch WiFiUdpSendReceiveString
