@@ -1,3 +1,7 @@
+WiFi101 ?.?.? - ????.??.??
+
+* Added new WiFi.ping(...) functionality. Thanks @PKGeorgiev
+
 WiFi101 0.9.1 - 2016.04.19
 
 * Increased compatibility with 3rd party boards and architectures.
