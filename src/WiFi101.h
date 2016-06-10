@@ -61,6 +61,14 @@ typedef enum {
 	WL_AP_MODE
 } wl_mode_t;
 
+typedef enum {
+	WL_PING_SUCCESS = 0,
+	WL_PING_DEST_UNREACHABLE,
+	WL_PING_TIMEOUT,
+	WL_PING_UNKNOWN_HOST,
+	WL_PING_ERROR
+} wl_ping_result_t;
+
 class WiFiClass
 {
 public:
@@ -139,6 +147,10 @@ public:
 	int hostByName(const char* hostname, IPAddress& result);
 	int hostByName(const String &hostname, IPAddress& result) { return hostByName(hostname.c_str(), result); }
 
+	uint8_t ping(const char* hostname, uint8_t ttl = 128);
+	uint8_t ping(const String &hostname, uint8_t ttl = 128);
+	uint8_t ping(IPAddress host, uint8_t ttl = 128);
+	
 	void refresh(void);
 
 private:
