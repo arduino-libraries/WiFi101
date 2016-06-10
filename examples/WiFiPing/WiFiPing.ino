@@ -57,20 +57,19 @@ void setup() {
 }
 
 void loop() {
-
   Serial.print("Pinging ");
   Serial.print(hostName);
   Serial.print(": ");
-  
+
   pingResult = WiFi.ping(hostName);
-  
+
   if (pingResult == WL_PING_SUCCESS) {
     Serial.println("SUCCESS!");
   } else {
     Serial.print("FAILED! Error code: ");
-    Serial.println(pingResult);     
-  };
-  
+    Serial.println(pingResult);
+  }
+
   delay(3000);
 }
 
