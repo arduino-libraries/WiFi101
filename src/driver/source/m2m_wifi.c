@@ -489,12 +489,14 @@ sint8  m2m_wifi_deinit(void * arg)
 	return M2M_SUCCESS;
 }
 
+#ifdef ARDUINO
 #include "socket/include/socket_buffer.h"
-extern tstrSocketBuffer gastrSocketBuffer[];
+#endif
+
 sint8 m2m_wifi_handle_events(void * arg)
 {
 	(void)arg; // Silence "unused" warning
-
+#ifdef ARDUINO
 	uint8 i;
 
 	/* Arduino API LIMITATION: */
@@ -510,10 +512,11 @@ sint8 m2m_wifi_handle_events(void * arg)
 	/* several sockets are to be used. Instead, application must carefully read for */
 	/* all sockets, anytime. */
 	for (i = 0; i < MAX_SOCKET; ++i) {
-		if (gastrSocketBuffer[i].flag && (*(gastrSocketBuffer[i].flag) & SOCKET_BUFFER_FLAG_FULL)) {
+		if (gastrSocketBuffer[i].flag & SOCKET_BUFFER_FLAG_FULL) {
 			return M2M_ERR_FAIL;
 		}
 	}
+#endif
 	return hif_handle_isr();
 }
 

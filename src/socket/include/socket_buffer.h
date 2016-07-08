@@ -63,28 +63,25 @@ extern "C" {
 #define SOCKET_BUFFER_TCP_SIZE					(SOCKET_BUFFER_MTU)
 #endif
 
-#define SOCKET_BUFFER_FLAG_CONNECTED			(0x1 << 0)
-#define SOCKET_BUFFER_FLAG_FULL					(0x1 << 1)
-#define SOCKET_BUFFER_FLAG_BIND					(0x1 << 2)
-#define SOCKET_BUFFER_FLAG_SPAWN				(0x1 << 3)
-#define SOCKET_BUFFER_FLAG_SPAWN_SOCKET_POS		(16)
-#define SOCKET_BUFFER_FLAG_SPAWN_SOCKET_MSK		(((uint32)0xFF) << SOCKET_BUFFER_FLAG_SPAWN_SOCKET_POS)
-#define SOCKET_BUFFER_FLAG_PARENT_SOCKET_POS	(24)
-#define SOCKET_BUFFER_FLAG_PARENT_SOCKET_MSK	(((uint32)0xFF) << SOCKET_BUFFER_FLAG_PARENT_SOCKET_POS)
-
-/* Parent stored as parent+1, as socket 1 ID is 0. */
+#define SOCKET_BUFFER_FLAG_CONNECTING			(0x1 << 0)
+#define SOCKET_BUFFER_FLAG_CONNECTED			(0x1 << 1)
+#define SOCKET_BUFFER_FLAG_FULL					(0x1 << 2)
+#define SOCKET_BUFFER_FLAG_BIND					(0x1 << 4)
+#define SOCKET_BUFFER_FLAG_BINDING				(0x1 << 5)
+#define SOCKET_BUFFER_FLAG_SPAWN				(0x1 << 6)
 
 typedef struct{
 	uint8		*buffer;
-	uint32		*flag;
-	uint32		*head;
-	uint32		*tail;
+	uint32		flag;
+	SOCKET		parent;
+	uint32		head;
+	uint32		tail;
 }tstrSocketBuffer;
 
 void socketBufferInit(void);
-void socketBufferRegister(SOCKET socket, uint32 *flag, uint32 *head, uint32 *tail, uint8 *buffer);
-void socketBufferUnregister(SOCKET socket);
 void socketBufferCb(SOCKET sock, uint8 u8Msg, void *pvMsg);
+
+extern tstrSocketBuffer gastrSocketBuffer[];
 
 #ifdef  __cplusplus
 }

@@ -171,11 +171,6 @@ private:
 	char _scan_ssid[M2M_MAX_SSID_LEN];
 	uint8_t _scan_auth;
 	char _ssid[M2M_MAX_SSID_LEN];
-
-protected:
-	friend class WiFiClient;
-	friend class WiFiServer;
-	WiFiClient *_client[TCP_SOCK_MAX];
 };
 
 extern WiFiClass WiFi;

@@ -221,7 +221,6 @@ int WiFiClass::init()
 	_submask = 0;
 	_gateway = 0;
 	_dhcp = 1;
-	memset(_client, 0, sizeof(WiFiClient *) * TCP_SOCK_MAX);
 
 	// Initialize IO expander LED control (rev A then rev B)..
 	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO15, 1);

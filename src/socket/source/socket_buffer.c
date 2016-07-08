@@ -58,22 +58,6 @@ void socketBufferInit(void)
 	memset(gastrSocketBuffer, 0, sizeof(gastrSocketBuffer));
 }
 
-void socketBufferRegister(SOCKET socket, uint32 *flag, uint32 *head, uint32 *tail, uint8 *buffer)
-{
-	gastrSocketBuffer[socket].flag = flag;
-	gastrSocketBuffer[socket].head = head;
-	gastrSocketBuffer[socket].tail = tail;
-	gastrSocketBuffer[socket].buffer = buffer;
-}
-
-void socketBufferUnregister(SOCKET socket)
-{
-	gastrSocketBuffer[socket].flag = 0;
-	gastrSocketBuffer[socket].head = 0;
-	gastrSocketBuffer[socket].tail = 0;
-	gastrSocketBuffer[socket].buffer = 0;
-}
-
 void socketBufferCb(SOCKET sock, uint8 u8Msg, void *pvMsg)
 {
 	switch (u8Msg) {
@@ -81,11 +65,15 @@ void socketBufferCb(SOCKET sock, uint8 u8Msg, void *pvMsg)
 		case SOCKET_MSG_CONNECT:
 		{
 			tstrSocketConnectMsg *pstrConnect = (tstrSocketConnectMsg *)pvMsg;
-			if (pstrConnect && pstrConnect->s8Error >= 0) {
-				recv(sock, gastrSocketBuffer[sock].buffer, SOCKET_BUFFER_MTU, 0);
-				*(gastrSocketBuffer[sock].flag) |= SOCKET_BUFFER_FLAG_CONNECTED;
-			} else {
-				close(sock);
+			if (pstrConnect) {
+				if (pstrConnect->s8Error >= 0) {
+					gastrSocketBuffer[sock].flag = SOCKET_BUFFER_FLAG_CONNECTED;
+
+					// Enable receive buffer:
+					recv(sock, gastrSocketBuffer[sock].buffer, SOCKET_BUFFER_MTU, 0);
+				} else {
+					gastrSocketBuffer[sock].flag = 0;
+				}
 			}
 		}
 		break;
@@ -100,28 +88,28 @@ void socketBufferCb(SOCKET sock, uint8 u8Msg, void *pvMsg)
 			tstrSocketRecvMsg *pstrRecv = (tstrSocketRecvMsg *)pvMsg;
 			if (pstrRecv && pstrRecv->s16BufferSize > 0) {
 				/* Protect against overflow. */
-				if (*(gastrSocketBuffer[sock].head) + pstrRecv->s16BufferSize > SOCKET_BUFFER_TCP_SIZE) {
-					*(gastrSocketBuffer[sock].flag) |= SOCKET_BUFFER_FLAG_FULL;
+				if (gastrSocketBuffer[sock].head + pstrRecv->s16BufferSize > SOCKET_BUFFER_TCP_SIZE) {
+					gastrSocketBuffer[sock].flag |= SOCKET_BUFFER_FLAG_FULL;
 					break;
 				}
 
 				/* Add data size. */
-				*(gastrSocketBuffer[sock].head) += pstrRecv->s16BufferSize;
+				gastrSocketBuffer[sock].head += pstrRecv->s16BufferSize;
 				
 				/* Buffer full, stop reception. */
-				if (SOCKET_BUFFER_TCP_SIZE - *(gastrSocketBuffer[sock].head) < SOCKET_BUFFER_MTU) {
+				if ((SOCKET_BUFFER_TCP_SIZE - gastrSocketBuffer[sock].head) < SOCKET_BUFFER_MTU) {
 					if (pstrRecv->u16RemainingSize != 0) {
-						*(gastrSocketBuffer[sock].flag) |= SOCKET_BUFFER_FLAG_FULL;
+						gastrSocketBuffer[sock].flag |= SOCKET_BUFFER_FLAG_FULL;
 					}
 				}
 				else {
-					recv(sock, gastrSocketBuffer[sock].buffer + *(gastrSocketBuffer[sock].head),
-						SOCKET_BUFFER_MTU, 0);
+					recv(sock, gastrSocketBuffer[sock].buffer + gastrSocketBuffer[sock].head, SOCKET_BUFFER_MTU, 0);
 				}
 			}
 			/* Test EOF (Socket closed) condition for TCP socket. */
 			else {
-				*(gastrSocketBuffer[sock].flag) &= ~SOCKET_BUFFER_FLAG_CONNECTED;
+				gastrSocketBuffer[sock].flag = 0;
+				gastrSocketBuffer[sock].parent = -1;
 				close(sock);
 			}
 			
@@ -142,7 +130,7 @@ void socketBufferCb(SOCKET sock, uint8 u8Msg, void *pvMsg)
 			if (pstrRecv && pstrRecv->s16BufferSize > 0) {
 
 				if (hif_small_xfer < 2) {
-					uint32 h = *(gastrSocketBuffer[sock].head);
+					uint32 h = gastrSocketBuffer[sock].head;
 					uint8 *buf = gastrSocketBuffer[sock].buffer;
 					uint16 sz = pstrRecv->s16BufferSize + pstrRecv->u16RemainingSize;
 				
@@ -161,27 +149,25 @@ void socketBufferCb(SOCKET sock, uint8 u8Msg, void *pvMsg)
 					buf[h++] = pstrRecv->strRemoteAddr.sin_addr.s_addr;
 				
 					/* Data received. */
-					*(gastrSocketBuffer[sock].head) = h + pstrRecv->s16BufferSize;
+					gastrSocketBuffer[sock].head = h + pstrRecv->s16BufferSize;
 				}
 				else {
 					/* Data received. */
-					*(gastrSocketBuffer[sock].head) += pstrRecv->s16BufferSize;				
+					gastrSocketBuffer[sock].head += pstrRecv->s16BufferSize;
 				}
 				
 				/* Buffer full, stop reception. */
-				if (SOCKET_BUFFER_UDP_SIZE - *(gastrSocketBuffer[sock].head) < SOCKET_BUFFER_MTU + SOCKET_BUFFER_UDP_HEADER_SIZE) {
+				if (SOCKET_BUFFER_UDP_SIZE - gastrSocketBuffer[sock].head < SOCKET_BUFFER_MTU + SOCKET_BUFFER_UDP_HEADER_SIZE) {
 					if (pstrRecv->u16RemainingSize != 0) {
-						*(gastrSocketBuffer[sock].flag) |= SOCKET_BUFFER_FLAG_FULL;
+						gastrSocketBuffer[sock].flag |= SOCKET_BUFFER_FLAG_FULL;
 					}
 				}
 				else {
 					if (hif_small_xfer && hif_small_xfer != 3) {
-						recvfrom(sock, gastrSocketBuffer[sock].buffer + *(gastrSocketBuffer[sock].head),
-								SOCKET_BUFFER_MTU, 0);
+						recvfrom(sock, gastrSocketBuffer[sock].buffer + gastrSocketBuffer[sock].head, SOCKET_BUFFER_MTU, 0);
 					}
 					else {
-						recvfrom(sock, gastrSocketBuffer[sock].buffer + *(gastrSocketBuffer[sock].head) + SOCKET_BUFFER_UDP_HEADER_SIZE,
-								SOCKET_BUFFER_MTU, 0);
+						recvfrom(sock, gastrSocketBuffer[sock].buffer + gastrSocketBuffer[sock].head + SOCKET_BUFFER_UDP_HEADER_SIZE, SOCKET_BUFFER_MTU, 0);
 					}
 				}
 			}
@@ -196,17 +182,20 @@ void socketBufferCb(SOCKET sock, uint8 u8Msg, void *pvMsg)
 		case SOCKET_MSG_BIND:
 		{
 			tstrSocketBindMsg *pstrBind = (tstrSocketBindMsg *)pvMsg;
-			if (pstrBind && pstrBind->status == 0) {
-				*(gastrSocketBuffer[sock].flag) |= SOCKET_BUFFER_FLAG_BIND;
-				/* TCP socket needs to enter Listen state. */
-				if (sock < TCP_SOCK_MAX) {
-					listen(sock, 0);
-				}
-				/* UDP socket only needs to supply the receive buffer. */
-				/* +8 is used to store size, port and IP of incoming data. */
-				else {
-					recvfrom(sock, gastrSocketBuffer[sock].buffer + SOCKET_BUFFER_UDP_HEADER_SIZE,
-							SOCKET_BUFFER_MTU, 0);
+			if (pstrBind) {
+				if (pstrBind->status == 0) {
+					gastrSocketBuffer[sock].flag = SOCKET_BUFFER_FLAG_BIND;
+					/* TCP socket needs to enter Listen state. */
+					if (sock < TCP_SOCK_MAX) {
+						listen(sock, 0);
+					}
+					/* UDP socket only needs to supply the receive buffer. */
+					/* +8 is used to store size, port and IP of incoming data. */
+					else {
+						recvfrom(sock, gastrSocketBuffer[sock].buffer + SOCKET_BUFFER_UDP_HEADER_SIZE, SOCKET_BUFFER_MTU, 0);
+					}
+				} else {
+					gastrSocketBuffer[sock].flag = 0;
 				}
 			}
 		}
@@ -217,16 +206,8 @@ void socketBufferCb(SOCKET sock, uint8 u8Msg, void *pvMsg)
 		{
 			tstrSocketAcceptMsg *pstrAccept = (tstrSocketAcceptMsg *)pvMsg;
 			if (pstrAccept && pstrAccept->sock >= 0) {
-				if (*(gastrSocketBuffer[sock].flag) & SOCKET_BUFFER_FLAG_SPAWN) {
-					/* One spawn connection already waiting, discard current one. */
-					close(pstrAccept->sock);
-				}
-				else {
-					/* Use flag to store spawn TCP descriptor. */
-					*(gastrSocketBuffer[sock].flag) &= ~SOCKET_BUFFER_FLAG_SPAWN_SOCKET_MSK;
-					*(gastrSocketBuffer[sock].flag) |= (((uint32)pstrAccept->sock) << SOCKET_BUFFER_FLAG_SPAWN_SOCKET_POS);
-					*(gastrSocketBuffer[sock].flag) |= SOCKET_BUFFER_FLAG_SPAWN;
-				}
+				gastrSocketBuffer[pstrAccept->sock].flag = SOCKET_BUFFER_FLAG_CONNECTED | SOCKET_BUFFER_FLAG_SPAWN;
+				gastrSocketBuffer[pstrAccept->sock].parent = sock;
 			}
 		}
 		break;
