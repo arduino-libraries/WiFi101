@@ -28,7 +28,7 @@ extern "C" {
   #include "driver/include/m2m_periph.h"
 }
 
-static void wifi_cb(uint8_t u8MsgType, void *pvMsg)
+void WiFiClass::wifi_cb(uint8_t u8MsgType, void *pvMsg)
 {
 	switch (u8MsgType) {
 		case M2M_WIFI_RESP_CON_STATE_CHANGED:
@@ -154,12 +154,12 @@ static void wifi_cb(uint8_t u8MsgType, void *pvMsg)
 	}
 }
 
-static void resolve_cb(uint8_t * /* hostName */, uint32_t hostIp)
+void WiFiClass::resolve_cb(uint8_t * /* hostName */, uint32_t hostIp)
 {
 	WiFi._resolve = hostIp;
 }
 
-static void ping_cb(uint32 u32IPAddr, uint32 /*u32RTT*/, uint8 u8ErrorCode)
+void WiFiClass::ping_cb(uint32 u32IPAddr, uint32 /*u32RTT*/, uint8 u8ErrorCode)
 {
 	if (PING_ERR_SUCCESS == u8ErrorCode) {
 		// Ensure this ICMP reply comes from requested IP address
@@ -202,7 +202,7 @@ int WiFiClass::init()
 	nm_bsp_init();
 
 	// Initialize WiFi module and register status callback:
-	param.pfAppWifiCb = wifi_cb;
+	param.pfAppWifiCb = WiFiClass::wifi_cb;
 	ret = m2m_wifi_init(&param);
 	if (M2M_SUCCESS != ret) {
 		// Error led ON (rev A then rev B).
@@ -214,7 +214,7 @@ int WiFiClass::init()
 	// Initialize socket API and register socket callback:
 	socketInit();
 	socketBufferInit();
-	registerSocketCallback(socketBufferCb, resolve_cb);
+	registerSocketCallback(socketBufferCb, WiFiClass::resolve_cb);
 	_init = 1;
 	_status = WL_IDLE_STATUS;
 	_localip = 0;
@@ -822,7 +822,7 @@ uint8_t WiFiClass::ping(IPAddress host, uint8_t ttl)
 	uint32_t dstHost = (uint32_t)host;
 	_resolve = dstHost;
 
-	if (m2m_ping_req((uint32_t)host, ttl, &ping_cb) < 0) {
+	if (m2m_ping_req((uint32_t)host, ttl, &WiFiClass::ping_cb) < 0) {
 		// Network led OFF (rev A then rev B).
 		m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 1);
 		m2m_periph_gpio_set_val(M2M_PERIPH_GPIO5, 1);

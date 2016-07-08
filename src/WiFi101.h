@@ -163,11 +163,15 @@ public:
 	void noLowPowerMode(void);
 
 private:
-	int _init;
-	char _version[9];
-
 	uint8_t startConnect(const char *ssid, uint8_t u8SecType, const void *pvAuthInfo);
 	uint8_t startAP(const char *ssid, uint8_t u8SecType, const void *pvAuthInfo, uint8_t channel);
+
+	static void wifi_cb(uint8_t u8MsgType, void *pvMsg);
+	static void resolve_cb(uint8_t * hostName, uint32_t hostIp);
+	static void ping_cb(uint32 u32IPAddr, uint32 u32RTT, uint8 u8ErrorCode);
+
+	int _init;
+	char _version[9];
 };
 
 extern WiFiClass WiFi;
