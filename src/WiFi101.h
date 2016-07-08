@@ -75,25 +75,12 @@ typedef enum {
 class WiFiClass
 {
 public:
-	uint32_t _localip;
-	uint32_t _submask;
-	uint32_t _gateway;
-	int _dhcp;
-	uint32_t _resolve;
-	byte *_bssid;
-	wl_mode_t _mode;
-	wl_status_t _status;
-	char _scan_ssid[M2M_MAX_SSID_LEN];
-	uint8_t _scan_auth;
-	char _ssid[M2M_MAX_SSID_LEN];
-	WiFiClient *_client[TCP_SOCK_MAX];
-
 	WiFiClass();
 
 	void setPins(int8_t cs, int8_t irq, int8_t rst, int8_t en = -1);
 
 	int init();
-	
+
 	char* firmwareVersion();
 
 	/* Start Wifi connection with WPA/WPA2 encryption.
@@ -172,6 +159,23 @@ private:
 
 	int _init;
 	char _version[9];
+
+	uint32_t _localip;
+	uint32_t _submask;
+	uint32_t _gateway;
+	int _dhcp;
+	uint32_t _resolve;
+	byte *_bssid;
+	wl_mode_t _mode;
+	wl_status_t _status;
+	char _scan_ssid[M2M_MAX_SSID_LEN];
+	uint8_t _scan_auth;
+	char _ssid[M2M_MAX_SSID_LEN];
+
+protected:
+	friend class WiFiClient;
+	friend class WiFiServer;
+	WiFiClient *_client[TCP_SOCK_MAX];
 };
 
 extern WiFiClass WiFi;
