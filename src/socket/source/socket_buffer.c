@@ -140,13 +140,25 @@ sint8 socketBufferConnectWait(SOCKET sock)
 	return (gastrSocketBuffer[sock].flag & SOCKET_BUFFER_FLAG_CONNECTED) != 0;
 }
 
-void socketBufferSendWait(SOCKET sock)
+sint8 socketBufferSendWait(SOCKET sock)
 {
+	SOCKET s;
+
+	// check if any sockets are full, if so fail because m2m_wifi_handle_events
+	// won't be able to run
+	for (s = 0; s < MAX_SOCKET; s++) {
+		if (socketBufferIsFull(s)) {
+			return 0;
+		}
+	}
+
 	gastrSocketBuffer[sock].flag = SOCKET_BUFFER_FLAG_SENDING;
 
 	while (gastrSocketBuffer[sock].flag & SOCKET_BUFFER_FLAG_SENDING) {
 		m2m_wifi_handle_events(NULL);
 	}
+
+	return 1;
 }
 
 void socketBufferReadUdpHeader(SOCKET sock, uint16_t* rcvSize, uint16_t* rcvPort, uint32_t* rcvIP)

@@ -77,7 +77,7 @@ sint16 socketBufferDataAvailable(SOCKET sock);
 void socketBufferSetupBuffer(SOCKET sock);
 sint8 socketBufferBindWait(SOCKET sock);
 sint8 socketBufferConnectWait(SOCKET sock);
-void socketBufferSendWait(SOCKET sock);
+sint8 socketBufferSendWait(SOCKET sock);
 void socketBufferReadUdpHeader(SOCKET sock, uint16_t* rcvSize, uint16_t* rcvPort, uint32_t* rcvIP);
 uint8 socketBufferPeek(SOCKET sock);
 sint16 socketBufferRead(SOCKET sock, uint8 *buf, uint16 len);

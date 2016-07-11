@@ -129,14 +129,13 @@ size_t WiFiClient::write(const uint8_t *buf, size_t size)
 
 	while ((err = send(_socket, (void *)buf, size, 0)) < 0) {
 		// Exit on fatal error, retry if buffer not ready.
-		if (err != SOCK_ERR_BUFFER_FULL) {
+		// or can't wait for send event because a recv is pending
+		if (err != SOCK_ERR_BUFFER_FULL || socketBufferSendWait(_socket) == 0) {
 			setWriteError();
 			m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 1);
 			m2m_periph_gpio_set_val(M2M_PERIPH_GPIO5, 1);
 			return 0;
 		}
-
-		socketBufferSendWait(_socket);
 	}
 
 	// Network led OFF (rev A then rev B).
