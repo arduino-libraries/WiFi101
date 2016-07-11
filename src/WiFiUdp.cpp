@@ -20,7 +20,6 @@
 extern "C" {
 	#include "socket/include/socket.h"
 	#include "driver/include/m2m_periph.h"
-	extern uint8 hif_small_xfer;
 }
 
 #include <string.h>
@@ -62,23 +61,18 @@ uint8_t WiFiUDP::begin(uint16_t port)
 
 	setsockopt(_socket, SOL_SOCKET, SO_SET_UDP_SEND_CALLBACK, &u32EnableCallbacks, 0);
 
-	gastrSocketBuffer[_socket].flag = SOCKET_BUFFER_FLAG_BINDING;
-	gastrSocketBuffer[_socket].parent = -1;
-	gastrSocketBuffer[_socket].buffer = (uint8*)realloc(gastrSocketBuffer[_socket].buffer, SOCKET_BUFFER_UDP_SIZE);
+	socketBufferSetupBuffer(_socket);
 
 	// Bind socket:
 	if (bind(_socket, (struct sockaddr *)&addr, sizeof(struct sockaddr_in)) < 0) {
-		gastrSocketBuffer[_socket].flag = 0;
+		socketBufferClose(_socket);
 		close(_socket);
 		_socket = -1;
 		return 0;
 	}
 
-	while (gastrSocketBuffer[_socket].flag & SOCKET_BUFFER_FLAG_BINDING) {
-		m2m_wifi_handle_events(NULL);
-	}
-
-	if ((gastrSocketBuffer[_socket].flag & SOCKET_BUFFER_FLAG_BIND) == 0) {
+	if (socketBufferBindWait(_socket) == 0) {
+		socketBufferClose(_socket);
 		close(_socket);
 		_socket = -1;
 		return 0;
@@ -118,6 +112,7 @@ void WiFiUDP::stop()
 	if (_socket < 0)
 		return;
 
+	socketBufferClose(_socket);
 	close(_socket);
 	_socket = -1;
 }
@@ -194,12 +189,8 @@ int WiFiUDP::parsePacket()
 		if (_rcvSize != 0) {
 			return _rcvSize;
 		}
-		if (gastrSocketBuffer[_socket].head != gastrSocketBuffer[_socket].tail) {
-			_rcvSize = ((uint16_t)gastrSocketBuffer[_socket].buffer[gastrSocketBuffer[_socket].tail] << 8) + (uint16_t)gastrSocketBuffer[_socket].buffer[gastrSocketBuffer[_socket].tail + 1];
-			_rcvPort = ((uint16_t)gastrSocketBuffer[_socket].buffer[gastrSocketBuffer[_socket].tail + 2] << 8) + (uint16_t)gastrSocketBuffer[_socket].buffer[gastrSocketBuffer[_socket].tail + 3];
-			_rcvIP =   ((uint32_t)gastrSocketBuffer[_socket].buffer[gastrSocketBuffer[_socket].tail + 4] << 24) + ((uint32_t)gastrSocketBuffer[_socket].buffer[gastrSocketBuffer[_socket].tail + 5] << 16) +
-					((uint32_t)gastrSocketBuffer[_socket].buffer[gastrSocketBuffer[_socket].tail + 6] << 8) + (uint32_t)gastrSocketBuffer[_socket].buffer[gastrSocketBuffer[_socket].tail + 7];
-			gastrSocketBuffer[_socket].tail += SOCKET_BUFFER_UDP_HEADER_SIZE;
+		if (socketBufferDataAvailable(_socket)) {
+			socketBufferReadUdpHeader(_socket, &_rcvSize, &_rcvPort, &_rcvIP);
 			return _rcvSize;
 		}
 	}
@@ -219,41 +210,13 @@ int WiFiUDP::read()
 
 int WiFiUDP::read(unsigned char* buf, size_t size)
 {
-	// sizeof(size_t) is architecture dependent
-	// but we need a 16 bit data type here
-	uint16_t size_tmp = available();
+	int readSize = socketBufferRead(_socket, buf, size);
 
-	if (size_tmp == 0) {
-		return -1;
+	if (readSize > 0) {
+		_rcvSize -= readSize;
 	}
 
-	if (size < size_tmp) {
-		size_tmp = size;
-	}
-
-	for (uint32_t i = 0; i < size_tmp; ++i) {
-		buf[i] = gastrSocketBuffer[_socket].buffer[gastrSocketBuffer[_socket].tail++];
-		_rcvSize--;
-
-		if (gastrSocketBuffer[_socket].tail == gastrSocketBuffer[_socket].head) {
-			// the full buffered data has been read, reset head and tail for next transfer
-			gastrSocketBuffer[_socket].tail = gastrSocketBuffer[_socket].head = 0;
-
-			// clear the buffer full flag
-			gastrSocketBuffer[_socket].flag &= ~SOCKET_BUFFER_FLAG_FULL;
-
-			// setup buffer and buffer size to transfer the remainder of the current packet
-			// or next received packet
-			if (hif_small_xfer) {
-				recvfrom(_socket, gastrSocketBuffer[_socket].buffer, SOCKET_BUFFER_MTU, 0);
-			} else {
-				recvfrom(_socket, gastrSocketBuffer[_socket].buffer + SOCKET_BUFFER_UDP_HEADER_SIZE, SOCKET_BUFFER_MTU, 0);
-			}
-			m2m_wifi_handle_events(NULL);
-		}
-	}
-
-	return size_tmp;
+	return readSize;
 }
 
 int WiFiUDP::peek()
@@ -261,7 +224,7 @@ int WiFiUDP::peek()
 	if (!available())
 		return -1;
 
-	return gastrSocketBuffer[_socket].buffer[gastrSocketBuffer[_socket].tail];
+	return socketBufferPeek(_socket);
 }
 
 void WiFiUDP::flush()

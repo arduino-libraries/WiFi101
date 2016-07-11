@@ -42,12 +42,30 @@
  *
  */
 
+#include <stdlib.h>	
 #include <string.h>
 #include "socket/include/socket.h"
 #include "driver/source/m2m_hif.h"
 #include "socket/source/socket_internal.h"
 #include "socket/include/socket_buffer.h"
 #include "driver/include/m2m_periph.h"
+#include "driver/include/m2m_wifi.h"
+
+#define SOCKET_BUFFER_FLAG_CONNECTING			(0x1 << 0)
+#define SOCKET_BUFFER_FLAG_CONNECTED			(0x1 << 1)
+#define SOCKET_BUFFER_FLAG_FULL					(0x1 << 2)
+#define SOCKET_BUFFER_FLAG_BIND					(0x1 << 4)
+#define SOCKET_BUFFER_FLAG_BINDING				(0x1 << 5)
+#define SOCKET_BUFFER_FLAG_SPAWN				(0x1 << 6)
+#define SOCKET_BUFFER_FLAG_SENDING				(0x1 << 7)
+
+typedef struct{
+	uint8		*buffer;
+	uint32		flag;
+	SOCKET		parent;
+	uint32		head;
+	uint32		tail;
+}tstrSocketBuffer;
 
 tstrSocketBuffer gastrSocketBuffer[MAX_SOCKET];
 
@@ -56,6 +74,153 @@ extern uint8 hif_small_xfer;
 void socketBufferInit(void)
 {
 	memset(gastrSocketBuffer, 0, sizeof(gastrSocketBuffer));
+
+	SOCKET s;
+
+	for (s = 0; s < MAX_SOCKET; s++) {
+		gastrSocketBuffer[s].parent = -1;
+	}
+}
+
+sint8 socketBufferIsFull(SOCKET sock)
+{
+	return (gastrSocketBuffer[sock].flag & SOCKET_BUFFER_FLAG_FULL) != 0;
+}
+
+sint8 socketBufferIsConnected(SOCKET sock)
+{
+	return (gastrSocketBuffer[sock].flag & SOCKET_BUFFER_FLAG_CONNECTED) != 0;
+}
+
+sint8 socketBufferIsSpawned(SOCKET sock)
+{
+	return (gastrSocketBuffer[sock].flag & SOCKET_BUFFER_FLAG_SPAWN) != 0;
+}
+
+sint8 socketBufferHasParent(SOCKET sock, SOCKET parent)
+{
+	return (gastrSocketBuffer[sock].parent == parent);
+}
+
+void socketBufferSetupBuffer(SOCKET sock)
+{
+	uint32 size = (sock < TCP_SOCK_MAX) ? SOCKET_BUFFER_TCP_SIZE : SOCKET_BUFFER_UDP_SIZE;
+
+	gastrSocketBuffer[sock].buffer = (uint8*)realloc(gastrSocketBuffer[sock].buffer, size);
+
+	gastrSocketBuffer[sock].head = gastrSocketBuffer[sock].tail = 0;
+}
+
+sint16 socketBufferDataAvailable(SOCKET sock)
+{
+	return (gastrSocketBuffer[sock].head - gastrSocketBuffer[sock].tail);
+}
+
+sint8 socketBufferBindWait(SOCKET sock)
+{
+	gastrSocketBuffer[sock].parent = -1;
+	gastrSocketBuffer[sock].flag = SOCKET_BUFFER_FLAG_BINDING;
+
+	while (gastrSocketBuffer[sock].flag & SOCKET_BUFFER_FLAG_BINDING) {
+		m2m_wifi_handle_events(NULL);
+	}
+
+	return (gastrSocketBuffer[sock].flag & SOCKET_BUFFER_FLAG_BIND) != 0;
+}
+
+sint8 socketBufferConnectWait(SOCKET sock)
+{
+	gastrSocketBuffer[sock].parent = -1;
+	gastrSocketBuffer[sock].flag = SOCKET_BUFFER_FLAG_CONNECTING;
+
+	while (gastrSocketBuffer[sock].flag & SOCKET_BUFFER_FLAG_CONNECTING) {
+		m2m_wifi_handle_events(NULL);
+	}
+
+	return (gastrSocketBuffer[sock].flag & SOCKET_BUFFER_FLAG_CONNECTED) != 0;
+}
+
+void socketBufferSendWait(SOCKET sock)
+{
+	gastrSocketBuffer[sock].flag = SOCKET_BUFFER_FLAG_SENDING;
+
+	while (gastrSocketBuffer[sock].flag & SOCKET_BUFFER_FLAG_SENDING) {
+		m2m_wifi_handle_events(NULL);
+	}
+}
+
+void socketBufferReadUdpHeader(SOCKET sock, uint16_t* rcvSize, uint16_t* rcvPort, uint32_t* rcvIP)
+{
+	*rcvSize = ((uint16)gastrSocketBuffer[sock].buffer[gastrSocketBuffer[sock].tail] << 8) + (uint16)gastrSocketBuffer[sock].buffer[gastrSocketBuffer[sock].tail + 1];
+	*rcvPort = ((uint16)gastrSocketBuffer[sock].buffer[gastrSocketBuffer[sock].tail + 2] << 8) + (uint16)gastrSocketBuffer[sock].buffer[gastrSocketBuffer[sock].tail + 3];
+	*rcvIP =   ((uint32)gastrSocketBuffer[sock].buffer[gastrSocketBuffer[sock].tail + 4] << 24) + ((uint32)gastrSocketBuffer[sock].buffer[gastrSocketBuffer[sock].tail + 5] << 16) +
+				((uint32)gastrSocketBuffer[sock].buffer[gastrSocketBuffer[sock].tail + 6] << 8) + (uint32)gastrSocketBuffer[sock].buffer[gastrSocketBuffer[sock].tail + 7];
+
+	gastrSocketBuffer[sock].tail += SOCKET_BUFFER_UDP_HEADER_SIZE;
+}
+
+uint8 socketBufferPeek(SOCKET sock)
+{
+	return gastrSocketBuffer[sock].buffer[gastrSocketBuffer[sock].tail];
+}
+
+sint16 socketBufferRead(SOCKET sock, uint8 *buf, uint16 len)
+{
+	sint16 size_tmp = socketBufferDataAvailable(sock);
+
+	if (size_tmp == 0) {
+		return -1;
+	}
+
+	if ((sint16)len < size_tmp) {
+		size_tmp = len;
+	}
+
+	sint16 i;
+
+	for (i = 0; i < size_tmp; ++i) {
+		buf[i] = gastrSocketBuffer[sock].buffer[gastrSocketBuffer[sock].tail++];
+
+		if (gastrSocketBuffer[sock].tail == gastrSocketBuffer[sock].head) {
+			// the full buffered data has been read, reset head and tail for next transfer
+			gastrSocketBuffer[sock].tail = gastrSocketBuffer[sock].head = 0;
+
+			// clear the buffer full flag
+			gastrSocketBuffer[sock].flag &= ~SOCKET_BUFFER_FLAG_FULL;
+
+			if (sock < TCP_SOCK_MAX) {
+				// TCP
+				recv(sock, gastrSocketBuffer[sock].buffer, SOCKET_BUFFER_MTU, 0);
+			} else {
+				// UDP
+
+				// setup buffer and buffer size to transfer the remainder of the current packet
+				// or next received packet
+				if (hif_small_xfer) {
+					recvfrom(sock, gastrSocketBuffer[sock].buffer, SOCKET_BUFFER_MTU, 0);
+				} else {
+					recvfrom(sock, gastrSocketBuffer[sock].buffer + SOCKET_BUFFER_UDP_HEADER_SIZE, SOCKET_BUFFER_MTU, 0);
+				}
+			}
+			m2m_wifi_handle_events(NULL);
+		}
+	}
+
+	return size_tmp;
+}
+
+void socketBufferClearSpawned(SOCKET sock)
+{
+	gastrSocketBuffer[sock].flag &= ~SOCKET_BUFFER_FLAG_SPAWN;
+
+	recv(sock, gastrSocketBuffer[sock].buffer, SOCKET_BUFFER_MTU, 0);
+}
+
+void socketBufferClose(SOCKET sock)
+{
+	gastrSocketBuffer[sock].head = gastrSocketBuffer[sock].tail = 0;
+	gastrSocketBuffer[sock].parent = -1;
+	gastrSocketBuffer[sock].flag = 0;
 }
 
 void socketBufferCb(SOCKET sock, uint8 u8Msg, void *pvMsg)
@@ -116,6 +281,13 @@ void socketBufferCb(SOCKET sock, uint8 u8Msg, void *pvMsg)
 			// Network led OFF (rev A then rev B).
 			m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 1);
 			m2m_periph_gpio_set_val(M2M_PERIPH_GPIO5, 1);
+		}
+		break;
+
+		/* TCP Data send. */
+		case SOCKET_MSG_SEND:
+		{
+			gastrSocketBuffer[sock].flag &= ~SOCKET_BUFFER_FLAG_SENDING;
 		}
 		break;
 

@@ -45,6 +45,8 @@
 #ifndef __SOCKET_BUFFER_H__
 #define __SOCKET_BUFFER_H__
 
+#include <stdint.h>
+
 #include "socket/include/socket.h"
 
 #ifdef  __cplusplus
@@ -63,25 +65,27 @@ extern "C" {
 #define SOCKET_BUFFER_TCP_SIZE					(SOCKET_BUFFER_MTU)
 #endif
 
-#define SOCKET_BUFFER_FLAG_CONNECTING			(0x1 << 0)
-#define SOCKET_BUFFER_FLAG_CONNECTED			(0x1 << 1)
-#define SOCKET_BUFFER_FLAG_FULL					(0x1 << 2)
-#define SOCKET_BUFFER_FLAG_BIND					(0x1 << 4)
-#define SOCKET_BUFFER_FLAG_BINDING				(0x1 << 5)
-#define SOCKET_BUFFER_FLAG_SPAWN				(0x1 << 6)
-
-typedef struct{
-	uint8		*buffer;
-	uint32		flag;
-	SOCKET		parent;
-	uint32		head;
-	uint32		tail;
-}tstrSocketBuffer;
-
 void socketBufferInit(void);
 void socketBufferCb(SOCKET sock, uint8 u8Msg, void *pvMsg);
 
-extern tstrSocketBuffer gastrSocketBuffer[];
+sint8 socketBufferIsFull(SOCKET sock);
+sint8 socketBufferIsConnected(SOCKET sock);
+sint8 socketBufferIsSpawned(SOCKET sock);
+sint8 socketBufferHasParent(SOCKET sock, SOCKET parent);
+sint16 socketBufferDataAvailable(SOCKET sock);
+
+void socketBufferSetupBuffer(SOCKET sock);
+sint8 socketBufferBindWait(SOCKET sock);
+sint8 socketBufferConnectWait(SOCKET sock);
+void socketBufferSendWait(SOCKET sock);
+void socketBufferReadUdpHeader(SOCKET sock, uint16_t* rcvSize, uint16_t* rcvPort, uint32_t* rcvIP);
+uint8 socketBufferPeek(SOCKET sock);
+sint16 socketBufferRead(SOCKET sock, uint8 *buf, uint16 len);
+void socketBufferClearSpawned(SOCKET sock);
+void socketBufferClose(SOCKET sock);
+
+
+// extern tstrSocketBuffer gastrSocketBuffer[];
 
 #ifdef  __cplusplus
 }

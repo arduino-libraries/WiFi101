@@ -85,23 +85,18 @@ int WiFiClient::connect(IPAddress ip, uint16_t port, uint8_t opt, const uint8_t 
 		setsockopt(_socket, SOL_SSL_SOCKET, SO_SSL_SNI, hostname, m2m_strlen((uint8_t *)hostname));
 	}
 
-	gastrSocketBuffer[_socket].buffer = (uint8*)realloc(gastrSocketBuffer[_socket].buffer, SOCKET_BUFFER_TCP_SIZE);
-	gastrSocketBuffer[_socket].head = gastrSocketBuffer[_socket].tail = 0;
-	gastrSocketBuffer[_socket].flag = SOCKET_BUFFER_FLAG_CONNECTING;
-	gastrSocketBuffer[_socket].parent = -1;
+	socketBufferSetupBuffer(_socket);
 
 	// Connect to remote host:
 	if (connectSocket(_socket, (struct sockaddr *)&addr, sizeof(struct sockaddr_in)) < 0) {
+		socketBufferClose(_socket);
 		close(_socket);
 		_socket = -1;
 		return 0;
 	}
 
-	while (gastrSocketBuffer[_socket].flag & SOCKET_BUFFER_FLAG_CONNECTING) {
-		m2m_wifi_handle_events(NULL);
-	}
-
-	if ((gastrSocketBuffer[_socket].flag & SOCKET_BUFFER_FLAG_CONNECTED) == 0) {
+	if (socketBufferConnectWait(_socket) == 0) {
+		socketBufferClose(_socket);
 		close(_socket);
 		_socket = -1;
 		return 0;
@@ -140,7 +135,8 @@ size_t WiFiClient::write(const uint8_t *buf, size_t size)
 			m2m_periph_gpio_set_val(M2M_PERIPH_GPIO5, 1);
 			return 0;
 		}
-		m2m_wifi_handle_events(NULL);
+
+		socketBufferSendWait(_socket);
 	}
 
 	// Network led OFF (rev A then rev B).
@@ -155,7 +151,7 @@ int WiFiClient::available()
 	m2m_wifi_handle_events(NULL);
 
 	if (_socket != -1) {
-		return (gastrSocketBuffer[_socket].head - gastrSocketBuffer[_socket].tail);
+		return socketBufferDataAvailable(_socket);
 	}
 	return 0;
 }
@@ -181,22 +177,7 @@ int WiFiClient::read(uint8_t* buf, size_t size)
 		return -1;
 	}
 
-	if (size < size_tmp) {
-		size_tmp = size;
-	}
-
-	for (uint32_t i = 0; i < size_tmp; ++i) {
-		buf[i] = gastrSocketBuffer[_socket].buffer[gastrSocketBuffer[_socket].tail++];
-	}
-	
-	if (gastrSocketBuffer[_socket].tail == gastrSocketBuffer[_socket].head) {
-		gastrSocketBuffer[_socket].tail = gastrSocketBuffer[_socket].head = 0;
-		gastrSocketBuffer[_socket].flag &= ~SOCKET_BUFFER_FLAG_FULL;
-		recv(_socket, gastrSocketBuffer[_socket].buffer, SOCKET_BUFFER_MTU, 0);
-		m2m_wifi_handle_events(NULL);
-	}
-
-	return size_tmp;
+	return socketBufferRead(_socket, buf, size);
 }
 
 int WiFiClient::peek()
@@ -204,7 +185,7 @@ int WiFiClient::peek()
 	if (!available())
 		return -1;
 
-	return gastrSocketBuffer[_socket].buffer[gastrSocketBuffer[_socket].tail];
+	return socketBufferPeek(_socket);
 }
 
 void WiFiClient::flush()
@@ -220,8 +201,7 @@ void WiFiClient::stop()
 
 	flush();
 
-	gastrSocketBuffer[_socket].flag = 0;
-
+	socketBufferClose(_socket);
 	close(_socket);
 	_socket = -1;
 }
@@ -233,7 +213,7 @@ uint8_t WiFiClient::connected()
 	if (available())
 		return 1;
 
-	if ((_socket == -1) || (gastrSocketBuffer[_socket].flag & SOCKET_BUFFER_FLAG_CONNECTED) == 0) {
+	if ((_socket == -1) || !socketBufferIsConnected(_socket)) {
 		_socket = -1;
 		return 0;
 	}
