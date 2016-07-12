@@ -198,10 +198,12 @@ void WiFiClient::stop()
 	if (_socket < 0)
 		return;
 
+	close(_socket);
+
+	// flush RX buffer, to unblock m2m_wifi_handle_events
 	flush();
 
 	socketBufferClose(_socket);
-	close(_socket);
 	_socket = -1;
 }
 
