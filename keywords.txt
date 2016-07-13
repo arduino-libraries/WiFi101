@@ -15,6 +15,7 @@ Server	KEYWORD1
 # Methods and Functions (KEYWORD2)
 #######################################
 
+setPins	KEYWORD2
 status	KEYWORD2
 connect	KEYWORD2
 connectSSL	KEYWORD2

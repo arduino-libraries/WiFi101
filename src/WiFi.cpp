@@ -21,6 +21,7 @@
 
 extern "C" {
   #include "bsp/include/nm_bsp.h"
+  #include "bsp/include/nm_bsp_arduino.h"
   #include "socket/include/socket_buffer.h"
   #include "socket/include/m2m_socket_host_if.h"
   #include "driver/source/nmasic.h"
@@ -172,6 +173,14 @@ WiFiClass::WiFiClass()
 	_mode = WL_RESET_MODE;
 	_status = WL_NO_SHIELD;
 	_init = 0;
+}
+
+void WiFiClass::setPins(int8_t cs, int8_t irq, int8_t rst, int8_t en)
+{
+	gi8Winc1501CsPin = cs;
+	gi8Winc1501IntnPin = irq;
+	gi8Winc1501ResetPin = rst;
+	gi8Winc1501ChipEnPin = en;
 }
 
 int WiFiClass::init()

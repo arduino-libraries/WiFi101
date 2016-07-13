@@ -45,8 +45,8 @@
 #ifdef ARDUINO_ARCH_AVR
 
 #include "bsp/include/nm_bsp.h"
+#include "bsp/include/nm_bsp_arduino.h"
 #include "common/include/nm_common.h"
-#include <Arduino.h>
 
 #define IS_MEGA (defined(ARDUINO_AVR_MEGA) || defined(ARDUINO_AVR_MEGA2560))
 
