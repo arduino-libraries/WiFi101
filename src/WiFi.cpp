@@ -525,6 +525,8 @@ void WiFiClass::end()
 {
 	if (_mode == WL_AP_MODE) {
 		m2m_wifi_disable_ap();
+
+		_status = WL_IDLE_STATUS;
 	} else {
 		if (_mode == WL_PROV_MODE) {
 			m2m_wifi_stop_provision_mode();
