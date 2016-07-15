@@ -229,7 +229,7 @@ NMI_API void Socket_ReadSocketData_Small(void)
 			}
 			else
 			{
-				M2M_INFO("(ERRR)Current <%d>\n", u16ReadCount);
+				M2M_INFO("(ERRR)Current <%d>\n", u16Read);
 				//break;
 			}
 			
