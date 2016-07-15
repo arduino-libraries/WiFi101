@@ -46,6 +46,8 @@ void WiFiClass::wifi_cb(uint8_t u8MsgType, void *pvMsg)
 				}
 			} else if (pstrWifiState->u8CurrState == M2M_WIFI_DISCONNECTED) {
 				//SERIAL_PORT_MONITOR.println("wifi_cb: M2M_WIFI_RESP_CON_STATE_CHANGED: DISCONNECTED");
+				socketBufferApDisconnected();
+
 				if (WiFi._mode == WL_STA_MODE) {
 					WiFi._status = WL_DISCONNECTED;
 					if (WiFi._dhcp) {

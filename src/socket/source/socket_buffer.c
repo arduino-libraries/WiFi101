@@ -82,9 +82,26 @@ void socketBufferInit(void)
 	}
 }
 
+void socketBufferApDisconnected(void)
+{
+	SOCKET s;
+
+	for (s = 0; s < MAX_SOCKET; s++) {
+		if (gastrSocketBuffer[s].flag & SOCKET_BUFFER_FLAG_BIND && s < TCP_SOCK_MAX) {
+			close(s);
+			socketBufferClose(s);
+		}
+	}
+}
+
 sint8 socketBufferIsFull(SOCKET sock)
 {
 	return (gastrSocketBuffer[sock].flag & SOCKET_BUFFER_FLAG_FULL) != 0;
+}
+
+sint8 socketBufferIsBind(SOCKET sock)
+{
+	return (gastrSocketBuffer[sock].flag & SOCKET_BUFFER_FLAG_BIND) != 0;
 }
 
 sint8 socketBufferIsConnected(SOCKET sock)

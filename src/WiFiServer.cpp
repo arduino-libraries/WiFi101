@@ -28,6 +28,7 @@ extern "C" {
 WiFiServer::WiFiServer(uint16_t port)
 {
 	_port = port;
+	_opt = 0;
 }
 
 void WiFiServer::begin()
@@ -43,6 +44,8 @@ uint8_t WiFiServer::beginSSL()
 uint8_t WiFiServer::begin(uint8_t opt)
 {
 	struct sockaddr_in addr;
+
+	_opt = opt;
 
 	// Initialize socket address structure.
 	addr.sin_family = AF_INET;
@@ -80,6 +83,11 @@ WiFiClient WiFiServer::available(uint8_t* status)
 	SOCKET sock = -1;
 
 	m2m_wifi_handle_events(NULL);
+
+	if (_socket == -1 || !socketBufferIsBind(_socket)) {
+		_socket = -1;
+		begin(_opt);
+	}
 
 	// search for existing connecion with data or new connection
 	for (SOCKET s = 0; s < TCP_SOCK_MAX; s++) {

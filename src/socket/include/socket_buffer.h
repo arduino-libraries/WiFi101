@@ -66,9 +66,11 @@ extern "C" {
 #endif
 
 void socketBufferInit(void);
+void socketBufferApDisconnected(void);
 void socketBufferCb(SOCKET sock, uint8 u8Msg, void *pvMsg);
 
 sint8 socketBufferIsFull(SOCKET sock);
+sint8 socketBufferIsBind(SOCKET sock);
 sint8 socketBufferIsConnected(SOCKET sock);
 sint8 socketBufferIsSpawned(SOCKET sock);
 sint8 socketBufferHasParent(SOCKET sock, SOCKET parent);
