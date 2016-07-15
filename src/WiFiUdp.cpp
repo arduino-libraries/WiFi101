@@ -32,6 +32,8 @@ extern "C" {
 WiFiUDP::WiFiUDP()
 {
 	_socket = -1;
+	_port = -1;
+	_multiIp = 0;
 	_rcvSize = 0;
 	_rcvPort = 0;
 	_rcvIP = 0;
@@ -44,6 +46,7 @@ uint8_t WiFiUDP::begin(uint16_t port)
 	struct sockaddr_in addr;
 	uint32 u32EnableCallbacks = 0;
 
+	_port = port;
 	_rcvSize = 0;
 	_rcvPort = 0;
 	_rcvIP = 0;
@@ -51,7 +54,7 @@ uint8_t WiFiUDP::begin(uint16_t port)
 
 	// Initialize socket address structure.
 	addr.sin_family = AF_INET;
-	addr.sin_port = _htons(port);
+	addr.sin_port = _htons(_port);
 	addr.sin_addr.s_addr = 0;
 
 	// Open UDP server socket.
@@ -83,13 +86,13 @@ uint8_t WiFiUDP::begin(uint16_t port)
 
 uint8_t WiFiUDP::beginMulti(IPAddress ip, uint16_t port)
 {
-	uint32_t multiIp = ip;
+	_multiIp = ip;
 
 	if (!begin(port)) {
 		return 0;
 	}
 
-	setsockopt(_socket, SOL_SOCKET, IP_ADD_MEMBERSHIP, &multiIp, sizeof(multiIp));
+	setsockopt(_socket, SOL_SOCKET, IP_ADD_MEMBERSHIP, &_multiIp, sizeof(_multiIp));
 
 	return 1;
 }
@@ -184,6 +187,15 @@ size_t WiFiUDP::write(const uint8_t *buffer, size_t size)
 int WiFiUDP::parsePacket()
 {
 	m2m_wifi_handle_events(NULL);
+
+	if (_socket == -1 || !socketBufferIsBind(_socket)) {
+		_socket = -1;
+		if (_multiIp) {
+			beginMulti(_multiIp, _port);
+		} else {
+			begin(_port);
+		}
+	}
 
 	if (_socket != -1) {
 		if (_rcvSize != 0) {

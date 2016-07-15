@@ -25,6 +25,8 @@
 class WiFiUDP : public UDP {
 private:
 	SOCKET _socket;
+	uint16_t _port;
+	uint32_t _multiIp;
 	uint16_t _rcvSize;
 	uint16_t _rcvPort;
 	uint32_t _rcvIP;

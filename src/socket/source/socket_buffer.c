@@ -87,7 +87,7 @@ void socketBufferApDisconnected(void)
 	SOCKET s;
 
 	for (s = 0; s < MAX_SOCKET; s++) {
-		if (gastrSocketBuffer[s].flag & SOCKET_BUFFER_FLAG_BIND && s < TCP_SOCK_MAX) {
+		if (gastrSocketBuffer[s].flag & SOCKET_BUFFER_FLAG_BIND) {
 			close(s);
 			socketBufferClose(s);
 		}
