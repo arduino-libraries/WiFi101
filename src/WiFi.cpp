@@ -774,7 +774,7 @@ void WiFiClass::refresh(void)
 
 void WiFiClass::lowPowerMode(void)
 {
-  m2m_wifi_set_sleep_mode(M2M_PS_DEEP_AUTOMATIC, true);
+	m2m_wifi_set_sleep_mode(M2M_PS_H_AUTOMATIC, true);
 }
 
 void WiFiClass::noLowPowerMode(void)
