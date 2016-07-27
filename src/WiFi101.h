@@ -41,7 +41,9 @@ typedef enum {
 	WL_CONNECTED,
 	WL_CONNECT_FAILED,
 	WL_CONNECTION_LOST,
-	WL_DISCONNECTED
+	WL_DISCONNECTED,
+	WL_AP_LISTENING,
+	WL_AP_CONNECTED
 } wl_status_t;
 
 /* Encryption modes */

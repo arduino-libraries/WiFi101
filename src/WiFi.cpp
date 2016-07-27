@@ -41,6 +41,8 @@ static void wifi_cb(uint8_t u8MsgType, void *pvMsg)
 
 					// WiFi led ON.
 					m2m_periph_gpio_set_val(M2M_PERIPH_GPIO15, 0);
+				} else if (WiFi._mode == WL_AP_MODE) {
+					WiFi._status = WL_AP_CONNECTED;
 				}
 			} else if (pstrWifiState->u8CurrState == M2M_WIFI_DISCONNECTED) {
 				//SERIAL_PORT_MONITOR.println("wifi_cb: M2M_WIFI_RESP_CON_STATE_CHANGED: DISCONNECTED");
@@ -51,6 +53,8 @@ static void wifi_cb(uint8_t u8MsgType, void *pvMsg)
 						WiFi._submask = 0;
 						WiFi._gateway = 0;
 					}
+				} else if (WiFi._mode == WL_AP_MODE) {
+					WiFi._status = WL_AP_LISTENING;
 				}
 				// WiFi led OFF (rev A then rev B).
 				m2m_periph_gpio_set_val(M2M_PERIPH_GPIO15, 1);
@@ -407,7 +411,7 @@ uint8_t WiFiClass::startAP(const char *ssid, uint8_t u8SecType, const void *pvAu
 		_status = WL_CONNECT_FAILED;
 		return _status;
 	}
-	_status = WL_CONNECTED;
+	_status = WL_AP_LISTENING;
 	_mode = WL_AP_MODE;
 
 	memset(_ssid, 0, M2M_MAX_SSID_LEN);
@@ -527,6 +531,7 @@ void WiFiClass::end()
 		m2m_wifi_disable_ap();
 
 		_status = WL_IDLE_STATUS;
+		_mode = WL_RESET_MODE;
 	} else {
 		if (_mode == WL_PROV_MODE) {
 			m2m_wifi_stop_provision_mode();
