@@ -1,7 +1,7 @@
 language: generic
 env:
   global:
-    - IDE_VERSION=1.6.9
+    - IDE_VERSION=1.6.10
   matrix:
     - BOARD="arduino:avr:uno"
     - BOARD="arduino:avr:leonardo"
@@ -10,9 +10,6 @@ env:
     - BOARD="arduino:samd:arduino_zero_edbg"
     - BOARD="arduino:samd:mkr1000"
     - BOARD="Intel:arc32:arduino_101"
-matrix:
-  allow_failures:
-    - env: BOARD="arduino:avr:leonardo"
 before_install:
   - /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_1.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :1 -ac -screen 0 1280x1024x16
   - sleep 3
