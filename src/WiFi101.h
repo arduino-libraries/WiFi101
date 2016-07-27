@@ -164,7 +164,7 @@ private:
 	int _init;
 	char _version[9];
 
-	unsigned long _startSleepTime, _sleepTime;
+	uint32_t _wakeUpMillis;
 
 	uint8_t startConnect(const char *ssid, uint8_t u8SecType, const void *pvAuthInfo);
 	uint8_t startAP(const char *ssid, uint8_t u8SecType, const void *pvAuthInfo, uint8_t channel);
