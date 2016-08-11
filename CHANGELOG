@@ -1,6 +1,7 @@
 WiFi101 ?.?.? - ????.??.??
 
 * Added new WiFi.ping(...) functionality. Thanks @PKGeorgiev
+* Add new WL_AP_LISTENING and WL_AP_CONNECTED status types for AP mode
 
 WiFi101 0.9.1 - 2016.04.19
 
