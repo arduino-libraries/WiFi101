@@ -1,0 +1,36 @@
+Adafruit_WINC1500
+
+Author: Richard Hewitt (RH3) - Sydney, Australia.
+
+Added option to be able to read assigned DNS IP Address by user sketch.
+
+Updated files:
+
+Adafruit_WINC1500.h
+Adafruit_WINC1500.cpp
+
+Sample printWifiStatus()
+
+void printWifiStatus() {
+  // print the SSID of the network you're attached to:
+  Serial.print("SSID: ");
+  Serial.println(WiFi.SSID());
+
+  // print your WiFi shield's IP address:
+  IPAddress ip = WiFi.localIP();
+  Serial.print("IP Address: ");
+  Serial.println(ip);
+
+  // print DNS details
+
+  IPAddress dnsIP = WiFi.dnsIP();
+  Serial.print("DNS IP Address: ");
+  Serial.println(dnsIP);
+
+  // print the received signal strength:
+  long rssi = WiFi.RSSI();
+  Serial.print("signal strength (RSSI):");
+  Serial.print(rssi);
+  Serial.println(" dBm");
+  return;
+}
