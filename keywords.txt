@@ -45,6 +45,7 @@ WiFiSSLClient	KEYWORD2
 WiFiMDNSResponder	KEYWORD2
 
 lowPowerMode	KEYWORD2
+maxLowPowerMode	KEYWORD2
 noLowPowerMode	KEYWORD2
 sleepFor	KEYWORD2
 isAwake	KEYWORD2

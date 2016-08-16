@@ -156,6 +156,7 @@ public:
 	void refresh(void);
 
 	void lowPowerMode(void);
+	void maxLowPowerMode(void);
 	void noLowPowerMode(void);
 	void sleepFor(uint32_t thisTime);
 	bool isAwake(void);
