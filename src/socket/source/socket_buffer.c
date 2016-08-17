@@ -110,7 +110,9 @@ void socketBufferCb(SOCKET sock, uint8 u8Msg, void *pvMsg)
 				
 				/* Buffer full, stop reception. */
 				if (SOCKET_BUFFER_TCP_SIZE - *(gastrSocketBuffer[sock].head) < SOCKET_BUFFER_MTU) {
-					*(gastrSocketBuffer[sock].flag) |= SOCKET_BUFFER_FLAG_FULL;
+					if (pstrRecv->u16RemainingSize != 0) {
+						*(gastrSocketBuffer[sock].flag) |= SOCKET_BUFFER_FLAG_FULL;
+					}
 				}
 				else {
 					recv(sock, gastrSocketBuffer[sock].buffer + *(gastrSocketBuffer[sock].head),
@@ -168,7 +170,9 @@ void socketBufferCb(SOCKET sock, uint8 u8Msg, void *pvMsg)
 				
 				/* Buffer full, stop reception. */
 				if (SOCKET_BUFFER_UDP_SIZE - *(gastrSocketBuffer[sock].head) < SOCKET_BUFFER_MTU + SOCKET_BUFFER_UDP_HEADER_SIZE) {
-					*(gastrSocketBuffer[sock].flag) |= SOCKET_BUFFER_FLAG_FULL;
+					if (pstrRecv->u16RemainingSize != 0) {
+						*(gastrSocketBuffer[sock].flag) |= SOCKET_BUFFER_FLAG_FULL;
+					}
 				}
 				else {
 					if (hif_small_xfer && hif_small_xfer != 3) {
