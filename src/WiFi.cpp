@@ -140,12 +140,23 @@ static void wifi_cb(uint8_t u8MsgType, void *pvMsg)
 			if (scan_ssid_len) {
 				memcpy(WiFi._scan_ssid, (const char *)pstrScanResult->au8SSID, scan_ssid_len);
 			}
-			if (WiFi._bssid) {
-				memcpy(WiFi._bssid, (const char *)pstrScanResult->au8BSSID, 6);
-			}
 			WiFi._resolve = pstrScanResult->s8rssi;
 			WiFi._scan_auth = pstrScanResult->u8AuthType;
 			WiFi._status = WL_SCAN_COMPLETED;
+		}
+		break;
+
+		case M2M_WIFI_RESP_CONN_INFO:
+		{
+			tstrM2MConnInfo	*pstrConnInfo = (tstrM2MConnInfo*)pvMsg;
+
+			if (WiFi._bssid) {
+				// reverse copy the remote MAC
+				for(int i = 0; i < 6; i++) {
+					WiFi._bssid[i] = pstrConnInfo->au8MACAddress[5-i];
+				}
+				WiFi._bssid = 0;
+			}
 		}
 		break;
 
@@ -591,17 +602,17 @@ char* WiFiClass::SSID()
 
 uint8_t* WiFiClass::BSSID(uint8_t* bssid)
 {
-	int8_t net = scanNetworks();
-	
 	_bssid = bssid;
 	memset(bssid, 0, 6);
-	for (uint8_t i = 0; i < net; ++i) {
-		SSID(i);
-		if (strcmp(_scan_ssid, _ssid) == 0) {
-			break;
-		}
+
+	m2m_wifi_get_connection_info();
+
+	// Wait for connection or timeout:
+	unsigned long start = millis();
+	while (_bssid != 0 && millis() - start < 1000) {
+		m2m_wifi_handle_events(NULL);
 	}
-	
+
 	_bssid = 0;
 	return bssid;
 }
