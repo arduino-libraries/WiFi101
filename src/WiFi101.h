@@ -160,14 +160,10 @@ public:
 	void lowPowerMode(void);
 	void maxLowPowerMode(void);
 	void noLowPowerMode(void);
-	void sleepFor(uint32_t thisTime);
-	bool isAwake(void);
 
 private:
 	int _init;
 	char _version[9];
-
-	uint32_t _wakeUpMillis;
 
 	uint8_t startConnect(const char *ssid, uint8_t u8SecType, const void *pvAuthInfo);
 	uint8_t startAP(const char *ssid, uint8_t u8SecType, const void *pvAuthInfo, uint8_t channel);
