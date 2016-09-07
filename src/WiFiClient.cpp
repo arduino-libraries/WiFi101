@@ -152,7 +152,7 @@ int WiFiClient::connect(IPAddress ip, uint16_t port, uint8_t opt, const uint8_t 
 		_socket = -1;
 		return 0;
 	}
-	
+
 	// Wait for connection or timeout:
 	unsigned long start = millis();
 	while (!IS_CONNECTED && millis() - start < 20000) {
@@ -163,6 +163,8 @@ int WiFiClient::connect(IPAddress ip, uint16_t port, uint8_t opt, const uint8_t 
 		_socket = -1;
 		return 0;
 	}
+
+	WiFi._client[_socket] = this;
 
 	return 1;
 }
