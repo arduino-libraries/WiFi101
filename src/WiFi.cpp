@@ -415,7 +415,7 @@ uint8_t WiFiClass::startAP(const char *ssid, uint8_t u8SecType, const void *pvAu
 	}
 
 	if (m2m_wifi_enable_ap(&strM2MAPConfig) < 0) {
-		_status = WL_CONNECT_FAILED;
+		_status = WL_AP_FAILED;
 		return _status;
 	}
 	_status = WL_AP_LISTENING;
