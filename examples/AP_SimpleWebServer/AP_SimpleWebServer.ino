@@ -80,7 +80,7 @@ void loop() {
 
       // a device has connected to the AP
       Serial.print("Device connected to AP, MAC address: ");
-      WiFi.BSSID(remoteMac);
+      WiFi.APClientMacAddress(remoteMac);
       Serial.print(remoteMac[5], HEX);
       Serial.print(":");
       Serial.print(remoteMac[4], HEX);
