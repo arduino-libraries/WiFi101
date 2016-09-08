@@ -1,9 +1,9 @@
 WiFi101 ?.?.? - ????.??.??
 
 * Added new WiFi.ping(...) functionality. Thanks @PKGeorgiev
-* Add new WL_AP_LISTENING and WL_AP_CONNECTED status types for AP mode
+* Add new WL_AP_LISTENING, WL_AP_CONNECTED, and WL_AP_FAILED status types for AP mode
 * Fixed return value of WiFiUDP::beginPacket(host, port) when host is successfully resolved
-* Added power management methods: lowPowerMode(), maxLowPowerMode(), noLowPowerMode(), sleepFor(time), isAwake()
+* Added power management methods: WiFi.lowPowerMode(), WiFi.maxLowPowerMode(), WiFi.noLowPowerMode()
 * Close TCP sockets when physical link is disconnected
 
 WiFi101 0.9.1 - 2016.04.19
