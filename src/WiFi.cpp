@@ -183,7 +183,6 @@ WiFiClass::WiFiClass()
 	_mode = WL_RESET_MODE;
 	_status = WL_NO_SHIELD;
 	_init = 0;
-	_wakeUpMillis = 0;
 }
 
 void WiFiClass::setPins(int8_t cs, int8_t irq, int8_t rst, int8_t en)
@@ -796,18 +795,6 @@ void WiFiClass::maxLowPowerMode(void)
 void WiFiClass::noLowPowerMode(void)
 {
 	m2m_wifi_set_sleep_mode(M2M_NO_PS, false);
-}
-
-void WiFiClass::sleepFor(uint32_t thisTime)
-{
-	m2m_wifi_set_sleep_mode(M2M_PS_MANUAL, false);
-	_wakeUpMillis = millis() + thisTime + 150; //150 ms must elapse for complete awakening
-	m2m_wifi_request_sleep(thisTime);
-}
-
-bool WiFiClass::isAwake(void)
-{
-	return (millis() > _wakeUpMillis);
 }
 
 uint8_t WiFiClass::ping(const char* hostname, uint8_t ttl)
