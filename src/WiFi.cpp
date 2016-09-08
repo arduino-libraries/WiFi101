@@ -581,7 +581,7 @@ uint32_t WiFiClass::gatewayIP()
 
 char* WiFiClass::SSID()
 {
-	if (_status == WL_CONNECTED) {
+	if (_status == WL_CONNECTED || _status == WL_AP_LISTENING || _status == WL_AP_CONNECTED) {
 		return _ssid;
 	}
 	else {
