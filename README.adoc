@@ -1,9 +1,9 @@
-= Wifi library for the Arduino Wifi 101 Shield and MKR1000 board =
+= WiFi library for the Arduino WiFi Shield 101 and MKR1000 board =
 
 image:https://travis-ci.org/arduino-libraries/WiFi101.svg?branch=master["Build Status", link="https://travis-ci.org/arduino-libraries/WiFi101"]
 
 This library implements a network driver for devices based
-on the ATMEL WINC1500 wifi module.
+on the ATMEL WINC1500 WiFi module.
 
 For more information about this library please visit us at
 https://www.arduino.cc/en/Reference/WiFi101
