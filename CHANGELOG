@@ -5,6 +5,7 @@ WiFi101 ?.?.? - ????.??.??
 * Fixed return value of WiFiUDP::beginPacket(host, port) when host is successfully resolved
 * Added power management methods: WiFi.lowPowerMode(), WiFi.maxLowPowerMode(), WiFi.noLowPowerMode()
 * Close TCP sockets when physical link is disconnected
+* Fixed WiFi.RSSI() returning 0 when there was pending socket data
 
 WiFi101 0.9.1 - 2016.04.19
 
