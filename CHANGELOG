@@ -4,7 +4,9 @@ WiFi101 ?.?.? - ????.??.??
 
 WiFi101 0.10.0 - 2016.09.08
 
+* Added WiFi.end() to disconnect from the AP or end AP mode
 * Added new WiFi.ping(...) functionality. Thanks @PKGeorgiev
+* Added WiFi.setPins(...) to customize the CS, INTN, RESET and CHIPEN pins 
 * Add new WL_AP_LISTENING, WL_AP_CONNECTED, and WL_AP_FAILED status types for AP mode
 * Fixed return value of WiFiUDP::beginPacket(host, port) when host is successfully resolved
 * Added power management methods: WiFi.lowPowerMode(), WiFi.maxLowPowerMode(), WiFi.noLowPowerMode()
