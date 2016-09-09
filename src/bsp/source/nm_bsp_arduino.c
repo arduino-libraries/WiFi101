@@ -93,6 +93,17 @@ static void init_chip_pins(void)
 	}
 }
 
+static void deinit_chip_pins(void)
+{
+	digitalWrite(gi8Winc1501ResetPin, LOW);
+	pinMode(gi8Winc1501ResetPin, INPUT);
+
+	if (gi8Winc1501ChipEnPin > -1)
+	{
+		pinMode(gi8Winc1501ChipEnPin, INPUT);
+	}
+}
+
 /*
  *	@fn		nm_bsp_init
  *	@brief	Initialize BSP
@@ -122,6 +133,8 @@ sint8 nm_bsp_init(void)
  */
 sint8 nm_bsp_deinit(void)
 {
+	deinit_chip_pins();
+
 	return M2M_SUCCESS;
 }
 
