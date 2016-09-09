@@ -400,10 +400,14 @@ uint8_t WiFiClass::startAP(const char *ssid, uint8_t u8SecType, const void *pvAu
 	strcpy((char *)&strM2MAPConfig.au8SSID, ssid);
 	strM2MAPConfig.u8ListenChannel = channel - 1;
 	strM2MAPConfig.u8SecType = u8SecType;
-	strM2MAPConfig.au8DHCPServerIP[0] = 0xC0; /* 192 */
-	strM2MAPConfig.au8DHCPServerIP[1] = 0xA8; /* 168 */
-	strM2MAPConfig.au8DHCPServerIP[2] = 0x01; /* 1 */
-	strM2MAPConfig.au8DHCPServerIP[3] = 0x01; /* 1 */
+	if (_localip == 0) { 
+		strM2MAPConfig.au8DHCPServerIP[0] = 192;
+		strM2MAPConfig.au8DHCPServerIP[1] = 168;
+		strM2MAPConfig.au8DHCPServerIP[2] = 1;
+		strM2MAPConfig.au8DHCPServerIP[3] = 1;
+	} else {
+		memcpy(strM2MAPConfig.au8DHCPServerIP, &_localip, sizeof(_localip));
+	}
 
 	if (u8SecType == M2M_WIFI_SEC_WEP) {
 		tstrM2mWifiWepParams* wep_params = (tstrM2mWifiWepParams*)pvAuthInfo;
