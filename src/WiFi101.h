@@ -44,7 +44,9 @@ typedef enum {
 	WL_DISCONNECTED,
 	WL_AP_LISTENING,
 	WL_AP_CONNECTED,
-	WL_AP_FAILED
+	WL_AP_FAILED,
+	WL_PROVISIONING,
+	WL_PROVISIONING_FAILED
 } wl_status_t;
 
 /* Encryption modes */
@@ -119,8 +121,8 @@ public:
 	uint8_t beginAP(const char *ssid, uint8_t key_idx, const char* key);
 	uint8_t beginAP(const char *ssid, uint8_t key_idx, const char* key, uint8_t channel);
 
-	uint8_t beginProvision(char *ssid, char *url);
-	uint8_t beginProvision(char *ssid, char *url, uint8_t channel);
+	uint8_t beginProvision();
+	uint8_t beginProvision(uint8_t channel);
 
 	uint32_t provisioned();
 
@@ -171,6 +173,8 @@ private:
 	uint8_t startConnect(const char *ssid, uint8_t u8SecType, const void *pvAuthInfo);
 	uint8_t startAP(const char *ssid, uint8_t u8SecType, const void *pvAuthInfo, uint8_t channel);
 	uint8_t* remoteMacAddress(uint8_t* remoteMacAddress);
+
+	uint8_t startProvision(const char *ssid, const char *url, uint8_t channel);
 };
 
 extern WiFiClass WiFi;
