@@ -212,7 +212,10 @@ uint8_t WiFiClient::connected()
 	if (available())
 		return 1;
 
-	if ((_socket == -1) || !socketBufferIsConnected(_socket)) {
+	if (_socket == -1) {
+		return 0;
+	} else if (!socketBufferIsConnected(_socket)) {
+		socketBufferClose(_socket);
 		_socket = -1;
 		return 0;
 	}

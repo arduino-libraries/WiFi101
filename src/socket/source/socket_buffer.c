@@ -248,6 +248,11 @@ void socketBufferClose(SOCKET sock)
 	gastrSocketBuffer[sock].head = gastrSocketBuffer[sock].tail = 0;
 	gastrSocketBuffer[sock].parent = -1;
 	gastrSocketBuffer[sock].flag = 0;
+
+	if (gastrSocketBuffer[sock].buffer) {
+		free(gastrSocketBuffer[sock].buffer);
+		gastrSocketBuffer[sock].buffer = NULL;
+	}
 }
 
 void socketBufferCb(SOCKET sock, uint8 u8Msg, void *pvMsg)
