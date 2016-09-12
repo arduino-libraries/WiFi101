@@ -61,8 +61,8 @@ extern "C" {
 #define SOCKET_BUFFER_TCP_SIZE					(64u)
 #else
 #define SOCKET_BUFFER_MTU						(1400u)
-#define SOCKET_BUFFER_UDP_SIZE					(SOCKET_BUFFER_MTU * 2)
-#define SOCKET_BUFFER_TCP_SIZE					(SOCKET_BUFFER_MTU * 2)
+#define SOCKET_BUFFER_UDP_SIZE					(SOCKET_BUFFER_MTU)
+#define SOCKET_BUFFER_TCP_SIZE					(SOCKET_BUFFER_MTU)
 #endif
 
 void socketBufferInit(void);
@@ -85,6 +85,9 @@ uint8 socketBufferPeek(SOCKET sock);
 sint16 socketBufferRead(SOCKET sock, uint8 *buf, uint16 len);
 void socketBufferClearSpawned(SOCKET sock);
 void socketBufferClose(SOCKET sock);
+
+
+// extern tstrSocketBuffer gastrSocketBuffer[];
 
 #ifdef  __cplusplus
 }
