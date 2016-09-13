@@ -407,6 +407,11 @@ uint8_t WiFiClass::startAP(const char *ssid, uint8_t u8SecType, const void *pvAu
 		strM2MAPConfig.au8DHCPServerIP[3] = 1;
 	} else {
 		memcpy(strM2MAPConfig.au8DHCPServerIP, &_localip, sizeof(_localip));
+		if (strM2MAPConfig.au8DHCPServerIP[3] == 100) {
+			// limitation of WINC1500 firmware, IP address of client is always x.x.x.100
+			_status = WL_AP_FAILED;
+			return _status;
+		}
 	}
 
 	if (u8SecType == M2M_WIFI_SEC_WEP) {
