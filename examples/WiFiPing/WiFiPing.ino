@@ -63,22 +63,28 @@ void loop() {
 
   pingResult = WiFi.ping(hostName);
 
-  if (pingResult == WL_PING_SUCCESS) {
-    Serial.println("SUCCESS!");
+  if (pingResult >= 0) {
+    Serial.print("SUCCESS! RTT = ");
+    Serial.println(pingResult);
   } else {
     Serial.print("FAILED! Error code: ");
     Serial.println(pingResult);
   }
 
-  delay(3000);
+  delay(1000);
 }
 
 void printWifiData() {
   // print your WiFi shield's IP address:
   IPAddress ip = WiFi.localIP();
-  Serial.print("IP Address: ");
+  Serial.print("IP address : ");
   Serial.println(ip);
-  Serial.println(ip);
+
+  Serial.print("Subnet mask: ");
+  Serial.println((IPAddress)WiFi.subnetMask()); 
+
+  Serial.print("Gateway IP : ");
+  Serial.println((IPAddress)WiFi.gatewayIP());
 
   // print your MAC address:
   byte mac[6];
@@ -121,12 +127,12 @@ void printCurrentNet() {
 
   // print the received signal strength:
   long rssi = WiFi.RSSI();
-  Serial.print("signal strength (RSSI):");
+  Serial.print("signal strength (RSSI): ");
   Serial.println(rssi);
 
   // print the encryption type:
   byte encryption = WiFi.encryptionType();
-  Serial.print("Encryption Type:");
+  Serial.print("Encryption Type: ");
   Serial.println(encryption, HEX);
   Serial.println();
 }

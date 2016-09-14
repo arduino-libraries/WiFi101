@@ -159,22 +159,22 @@ static void resolve_cb(uint8_t * /* hostName */, uint32_t hostIp)
 	WiFi._resolve = hostIp;
 }
 
-static void ping_cb(uint32 u32IPAddr, uint32 /*u32RTT*/, uint8 u8ErrorCode)
+static void ping_cb(uint32 u32IPAddr, uint32 u32RTT, uint8 u8ErrorCode)
 {
 	if (PING_ERR_SUCCESS == u8ErrorCode) {
 		// Ensure this ICMP reply comes from requested IP address
 		if (WiFi._resolve == u32IPAddr) {
-			WiFi._resolve = WL_PING_SUCCESS;
+			WiFi._resolve = (uint32_t)u32RTT;
 		} else {
 			// Another network device replied to the our ICMP request
-			WiFi._resolve = WL_PING_DEST_UNREACHABLE;
+			WiFi._resolve = (uint32_t)WL_PING_DEST_UNREACHABLE;
 		}
 	} else if (PING_ERR_DEST_UNREACH == u8ErrorCode) {
-		WiFi._resolve = WL_PING_DEST_UNREACHABLE;
+		WiFi._resolve = (uint32_t)WL_PING_DEST_UNREACHABLE;
 	} else if (PING_ERR_TIMEOUT == u8ErrorCode) {
-		WiFi._resolve = WL_PING_TIMEOUT;
+		WiFi._resolve = (uint32_t)WL_PING_TIMEOUT;
 	} else {
-		WiFi._resolve = WL_PING_ERROR;
+		WiFi._resolve = (uint32_t)WL_PING_ERROR;
 	}
 }
 
@@ -797,7 +797,7 @@ void WiFiClass::noLowPowerMode(void)
 	m2m_wifi_set_sleep_mode(M2M_NO_PS, false);
 }
 
-uint8_t WiFiClass::ping(const char* hostname, uint8_t ttl)
+int WiFiClass::ping(const char* hostname, uint8_t ttl)
 {
 	IPAddress ip;
 
@@ -808,12 +808,12 @@ uint8_t WiFiClass::ping(const char* hostname, uint8_t ttl)
 	}
 }
 
-uint8_t WiFiClass::ping(const String &hostname, uint8_t ttl)
+int WiFiClass::ping(const String &hostname, uint8_t ttl)
 {
 	return ping(hostname.c_str(), ttl);
 }
 
-uint8_t WiFiClass::ping(IPAddress host, uint8_t ttl)
+int WiFiClass::ping(IPAddress host, uint8_t ttl)
 {
 	// Network led ON (rev A then rev B).
 	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 0);
@@ -843,7 +843,7 @@ uint8_t WiFiClass::ping(IPAddress host, uint8_t ttl)
 	if (_resolve == dstHost) {
 		return WL_PING_TIMEOUT;
 	} else {
-		return _resolve;
+		return (int)_resolve;
 	}
 }
 
