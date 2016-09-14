@@ -41,7 +41,10 @@ typedef enum {
 	WL_CONNECTED,
 	WL_CONNECT_FAILED,
 	WL_CONNECTION_LOST,
-	WL_DISCONNECTED
+	WL_DISCONNECTED,
+	WL_AP_LISTENING,
+	WL_AP_CONNECTED,
+	WL_AP_FAILED
 } wl_status_t;
 
 /* Encryption modes */
@@ -87,6 +90,8 @@ public:
 
 	WiFiClass();
 
+	void setPins(int8_t cs, int8_t irq, int8_t rst, int8_t en = -1);
+
 	int init();
 	
 	char* firmwareVersion();
@@ -110,8 +115,8 @@ public:
 	 * param ssid: Pointer to the SSID string.
 	 * param channel: Wifi channel to use. Valid values are 1-12.
 	 */
-	uint8_t beginAP(char *ssid);
-	uint8_t beginAP(char *ssid, uint8_t channel);
+	uint8_t beginAP(const char *ssid);
+	uint8_t beginAP(const char *ssid, uint8_t channel);
 	uint8_t beginAP(const char *ssid, uint8_t key_idx, const char* key);
 	uint8_t beginAP(const char *ssid, uint8_t key_idx, const char* key, uint8_t channel);
 
@@ -126,6 +131,7 @@ public:
 	void config(IPAddress local_ip, IPAddress dns_server, IPAddress gateway, IPAddress subnet);
 
 	void disconnect();
+	void end();
 
 	uint8_t *macAddress(uint8_t *mac);
 
@@ -149,12 +155,17 @@ public:
 	uint8_t ping(const char* hostname, uint8_t ttl = 128);
 	uint8_t ping(const String &hostname, uint8_t ttl = 128);
 	uint8_t ping(IPAddress host, uint8_t ttl = 128);
-	
+
 	void refresh(void);
+
+	void lowPowerMode(void);
+	void maxLowPowerMode(void);
+	void noLowPowerMode(void);
 
 private:
 	int _init;
 	char _version[9];
+
 	uint8_t startConnect(const char *ssid, uint8_t u8SecType, const void *pvAuthInfo);
 	uint8_t startAP(const char *ssid, uint8_t u8SecType, const void *pvAuthInfo, uint8_t channel);
 };

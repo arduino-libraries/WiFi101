@@ -22,7 +22,7 @@ int status = WL_IDLE_STATUS;     // the Wifi radio's status
 
 // Specify IP address or hostname
 String hostName = "www.google.com";
-byte pingResult;
+int pingResult;
 
 void setup() {
   // Initialize serial and wait for port to open:
@@ -57,20 +57,19 @@ void setup() {
 }
 
 void loop() {
-
   Serial.print("Pinging ");
   Serial.print(hostName);
   Serial.print(": ");
-  
+
   pingResult = WiFi.ping(hostName);
-  
+
   if (pingResult == WL_PING_SUCCESS) {
     Serial.println("SUCCESS!");
   } else {
     Serial.print("FAILED! Error code: ");
-    Serial.println(pingResult);     
-  };
-  
+    Serial.println(pingResult);
+  }
+
   delay(3000);
 }
 

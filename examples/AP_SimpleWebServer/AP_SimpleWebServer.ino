@@ -51,7 +51,8 @@ void setup() {
   Serial.println(ssid);
 
   // Create open network. Change this line if you want to create an WEP network:
-  if (WiFi.beginAP(ssid) != WL_CONNECTED) {
+  status = WiFi.beginAP(ssid);
+  if (status != WL_AP_LISTENING) {
     Serial.println("Creating access point failed");
     // don't continue
     while (true);
@@ -69,6 +70,20 @@ void setup() {
 
 
 void loop() {
+  // compare the previous status to the current status
+  if (status != WiFi.status()) {
+    // it has changed update the variable
+    status = WiFi.status();
+
+    if (status == WL_AP_CONNECTED) {
+      // a device has connected to the AP
+      Serial.println("Device connected to AP");
+    } else {
+      // a device has disconnected from the AP, and we are back in listening mode
+      Serial.println("Device disconnected from AP");
+    } 
+  }
+  
   WiFiClient client = server.available();   // listen for incoming clients
 
   if (client) {                             // if you get a client,
