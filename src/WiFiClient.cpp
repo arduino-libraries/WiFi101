@@ -209,12 +209,13 @@ uint8_t WiFiClient::connected()
 {
 	m2m_wifi_handle_events(NULL);
 
-	if (available())
-		return 1;
-
 	if (_socket == -1) {
 		return 0;
 	} else if (!socketBufferIsConnected(_socket)) {
+		while (available()) {
+			read();
+		}
+
 		socketBufferClose(_socket);
 		_socket = -1;
 		return 0;
