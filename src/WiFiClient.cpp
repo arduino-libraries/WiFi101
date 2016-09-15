@@ -25,70 +25,15 @@ extern "C" {
 #include "WiFi101.h"
 #include "WiFiClient.h"
 
-#define IS_CONNECTED	(_flag & SOCKET_BUFFER_FLAG_CONNECTED)
-
 WiFiClient::WiFiClient()
 {
 	_socket = -1;
-	_flag = 0;
-	_head = 0;
-	_tail = 0;
 }
 
-WiFiClient::WiFiClient(uint8_t sock, uint8_t parentsock)
+WiFiClient::WiFiClient(SOCKET sock)
 {
 	// Spawn connected TCP client from TCP server socket:
 	_socket = sock;
-	_flag = SOCKET_BUFFER_FLAG_CONNECTED;
-	if (parentsock) {
-		_flag |= ((uint32_t)(parentsock - 1)) << SOCKET_BUFFER_FLAG_PARENT_SOCKET_POS;
-	}
-	_head = 0;
-	_tail = 0;
-	for (int sock = 0; sock < TCP_SOCK_MAX; sock++) {
-		if (WiFi._client[sock] == this)
-			WiFi._client[sock] = 0;
-	}
-	WiFi._client[_socket] = this;
-	
-	// Add socket buffer handler:
-	socketBufferRegister(_socket, &_flag, &_head, &_tail, (uint8 *)_buffer);
-	
-	// Enable receive buffer:
-	recv(_socket, _buffer, SOCKET_BUFFER_MTU, 0);
-
-	m2m_wifi_handle_events(NULL);
-}
-
-WiFiClient::WiFiClient(const WiFiClient& other)
-{
-	copyFrom(other);
-}
-
-void WiFiClient::copyFrom(const WiFiClient& other)
-{
-	_socket = other._socket;
-	_flag = other._flag;
-	_head = other._head;
-	_tail = other._tail;
-	if (_head > _tail) {
-		memcpy(_buffer + _tail, other._buffer + _tail, (_head - _tail));
-	}
-
-	for (int sock = 0; sock < TCP_SOCK_MAX; sock++) {
-		if (WiFi._client[sock] == this)
-			WiFi._client[sock] = 0;
-	}
-
-	if (_socket > -1) {
-		WiFi._client[_socket] = this;
-		
-		// Add socket buffer handler:
-		socketBufferRegister(_socket, &_flag, &_head, &_tail, (uint8 *)_buffer);
-		
-		// Enable receive buffer:
-		recv(_socket, _buffer, SOCKET_BUFFER_MTU, 0);
-	}
 
 	m2m_wifi_handle_events(NULL);
 }
@@ -132,9 +77,6 @@ int WiFiClient::connect(IPAddress ip, uint16_t port, uint8_t opt, const uint8_t 
 	addr.sin_addr.s_addr = ip;
 
 	// Create TCP socket:
-	_flag = 0;
-	_head = 0;
-	_tail = 0;
 	if ((_socket = socket(AF_INET, SOCK_STREAM, opt)) < 0) {
 		return 0;
 	}
@@ -143,28 +85,22 @@ int WiFiClient::connect(IPAddress ip, uint16_t port, uint8_t opt, const uint8_t 
 		setsockopt(_socket, SOL_SSL_SOCKET, SO_SSL_SNI, hostname, m2m_strlen((uint8_t *)hostname));
 	}
 
-	// Add socket buffer handler:
-	socketBufferRegister(_socket, &_flag, &_head, &_tail, (uint8 *)_buffer);
+	socketBufferSetupBuffer(_socket);
 
 	// Connect to remote host:
 	if (connectSocket(_socket, (struct sockaddr *)&addr, sizeof(struct sockaddr_in)) < 0) {
+		socketBufferClose(_socket);
 		close(_socket);
 		_socket = -1;
 		return 0;
 	}
 
-	// Wait for connection or timeout:
-	unsigned long start = millis();
-	while (!IS_CONNECTED && millis() - start < 20000) {
-		m2m_wifi_handle_events(NULL);
-	}
-	if (!IS_CONNECTED) {
+	if (socketBufferConnectWait(_socket) == 0) {
+		socketBufferClose(_socket);
 		close(_socket);
 		_socket = -1;
 		return 0;
 	}
-
-	WiFi._client[_socket] = this;
 
 	return 1;
 }
@@ -191,28 +127,28 @@ size_t WiFiClient::write(const uint8_t *buf, size_t size)
 
 	while ((err = send(_socket, (void *)buf, size, 0)) < 0) {
 		// Exit on fatal error, retry if buffer not ready.
-		if (err != SOCK_ERR_BUFFER_FULL) {
+		// or can't wait for send event because a recv is pending
+		if (err != SOCK_ERR_BUFFER_FULL || socketBufferSendWait(_socket) == 0) {
 			setWriteError();
 			m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 1);
 			m2m_periph_gpio_set_val(M2M_PERIPH_GPIO5, 1);
 			return 0;
 		}
-		m2m_wifi_handle_events(NULL);
 	}
-	
+
 	// Network led OFF (rev A then rev B).
 	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 1);
 	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO5, 1);
-			
+
 	return size;
 }
 
 int WiFiClient::available()
 {
 	m2m_wifi_handle_events(NULL);
-	
+
 	if (_socket != -1) {
-		return _head - _tail;
+		return socketBufferDataAvailable(_socket);
 	}
 	return 0;
 }
@@ -237,23 +173,8 @@ int WiFiClient::read(uint8_t* buf, size_t size)
 	if (size_tmp == 0) {
 		return -1;
 	}
-	
-	if (size < size_tmp) {
-		size_tmp = size;
-	}
 
-	for (uint32_t i = 0; i < size_tmp; ++i) {
-		buf[i] = _buffer[_tail++];
-	}
-	
-	if (_tail == _head) {
-		_tail = _head = 0;
-		_flag &= ~SOCKET_BUFFER_FLAG_FULL;
-		recv(_socket, _buffer, SOCKET_BUFFER_MTU, 0);
-		m2m_wifi_handle_events(NULL);
-	}
-
-	return size_tmp;
+	return socketBufferRead(_socket, buf, size);
 }
 
 int WiFiClient::peek()
@@ -261,7 +182,7 @@ int WiFiClient::peek()
 	if (!available())
 		return -1;
 
-	return _buffer[_tail];
+	return socketBufferPeek(_socket);
 }
 
 void WiFiClient::flush()
@@ -274,19 +195,33 @@ void WiFiClient::stop()
 {
 	if (_socket < 0)
 		return;
-		
-	socketBufferUnregister(_socket);
+
 	close(_socket);
+
+	// flush RX buffer, to unblock m2m_wifi_handle_events
+	flush();
+
+	socketBufferClose(_socket);
 	_socket = -1;
-	_flag = 0;
 }
 
 uint8_t WiFiClient::connected()
 {
 	m2m_wifi_handle_events(NULL);
-	if (available())
-		return 1;
-	return IS_CONNECTED;
+
+	if (_socket == -1) {
+		return 0;
+	} else if (!socketBufferIsConnected(_socket)) {
+		while (available()) {
+			read();
+		}
+
+		socketBufferClose(_socket);
+		_socket = -1;
+		return 0;
+	}
+
+	return 1;
 }
 
 uint8_t WiFiClient::status()
@@ -298,11 +233,4 @@ uint8_t WiFiClient::status()
 WiFiClient::operator bool()
 {
 	return _socket != -1;
-}
-
-WiFiClient& WiFiClient::operator =(const WiFiClient& other)
-{
-	copyFrom(other);
-
-	return *this;
 }

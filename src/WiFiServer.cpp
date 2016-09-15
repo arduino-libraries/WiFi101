@@ -25,12 +25,10 @@ extern "C" {
 #include "WiFiClient.h"
 #include "WiFiServer.h"
 
-#define READY	(_flag & SOCKET_BUFFER_FLAG_BIND)
-
 WiFiServer::WiFiServer(uint16_t port)
 {
 	_port = port;
-	_flag = 0;
+	_opt = 0;
 }
 
 void WiFiServer::begin()
@@ -47,7 +45,7 @@ uint8_t WiFiServer::begin(uint8_t opt)
 {
 	struct sockaddr_in addr;
 
-	_flag = 0;
+	_opt = opt;
 
 	// Initialize socket address structure.
 	addr.sin_family = AF_INET;
@@ -59,55 +57,72 @@ uint8_t WiFiServer::begin(uint8_t opt)
 		return 0;
 	}
 
-	// Add socket buffer handler:
-	socketBufferRegister(_socket, &_flag, 0, 0, 0);
-
 	// Bind socket:
 	if (bind(_socket, (struct sockaddr *)&addr, sizeof(struct sockaddr_in)) < 0) {
+		socketBufferClose(_socket);
 		close(_socket);
 		_socket = -1;
 		return 0;
 	}
-	
-	// Wait for connection or timeout:
-	unsigned long start = millis();
-	while (!READY && millis() - start < 2000) {
-		m2m_wifi_handle_events(NULL);
-	}
-	if (!READY) {
+
+	if (socketBufferBindWait(_socket) == 0) {
+		socketBufferClose(_socket);
 		close(_socket);
 		_socket = -1;
 		return 0;
 	}
-	_flag &= ~SOCKET_BUFFER_FLAG_BIND;
 
 	return 1;
 }
 
 WiFiClient WiFiServer::available(uint8_t* status)
 {
-	uint32_t flag;
-	
+	SOCKET newSock = -1;
+	SOCKET fullSock = -1;
+	SOCKET dataSock = -1;
+	SOCKET sock = -1;
+
 	m2m_wifi_handle_events(NULL);
-	if (_flag & SOCKET_BUFFER_FLAG_SPAWN) {
-		flag = _flag;
-		_flag &= ~SOCKET_BUFFER_FLAG_SPAWN_SOCKET_MSK;
-		_flag &= ~SOCKET_BUFFER_FLAG_SPAWN;
+
+	if (_socket == -1 || !socketBufferIsBind(_socket)) {
+		_socket = -1;
+		begin(_opt);
+	}
+
+	// search for existing connecion with data or new connection
+	for (SOCKET s = 0; s < TCP_SOCK_MAX; s++) {
+		if (socketBufferHasParent(s, _socket)) {
+			if (socketBufferIsFull(s)) {
+				fullSock = s;
+			} else if (socketBufferIsSpawned(s)) {
+				newSock = s;
+			} else if (socketBufferDataAvailable(s) > 0) {
+				dataSock = s;
+			}
+		}
+	}
+
+	if (fullSock != -1) {
+		sock = fullSock; // give highest priority to full sockets
+	} else if (newSock != -1) {
+		sock = newSock; // give 2nd priority to new sockets
+
 		if (status != NULL) {
 			*status = 0;
 		}
-		return WiFiClient(((flag & SOCKET_BUFFER_FLAG_SPAWN_SOCKET_MSK) >> SOCKET_BUFFER_FLAG_SPAWN_SOCKET_POS), _socket + 1);
-	} else {
-		WiFiClient *client;
+	} else if (dataSock != -1) {
+		sock = dataSock; // give last priority to sockets with data
+	}
 
-		for (int sock = 0; sock < TCP_SOCK_MAX; sock++) {
-			client = WiFi._client[sock];
-			if (client && client->_flag & SOCKET_BUFFER_FLAG_CONNECTED) {
-				if (((client->_flag >> SOCKET_BUFFER_FLAG_PARENT_SOCKET_POS) & 0xff) == (uint8)_socket) {
-					return *client;
-				}
-			}
+	if (sock != -1) {
+		if (socketBufferIsSpawned(sock)) {
+			socketBufferSetupBuffer(sock);
+			socketBufferClearSpawned(sock);
+			
+			m2m_wifi_handle_events(NULL);
 		}
+
+		return WiFiClient(sock);
 	}
 
 	return WiFiClient();
@@ -126,15 +141,14 @@ size_t WiFiServer::write(uint8_t b)
 size_t WiFiServer::write(const uint8_t *buffer, size_t size)
 {
 	size_t n = 0;
-	WiFiClient *client;
 
-	for (int sock = 0; sock < TCP_SOCK_MAX; sock++) {
-		client = WiFi._client[sock];
-		if (client && client->_flag & SOCKET_BUFFER_FLAG_CONNECTED) {
-			if (((client->_flag >> SOCKET_BUFFER_FLAG_PARENT_SOCKET_POS) & 0xff) == (uint8)_socket) {
-				n += client->write(buffer, size);
-			}
+	for (SOCKET s = 0; s < TCP_SOCK_MAX; s++) {
+		if (socketBufferHasParent(s, _socket)) {
+			WiFiClient client(s);
+
+			n += client.write(buffer, size);
 		}
 	}
+
 	return n;
 }

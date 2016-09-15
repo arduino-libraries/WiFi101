@@ -42,12 +42,30 @@
  *
  */
 
+#include <stdlib.h>	
 #include <string.h>
 #include "socket/include/socket.h"
 #include "driver/source/m2m_hif.h"
 #include "socket/source/socket_internal.h"
 #include "socket/include/socket_buffer.h"
 #include "driver/include/m2m_periph.h"
+#include "driver/include/m2m_wifi.h"
+
+#define SOCKET_BUFFER_FLAG_CONNECTING			(0x1 << 0)
+#define SOCKET_BUFFER_FLAG_CONNECTED			(0x1 << 1)
+#define SOCKET_BUFFER_FLAG_FULL					(0x1 << 2)
+#define SOCKET_BUFFER_FLAG_BIND					(0x1 << 4)
+#define SOCKET_BUFFER_FLAG_BINDING				(0x1 << 5)
+#define SOCKET_BUFFER_FLAG_SPAWN				(0x1 << 6)
+#define SOCKET_BUFFER_FLAG_SENDING				(0x1 << 7)
+
+typedef struct{
+	uint8		*buffer;
+	uint32		flag;
+	SOCKET		parent;
+	uint32		head;
+	uint32		tail;
+}tstrSocketBuffer;
 
 tstrSocketBuffer gastrSocketBuffer[MAX_SOCKET];
 
@@ -56,22 +74,185 @@ extern uint8 hif_small_xfer;
 void socketBufferInit(void)
 {
 	memset(gastrSocketBuffer, 0, sizeof(gastrSocketBuffer));
+
+	SOCKET s;
+
+	for (s = 0; s < MAX_SOCKET; s++) {
+		gastrSocketBuffer[s].parent = -1;
+	}
 }
 
-void socketBufferRegister(SOCKET socket, uint32 *flag, uint32 *head, uint32 *tail, uint8 *buffer)
+void socketBufferApDisconnected(void)
 {
-	gastrSocketBuffer[socket].flag = flag;
-	gastrSocketBuffer[socket].head = head;
-	gastrSocketBuffer[socket].tail = tail;
-	gastrSocketBuffer[socket].buffer = buffer;
+	SOCKET s;
+
+	for (s = 0; s < MAX_SOCKET; s++) {
+		close(s);
+		socketBufferClose(s);
+	}
 }
 
-void socketBufferUnregister(SOCKET socket)
+sint8 socketBufferIsFull(SOCKET sock)
 {
-	gastrSocketBuffer[socket].flag = 0;
-	gastrSocketBuffer[socket].head = 0;
-	gastrSocketBuffer[socket].tail = 0;
-	gastrSocketBuffer[socket].buffer = 0;
+	return (gastrSocketBuffer[sock].flag & SOCKET_BUFFER_FLAG_FULL) != 0;
+}
+
+sint8 socketBufferIsBind(SOCKET sock)
+{
+	return (gastrSocketBuffer[sock].flag & SOCKET_BUFFER_FLAG_BIND) != 0;
+}
+
+sint8 socketBufferIsConnected(SOCKET sock)
+{
+	return (gastrSocketBuffer[sock].flag & SOCKET_BUFFER_FLAG_CONNECTED) != 0;
+}
+
+sint8 socketBufferIsSpawned(SOCKET sock)
+{
+	return (gastrSocketBuffer[sock].flag & SOCKET_BUFFER_FLAG_SPAWN) != 0;
+}
+
+sint8 socketBufferHasParent(SOCKET sock, SOCKET parent)
+{
+	return (gastrSocketBuffer[sock].parent == parent);
+}
+
+void socketBufferSetupBuffer(SOCKET sock)
+{
+	uint32 size = (sock < TCP_SOCK_MAX) ? SOCKET_BUFFER_TCP_SIZE : SOCKET_BUFFER_UDP_SIZE;
+
+	gastrSocketBuffer[sock].buffer = (uint8*)realloc(gastrSocketBuffer[sock].buffer, size);
+
+	gastrSocketBuffer[sock].head = gastrSocketBuffer[sock].tail = 0;
+}
+
+sint16 socketBufferDataAvailable(SOCKET sock)
+{
+	return (gastrSocketBuffer[sock].head - gastrSocketBuffer[sock].tail);
+}
+
+sint8 socketBufferBindWait(SOCKET sock)
+{
+	gastrSocketBuffer[sock].parent = -1;
+	gastrSocketBuffer[sock].flag = SOCKET_BUFFER_FLAG_BINDING;
+
+	while (gastrSocketBuffer[sock].flag & SOCKET_BUFFER_FLAG_BINDING) {
+		m2m_wifi_handle_events(NULL);
+	}
+
+	return (gastrSocketBuffer[sock].flag & SOCKET_BUFFER_FLAG_BIND) != 0;
+}
+
+sint8 socketBufferConnectWait(SOCKET sock)
+{
+	gastrSocketBuffer[sock].parent = -1;
+	gastrSocketBuffer[sock].flag = SOCKET_BUFFER_FLAG_CONNECTING;
+
+	while (gastrSocketBuffer[sock].flag & SOCKET_BUFFER_FLAG_CONNECTING) {
+		m2m_wifi_handle_events(NULL);
+	}
+
+	return (gastrSocketBuffer[sock].flag & SOCKET_BUFFER_FLAG_CONNECTED) != 0;
+}
+
+sint8 socketBufferSendWait(SOCKET sock)
+{
+	SOCKET s;
+
+	// check if any sockets are full, if so fail because m2m_wifi_handle_events
+	// won't be able to run
+	for (s = 0; s < MAX_SOCKET; s++) {
+		if (socketBufferIsFull(s)) {
+			return 0;
+		}
+	}
+
+	gastrSocketBuffer[sock].flag = SOCKET_BUFFER_FLAG_SENDING;
+
+	while (gastrSocketBuffer[sock].flag & SOCKET_BUFFER_FLAG_SENDING) {
+		m2m_wifi_handle_events(NULL);
+	}
+
+	return 1;
+}
+
+void socketBufferReadUdpHeader(SOCKET sock, uint16_t* rcvSize, uint16_t* rcvPort, uint32_t* rcvIP)
+{
+	*rcvSize = ((uint16)gastrSocketBuffer[sock].buffer[gastrSocketBuffer[sock].tail] << 8) + (uint16)gastrSocketBuffer[sock].buffer[gastrSocketBuffer[sock].tail + 1];
+	*rcvPort = ((uint16)gastrSocketBuffer[sock].buffer[gastrSocketBuffer[sock].tail + 2] << 8) + (uint16)gastrSocketBuffer[sock].buffer[gastrSocketBuffer[sock].tail + 3];
+	*rcvIP =   ((uint32)gastrSocketBuffer[sock].buffer[gastrSocketBuffer[sock].tail + 4] << 24) + ((uint32)gastrSocketBuffer[sock].buffer[gastrSocketBuffer[sock].tail + 5] << 16) +
+				((uint32)gastrSocketBuffer[sock].buffer[gastrSocketBuffer[sock].tail + 6] << 8) + (uint32)gastrSocketBuffer[sock].buffer[gastrSocketBuffer[sock].tail + 7];
+
+	gastrSocketBuffer[sock].tail += SOCKET_BUFFER_UDP_HEADER_SIZE;
+}
+
+uint8 socketBufferPeek(SOCKET sock)
+{
+	return gastrSocketBuffer[sock].buffer[gastrSocketBuffer[sock].tail];
+}
+
+sint16 socketBufferRead(SOCKET sock, uint8 *buf, uint16 len)
+{
+	sint16 size_tmp = socketBufferDataAvailable(sock);
+
+	if (size_tmp == 0) {
+		return -1;
+	}
+
+	if ((sint16)len < size_tmp) {
+		size_tmp = len;
+	}
+
+	sint16 i;
+
+	for (i = 0; i < size_tmp; ++i) {
+		buf[i] = gastrSocketBuffer[sock].buffer[gastrSocketBuffer[sock].tail++];
+
+		if (gastrSocketBuffer[sock].tail == gastrSocketBuffer[sock].head) {
+			// the full buffered data has been read, reset head and tail for next transfer
+			gastrSocketBuffer[sock].tail = gastrSocketBuffer[sock].head = 0;
+
+			// clear the buffer full flag
+			gastrSocketBuffer[sock].flag &= ~SOCKET_BUFFER_FLAG_FULL;
+
+			if (sock < TCP_SOCK_MAX) {
+				// TCP
+				recv(sock, gastrSocketBuffer[sock].buffer, SOCKET_BUFFER_MTU, 0);
+			} else {
+				// UDP
+
+				// setup buffer and buffer size to transfer the remainder of the current packet
+				// or next received packet
+				if (hif_small_xfer) {
+					recvfrom(sock, gastrSocketBuffer[sock].buffer, SOCKET_BUFFER_MTU, 0);
+				} else {
+					recvfrom(sock, gastrSocketBuffer[sock].buffer + SOCKET_BUFFER_UDP_HEADER_SIZE, SOCKET_BUFFER_MTU, 0);
+				}
+			}
+			m2m_wifi_handle_events(NULL);
+		}
+	}
+
+	return size_tmp;
+}
+
+void socketBufferClearSpawned(SOCKET sock)
+{
+	gastrSocketBuffer[sock].flag &= ~SOCKET_BUFFER_FLAG_SPAWN;
+
+	recv(sock, gastrSocketBuffer[sock].buffer, SOCKET_BUFFER_MTU, 0);
+}
+
+void socketBufferClose(SOCKET sock)
+{
+	gastrSocketBuffer[sock].head = gastrSocketBuffer[sock].tail = 0;
+	gastrSocketBuffer[sock].parent = -1;
+	gastrSocketBuffer[sock].flag = 0;
+
+	if (gastrSocketBuffer[sock].buffer) {
+		free(gastrSocketBuffer[sock].buffer);
+		gastrSocketBuffer[sock].buffer = NULL;
+	}
 }
 
 void socketBufferCb(SOCKET sock, uint8 u8Msg, void *pvMsg)
@@ -81,11 +262,15 @@ void socketBufferCb(SOCKET sock, uint8 u8Msg, void *pvMsg)
 		case SOCKET_MSG_CONNECT:
 		{
 			tstrSocketConnectMsg *pstrConnect = (tstrSocketConnectMsg *)pvMsg;
-			if (pstrConnect && pstrConnect->s8Error >= 0) {
-				recv(sock, gastrSocketBuffer[sock].buffer, SOCKET_BUFFER_MTU, 0);
-				*(gastrSocketBuffer[sock].flag) |= SOCKET_BUFFER_FLAG_CONNECTED;
-			} else {
-				close(sock);
+			if (pstrConnect) {
+				if (pstrConnect->s8Error >= 0) {
+					gastrSocketBuffer[sock].flag = SOCKET_BUFFER_FLAG_CONNECTED;
+
+					// Enable receive buffer:
+					recv(sock, gastrSocketBuffer[sock].buffer, SOCKET_BUFFER_MTU, 0);
+				} else {
+					gastrSocketBuffer[sock].flag = 0;
+				}
 			}
 		}
 		break;
@@ -100,34 +285,41 @@ void socketBufferCb(SOCKET sock, uint8 u8Msg, void *pvMsg)
 			tstrSocketRecvMsg *pstrRecv = (tstrSocketRecvMsg *)pvMsg;
 			if (pstrRecv && pstrRecv->s16BufferSize > 0) {
 				/* Protect against overflow. */
-				if (*(gastrSocketBuffer[sock].head) + pstrRecv->s16BufferSize > SOCKET_BUFFER_TCP_SIZE) {
-					*(gastrSocketBuffer[sock].flag) |= SOCKET_BUFFER_FLAG_FULL;
+				if (gastrSocketBuffer[sock].head + pstrRecv->s16BufferSize > SOCKET_BUFFER_TCP_SIZE) {
+					gastrSocketBuffer[sock].flag |= SOCKET_BUFFER_FLAG_FULL;
 					break;
 				}
 
 				/* Add data size. */
-				*(gastrSocketBuffer[sock].head) += pstrRecv->s16BufferSize;
+				gastrSocketBuffer[sock].head += pstrRecv->s16BufferSize;
 				
 				/* Buffer full, stop reception. */
-				if (SOCKET_BUFFER_TCP_SIZE - *(gastrSocketBuffer[sock].head) < SOCKET_BUFFER_MTU) {
+				if ((SOCKET_BUFFER_TCP_SIZE - gastrSocketBuffer[sock].head) < SOCKET_BUFFER_MTU) {
 					if (pstrRecv->u16RemainingSize != 0) {
-						*(gastrSocketBuffer[sock].flag) |= SOCKET_BUFFER_FLAG_FULL;
+						gastrSocketBuffer[sock].flag |= SOCKET_BUFFER_FLAG_FULL;
 					}
 				}
 				else {
-					recv(sock, gastrSocketBuffer[sock].buffer + *(gastrSocketBuffer[sock].head),
-						SOCKET_BUFFER_MTU, 0);
+					recv(sock, gastrSocketBuffer[sock].buffer + gastrSocketBuffer[sock].head, SOCKET_BUFFER_MTU, 0);
 				}
 			}
 			/* Test EOF (Socket closed) condition for TCP socket. */
 			else {
-				*(gastrSocketBuffer[sock].flag) &= ~SOCKET_BUFFER_FLAG_CONNECTED;
+				gastrSocketBuffer[sock].flag = 0;
+				gastrSocketBuffer[sock].parent = -1;
 				close(sock);
 			}
 			
 			// Network led OFF (rev A then rev B).
 			m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 1);
 			m2m_periph_gpio_set_val(M2M_PERIPH_GPIO5, 1);
+		}
+		break;
+
+		/* TCP Data send. */
+		case SOCKET_MSG_SEND:
+		{
+			gastrSocketBuffer[sock].flag &= ~SOCKET_BUFFER_FLAG_SENDING;
 		}
 		break;
 
@@ -142,7 +334,7 @@ void socketBufferCb(SOCKET sock, uint8 u8Msg, void *pvMsg)
 			if (pstrRecv && pstrRecv->s16BufferSize > 0) {
 
 				if (hif_small_xfer < 2) {
-					uint32 h = *(gastrSocketBuffer[sock].head);
+					uint32 h = gastrSocketBuffer[sock].head;
 					uint8 *buf = gastrSocketBuffer[sock].buffer;
 					uint16 sz = pstrRecv->s16BufferSize + pstrRecv->u16RemainingSize;
 				
@@ -161,27 +353,25 @@ void socketBufferCb(SOCKET sock, uint8 u8Msg, void *pvMsg)
 					buf[h++] = pstrRecv->strRemoteAddr.sin_addr.s_addr;
 				
 					/* Data received. */
-					*(gastrSocketBuffer[sock].head) = h + pstrRecv->s16BufferSize;
+					gastrSocketBuffer[sock].head = h + pstrRecv->s16BufferSize;
 				}
 				else {
 					/* Data received. */
-					*(gastrSocketBuffer[sock].head) += pstrRecv->s16BufferSize;				
+					gastrSocketBuffer[sock].head += pstrRecv->s16BufferSize;
 				}
 				
 				/* Buffer full, stop reception. */
-				if (SOCKET_BUFFER_UDP_SIZE - *(gastrSocketBuffer[sock].head) < SOCKET_BUFFER_MTU + SOCKET_BUFFER_UDP_HEADER_SIZE) {
+				if (SOCKET_BUFFER_UDP_SIZE - gastrSocketBuffer[sock].head < SOCKET_BUFFER_MTU + SOCKET_BUFFER_UDP_HEADER_SIZE) {
 					if (pstrRecv->u16RemainingSize != 0) {
-						*(gastrSocketBuffer[sock].flag) |= SOCKET_BUFFER_FLAG_FULL;
+						gastrSocketBuffer[sock].flag |= SOCKET_BUFFER_FLAG_FULL;
 					}
 				}
 				else {
 					if (hif_small_xfer && hif_small_xfer != 3) {
-						recvfrom(sock, gastrSocketBuffer[sock].buffer + *(gastrSocketBuffer[sock].head),
-								SOCKET_BUFFER_MTU, 0);
+						recvfrom(sock, gastrSocketBuffer[sock].buffer + gastrSocketBuffer[sock].head, SOCKET_BUFFER_MTU, 0);
 					}
 					else {
-						recvfrom(sock, gastrSocketBuffer[sock].buffer + *(gastrSocketBuffer[sock].head) + SOCKET_BUFFER_UDP_HEADER_SIZE,
-								SOCKET_BUFFER_MTU, 0);
+						recvfrom(sock, gastrSocketBuffer[sock].buffer + gastrSocketBuffer[sock].head + SOCKET_BUFFER_UDP_HEADER_SIZE, SOCKET_BUFFER_MTU, 0);
 					}
 				}
 			}
@@ -196,17 +386,20 @@ void socketBufferCb(SOCKET sock, uint8 u8Msg, void *pvMsg)
 		case SOCKET_MSG_BIND:
 		{
 			tstrSocketBindMsg *pstrBind = (tstrSocketBindMsg *)pvMsg;
-			if (pstrBind && pstrBind->status == 0) {
-				*(gastrSocketBuffer[sock].flag) |= SOCKET_BUFFER_FLAG_BIND;
-				/* TCP socket needs to enter Listen state. */
-				if (sock < TCP_SOCK_MAX) {
-					listen(sock, 0);
-				}
-				/* UDP socket only needs to supply the receive buffer. */
-				/* +8 is used to store size, port and IP of incoming data. */
-				else {
-					recvfrom(sock, gastrSocketBuffer[sock].buffer + SOCKET_BUFFER_UDP_HEADER_SIZE,
-							SOCKET_BUFFER_MTU, 0);
+			if (pstrBind) {
+				if (pstrBind->status == 0) {
+					gastrSocketBuffer[sock].flag = SOCKET_BUFFER_FLAG_BIND;
+					/* TCP socket needs to enter Listen state. */
+					if (sock < TCP_SOCK_MAX) {
+						listen(sock, 0);
+					}
+					/* UDP socket only needs to supply the receive buffer. */
+					/* +8 is used to store size, port and IP of incoming data. */
+					else {
+						recvfrom(sock, gastrSocketBuffer[sock].buffer + SOCKET_BUFFER_UDP_HEADER_SIZE, SOCKET_BUFFER_MTU, 0);
+					}
+				} else {
+					gastrSocketBuffer[sock].flag = 0;
 				}
 			}
 		}
@@ -217,16 +410,8 @@ void socketBufferCb(SOCKET sock, uint8 u8Msg, void *pvMsg)
 		{
 			tstrSocketAcceptMsg *pstrAccept = (tstrSocketAcceptMsg *)pvMsg;
 			if (pstrAccept && pstrAccept->sock >= 0) {
-				if (*(gastrSocketBuffer[sock].flag) & SOCKET_BUFFER_FLAG_SPAWN) {
-					/* One spawn connection already waiting, discard current one. */
-					close(pstrAccept->sock);
-				}
-				else {
-					/* Use flag to store spawn TCP descriptor. */
-					*(gastrSocketBuffer[sock].flag) &= ~SOCKET_BUFFER_FLAG_SPAWN_SOCKET_MSK;
-					*(gastrSocketBuffer[sock].flag) |= (((uint32)pstrAccept->sock) << SOCKET_BUFFER_FLAG_SPAWN_SOCKET_POS);
-					*(gastrSocketBuffer[sock].flag) |= SOCKET_BUFFER_FLAG_SPAWN;
-				}
+				gastrSocketBuffer[pstrAccept->sock].flag = SOCKET_BUFFER_FLAG_CONNECTED | SOCKET_BUFFER_FLAG_SPAWN;
+				gastrSocketBuffer[pstrAccept->sock].parent = sock;
 			}
 		}
 		break;

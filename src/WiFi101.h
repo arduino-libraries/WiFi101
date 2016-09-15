@@ -75,25 +75,12 @@ typedef enum {
 class WiFiClass
 {
 public:
-	uint32_t _localip;
-	uint32_t _submask;
-	uint32_t _gateway;
-	int _dhcp;
-	uint32_t _resolve;
-	byte *_bssid;
-	wl_mode_t _mode;
-	wl_status_t _status;
-	char _scan_ssid[M2M_MAX_SSID_LEN];
-	uint8_t _scan_auth;
-	char _ssid[M2M_MAX_SSID_LEN];
-	WiFiClient *_client[TCP_SOCK_MAX];
-
 	WiFiClass();
 
 	void setPins(int8_t cs, int8_t irq, int8_t rst, int8_t en = -1);
 
 	int init();
-	
+
 	char* firmwareVersion();
 
 	/* Start Wifi connection with WPA/WPA2 encryption.
@@ -163,11 +150,27 @@ public:
 	void noLowPowerMode(void);
 
 private:
+	uint8_t startConnect(const char *ssid, uint8_t u8SecType, const void *pvAuthInfo);
+	uint8_t startAP(const char *ssid, uint8_t u8SecType, const void *pvAuthInfo, uint8_t channel);
+
+	static void wifi_cb(uint8_t u8MsgType, void *pvMsg);
+	static void resolve_cb(uint8_t * hostName, uint32_t hostIp);
+	static void ping_cb(uint32 u32IPAddr, uint32 u32RTT, uint8 u8ErrorCode);
+
 	int _init;
 	char _version[9];
 
-	uint8_t startConnect(const char *ssid, uint8_t u8SecType, const void *pvAuthInfo);
-	uint8_t startAP(const char *ssid, uint8_t u8SecType, const void *pvAuthInfo, uint8_t channel);
+	uint32_t _localip;
+	uint32_t _submask;
+	uint32_t _gateway;
+	int _dhcp;
+	uint32_t _resolve;
+	byte *_bssid;
+	wl_mode_t _mode;
+	wl_status_t _status;
+	char _scan_ssid[M2M_MAX_SSID_LEN];
+	uint8_t _scan_auth;
+	char _ssid[M2M_MAX_SSID_LEN];
 };
 
 extern WiFiClass WiFi;

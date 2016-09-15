@@ -28,7 +28,7 @@ extern "C" {
   #include "driver/include/m2m_periph.h"
 }
 
-static void wifi_cb(uint8_t u8MsgType, void *pvMsg)
+void WiFiClass::wifi_cb(uint8_t u8MsgType, void *pvMsg)
 {
 	switch (u8MsgType) {
 		case M2M_WIFI_RESP_CON_STATE_CHANGED:
@@ -46,18 +46,14 @@ static void wifi_cb(uint8_t u8MsgType, void *pvMsg)
 				}
 			} else if (pstrWifiState->u8CurrState == M2M_WIFI_DISCONNECTED) {
 				//SERIAL_PORT_MONITOR.println("wifi_cb: M2M_WIFI_RESP_CON_STATE_CHANGED: DISCONNECTED");
+				socketBufferApDisconnected();
+
 				if (WiFi._mode == WL_STA_MODE) {
 					WiFi._status = WL_DISCONNECTED;
 					if (WiFi._dhcp) {
 						WiFi._localip = 0;
 						WiFi._submask = 0;
 						WiFi._gateway = 0;
-					}
-					// Close sockets to clean state
-					// Clients will need to reconnect once the physical link will be re-established
-					for (int i=0; i < TCP_SOCK_MAX; i++) {
-						if (WiFi._client[i])
-							WiFi._client[i]->stop();
 					}
 				} else if (WiFi._mode == WL_AP_MODE) {
 					WiFi._status = WL_AP_LISTENING;
@@ -154,12 +150,12 @@ static void wifi_cb(uint8_t u8MsgType, void *pvMsg)
 	}
 }
 
-static void resolve_cb(uint8_t * /* hostName */, uint32_t hostIp)
+void WiFiClass::resolve_cb(uint8_t * /* hostName */, uint32_t hostIp)
 {
 	WiFi._resolve = hostIp;
 }
 
-static void ping_cb(uint32 u32IPAddr, uint32 /*u32RTT*/, uint8 u8ErrorCode)
+void WiFiClass::ping_cb(uint32 u32IPAddr, uint32 /*u32RTT*/, uint8 u8ErrorCode)
 {
 	if (PING_ERR_SUCCESS == u8ErrorCode) {
 		// Ensure this ICMP reply comes from requested IP address
@@ -202,7 +198,7 @@ int WiFiClass::init()
 	nm_bsp_init();
 
 	// Initialize WiFi module and register status callback:
-	param.pfAppWifiCb = wifi_cb;
+	param.pfAppWifiCb = WiFiClass::wifi_cb;
 	ret = m2m_wifi_init(&param);
 	if (M2M_SUCCESS != ret) {
 		// Error led ON (rev A then rev B).
@@ -214,14 +210,13 @@ int WiFiClass::init()
 	// Initialize socket API and register socket callback:
 	socketInit();
 	socketBufferInit();
-	registerSocketCallback(socketBufferCb, resolve_cb);
+	registerSocketCallback(socketBufferCb, WiFiClass::resolve_cb);
 	_init = 1;
 	_status = WL_IDLE_STATUS;
 	_localip = 0;
 	_submask = 0;
 	_gateway = 0;
 	_dhcp = 1;
-	memset(_client, 0, sizeof(WiFiClient *) * TCP_SOCK_MAX);
 
 	// Initialize IO expander LED control (rev A then rev B)..
 	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO15, 1);
@@ -822,7 +817,7 @@ uint8_t WiFiClass::ping(IPAddress host, uint8_t ttl)
 	uint32_t dstHost = (uint32_t)host;
 	_resolve = dstHost;
 
-	if (m2m_ping_req((uint32_t)host, ttl, &ping_cb) < 0) {
+	if (m2m_ping_req((uint32_t)host, ttl, &WiFiClass::ping_cb) < 0) {
 		// Network led OFF (rev A then rev B).
 		m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 1);
 		m2m_periph_gpio_set_val(M2M_PERIPH_GPIO5, 1);
