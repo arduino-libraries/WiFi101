@@ -1,6 +1,6 @@
 WiFi101 ?.?.? - ????.??.??
 
-*
+* Changed WiFi.ping(...) to return round trip time on success, negative value on error. Thanks @PKGeorgiev
 
 WiFi101 0.10.0 - 2016.09.08
 
