@@ -535,9 +535,6 @@ void WiFiClass::end()
 {
 	if (_mode == WL_AP_MODE) {
 		m2m_wifi_disable_ap();
-
-		_status = WL_IDLE_STATUS;
-		_mode = WL_RESET_MODE;
 	} else {
 		if (_mode == WL_PROV_MODE) {
 			m2m_wifi_stop_provision_mode();
@@ -549,6 +546,14 @@ void WiFiClass::end()
 	// WiFi led OFF (rev A then rev B).
 	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO15, 1);
 	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO4, 1);
+
+	m2m_wifi_deinit(NULL);
+
+	nm_bsp_deinit();
+
+	_mode = WL_RESET_MODE;
+	_status = WL_NO_SHIELD;
+	_init = 0;
 }
 
 uint8_t *WiFiClass::macAddress(uint8_t *mac)
