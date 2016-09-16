@@ -1,6 +1,10 @@
 WiFi101 ?.?.? - ????.??.??
 
 * Changed WiFi.ping(...) to return round trip time on success, negative value on error. Thanks @PKGeorgiev
+* WiFi.end() now powers down the WiFi module
+* WiFi.config(ip) can now be used to set a static IP for WiFi.begin(...)
+* Fixed WiFi.BSSID(bssid) returning reversed MAC address
+* Added WiFi.APClientMacAddress() API to get MAC address of AP client in AP mode
 
 WiFi101 0.10.0 - 2016.09.08
 
