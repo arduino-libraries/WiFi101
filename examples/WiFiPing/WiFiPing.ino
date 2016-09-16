@@ -1,18 +1,18 @@
 /*
 
- This example connects to a encrypted Wifi network (WPA/WPA2).
- Then it prints the  MAC address of the Wifi shield,
- the IP address obtained, and other network details.
- Then it continuously pings given host specified by IP Address or name.
+  This example connects to a encrypted Wifi network (WPA/WPA2).
+  Then it prints the  MAC address of the Wifi shield,
+  the IP address obtained, and other network details.
+  Then it continuously pings given host specified by IP Address or name.
 
- Circuit:
- * WiFi shield attached / MKR1000
+  Circuit:
+   WiFi shield attached / MKR1000
 
- created 13 July 2010
- by dlf (Metodo2 srl)
- modified 09 June 2016
- by Petar Georgiev
- */
+  created 13 July 2010
+  by dlf (Metodo2 srl)
+  modified 09 June 2016
+  by Petar Georgiev
+*/
 #include <SPI.h>
 #include <WiFi101.h>
 
@@ -50,10 +50,9 @@ void setup() {
   }
 
   // you're connected now, so print out the data:
-  Serial.print("You're connected to the network");
+  Serial.println("You're connected to the network");
   printCurrentNet();
   printWifiData();
-
 }
 
 void loop() {
@@ -65,13 +64,14 @@ void loop() {
 
   if (pingResult >= 0) {
     Serial.print("SUCCESS! RTT = ");
-    Serial.println(pingResult);
+    Serial.print(pingResult);
+    Serial.println(" ms");
   } else {
     Serial.print("FAILED! Error code: ");
     Serial.println(pingResult);
   }
 
-  delay(1000);
+  delay(5000);
 }
 
 void printWifiData() {
@@ -81,7 +81,7 @@ void printWifiData() {
   Serial.println(ip);
 
   Serial.print("Subnet mask: ");
-  Serial.println((IPAddress)WiFi.subnetMask()); 
+  Serial.println((IPAddress)WiFi.subnetMask());
 
   Serial.print("Gateway IP : ");
   Serial.println((IPAddress)WiFi.gatewayIP());
