@@ -79,7 +79,7 @@ public:
 	uint32_t _gateway;
 	int _dhcp;
 	uint32_t _resolve;
-	byte *_bssid;
+	byte *_remoteMacAddress;
 	wl_mode_t _mode;
 	wl_status_t _status;
 	char _scan_ssid[M2M_MAX_SSID_LEN];
@@ -141,6 +141,7 @@ public:
 	int32_t RSSI();
 	uint8_t encryptionType();
 	uint8_t* BSSID(uint8_t* bssid);
+	uint8_t* APClientMacAddress(uint8_t* mac);
 	int8_t scanNetworks();
 	char* SSID(uint8_t pos);
 	int32_t RSSI(uint8_t pos);
@@ -167,6 +168,7 @@ private:
 
 	uint8_t startConnect(const char *ssid, uint8_t u8SecType, const void *pvAuthInfo);
 	uint8_t startAP(const char *ssid, uint8_t u8SecType, const void *pvAuthInfo, uint8_t channel);
+	uint8_t* remoteMacAddress(uint8_t* remoteMacAddress);
 };
 
 extern WiFiClass WiFi;

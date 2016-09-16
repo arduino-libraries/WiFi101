@@ -76,12 +76,26 @@ void loop() {
     status = WiFi.status();
 
     if (status == WL_AP_CONNECTED) {
+      byte remoteMac[6];
+
       // a device has connected to the AP
-      Serial.println("Device connected to AP");
+      Serial.print("Device connected to AP, MAC address: ");
+      WiFi.APClientMacAddress(remoteMac);
+      Serial.print(remoteMac[5], HEX);
+      Serial.print(":");
+      Serial.print(remoteMac[4], HEX);
+      Serial.print(":");
+      Serial.print(remoteMac[3], HEX);
+      Serial.print(":");
+      Serial.print(remoteMac[2], HEX);
+      Serial.print(":");
+      Serial.print(remoteMac[1], HEX);
+      Serial.print(":");
+      Serial.println(remoteMac[0], HEX);
     } else {
       // a device has disconnected from the AP, and we are back in listening mode
       Serial.println("Device disconnected from AP");
-    } 
+    }
   }
   
   WiFiClient client = server.available();   // listen for incoming clients
@@ -154,4 +168,5 @@ void printWifiStatus() {
   // print where to go in a browser:
   Serial.print("To see this page in action, open a browser to http://");
   Serial.println(ip);
+
 }
