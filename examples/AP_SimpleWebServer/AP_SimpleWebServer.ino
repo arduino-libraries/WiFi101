@@ -46,6 +46,10 @@ void setup() {
     while (true);
   }
 
+  // by default the local IP address of will be 192.168.1.1
+  // you can override it with the following:
+  // WiFi.config(IPAddress(10, 0, 0, 1));
+
   // print the network name (SSID);
   Serial.print("Creating access point named: ");
   Serial.println(ssid);
