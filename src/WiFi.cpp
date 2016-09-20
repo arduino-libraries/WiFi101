@@ -934,7 +934,7 @@ uint32_t WiFiClass::getTime()
 
 	_resolve = 0;
 
-	if (t == -1) {
+	if (t == (time_t)-1) {
 		t = 0;
 	}
 
