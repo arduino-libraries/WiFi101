@@ -17,6 +17,8 @@
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#include <time.h>
+
 #include "WiFi101.h"
 
 extern "C" {
@@ -157,6 +159,16 @@ static void wifi_cb(uint8_t u8MsgType, void *pvMsg)
 				}
 				WiFi._remoteMacAddress = 0;
 			}
+		}
+		break;
+
+		case M2M_WIFI_RESP_GET_SYS_TIME:
+		{
+			if (WiFi._resolve != 0) {
+				memcpy((tstrSystemTime *)WiFi._resolve, pvMsg, sizeof(tstrSystemTime));
+			}
+
+			WiFi._resolve = 0;
 		}
 		break;
 
@@ -889,6 +901,38 @@ int WiFiClass::ping(IPAddress host, uint8_t ttl)
 	} else {
 		return (int)_resolve;
 	}
+}
+
+uint32_t WiFiClass::getTime()
+{
+	tstrSystemTime systemTime;
+
+	_resolve = (uint32_t)&systemTime;
+
+	m2m_wifi_get_sytem_time();
+
+	unsigned long start = millis();
+	while (_resolve != 0 && millis() - start < 5000) {
+		m2m_wifi_handle_events(NULL);
+	}
+
+	if (_resolve == 0) {
+		struct tm tm;
+
+		tm.tm_year = systemTime.u16Year - 1900;
+		tm.tm_mon = systemTime.u8Month - 1;
+		tm.tm_mday = systemTime.u8Day;
+		tm.tm_hour = systemTime.u8Hour;
+		tm.tm_min = systemTime.u8Minute;
+		tm.tm_sec = systemTime.u8Second;
+		tm.tm_isdst = -1;
+
+		_resolve = mktime(&tm);
+	} else {
+		_resolve = (uint32_t)-1;
+	}
+
+	return _resolve;
 }
 
 WiFiClass WiFi;

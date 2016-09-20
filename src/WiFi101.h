@@ -156,6 +156,8 @@ public:
 	int ping(const String &hostname, uint8_t ttl = 128);
 	int ping(IPAddress host, uint8_t ttl = 128);
 
+	unsigned long getTime();
+
 	void refresh(void);
 
 	void lowPowerMode(void);
