@@ -5,6 +5,7 @@ WiFi101 ?.?.? - ????.??.??
 * WiFi.config(ip) can now be used to set a static IP for WiFi.begin(...)
 * Fixed WiFi.BSSID(bssid) returning reversed MAC address
 * Added WiFi.APClientMacAddress() API to get MAC address of AP client in AP mode
+* Added WiFi.getTime() API to get epoch from NTP
 
 WiFi101 0.10.0 - 2016.09.08
 
