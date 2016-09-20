@@ -916,6 +916,8 @@ uint32_t WiFiClass::getTime()
 		m2m_wifi_handle_events(NULL);
 	}
 
+	time_t t = -1;
+
 	if (_resolve == 0) {
 		struct tm tm;
 
@@ -927,12 +929,16 @@ uint32_t WiFiClass::getTime()
 		tm.tm_sec = systemTime.u8Second;
 		tm.tm_isdst = -1;
 
-		_resolve = mktime(&tm);
-	} else {
-		_resolve = (uint32_t)-1;
+		t = mktime(&tm);
 	}
 
-	return _resolve;
+	_resolve = 0;
+
+	if (t == -1) {
+		t = 0;
+	}
+
+	return t;
 }
 
 WiFiClass WiFi;
