@@ -579,7 +579,7 @@ void WiFiClass::end()
 	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO15, 1);
 	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO4, 1);
 
-    socketDeinit();
+	socketDeinit();
 
 	m2m_wifi_deinit(NULL);
 
