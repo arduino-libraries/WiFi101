@@ -166,9 +166,9 @@ static void wifi_cb(uint8_t u8MsgType, void *pvMsg)
 		{
 			if (WiFi._resolve != 0) {
 				memcpy((tstrSystemTime *)WiFi._resolve, pvMsg, sizeof(tstrSystemTime));
-			}
 
-			WiFi._resolve = 0;
+				WiFi._resolve = 0;
+			}
 		}
 		break;
 
@@ -244,6 +244,7 @@ int WiFiClass::init()
 	_submask = 0;
 	_gateway = 0;
 	_dhcp = 1;
+	_resolve = 0;
 	memset(_client, 0, sizeof(WiFiClient *) * TCP_SOCK_MAX);
 
 	// Initialize IO expander LED control (rev A then rev B)..
@@ -830,6 +831,7 @@ int WiFiClass::hostByName(const char* aHostname, IPAddress& aResult)
 		}
 
 		aResult = _resolve;
+		_resolve = 0;
 		return 1;
 	}
 }
@@ -899,9 +901,12 @@ int WiFiClass::ping(IPAddress host, uint8_t ttl)
 	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO5, 1);
 
 	if (_resolve == dstHost) {
+		_resolve = 0;
 		return WL_PING_TIMEOUT;
 	} else {
-		return (int)_resolve;
+		int rtt = (int)_resolve;
+		_resolve = 0;
+		return _resolve;
 	}
 }
 
