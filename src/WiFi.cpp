@@ -906,7 +906,7 @@ int WiFiClass::ping(IPAddress host, uint8_t ttl)
 	} else {
 		int rtt = (int)_resolve;
 		_resolve = 0;
-		return _resolve;
+		return rtt;
 	}
 }
 
