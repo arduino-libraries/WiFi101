@@ -17,7 +17,21 @@
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#ifdef ARDUINO_ARCH_AVR
+#include <avr/version.h>
+#if (__AVR_LIBC_MAJOR__ < 2)
+#define WIFI_101_NO_TIME_H
+#endif
+#endif
+
+#ifndef WIFI_101_NO_TIME_H
 #include <time.h>
+#endif
+
+#if !defined(_TIME_H_) && !defined(TIME_H)
+// another library overrided the time.h header
+#define WIFI_101_NO_TIME_H
+#endif
 
 #include "WiFi101.h"
 
@@ -912,6 +926,10 @@ int WiFiClass::ping(IPAddress host, uint8_t ttl)
 
 uint32_t WiFiClass::getTime()
 {
+#ifdef WIFI_101_NO_TIME_H
+	#warning "No system <time.h> header included, WiFi.getTime() will always return 0"
+	return 0;
+#else
 	tstrSystemTime systemTime;
 
 	_resolve = (uint32_t)&systemTime;
@@ -946,6 +964,7 @@ uint32_t WiFiClass::getTime()
 	}
 
 	return t;
+#endif
 }
 
 WiFiClass WiFi;
