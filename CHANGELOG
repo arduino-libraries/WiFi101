@@ -1,5 +1,9 @@
 WiFi101 ?.?.? - ????.??.??
 
+WiFi101 0.11.1 - 2016.11.29
+
+* Fixed regression for non-AVR boards that resulted in corrupt with data over than 1400 bytes was received
+
 WiFi101 0.11.0 - 2016.11.14
 
 * Changed WiFi.ping(...) to return round trip time on success, negative value on error. Thanks @PKGeorgiev
