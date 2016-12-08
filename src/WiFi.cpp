@@ -948,7 +948,7 @@ uint32_t WiFiClass::getTime()
 
 		tm.tm_year = systemTime.u16Year - 1900;
 		tm.tm_mon = systemTime.u8Month - 1;
-		tm.tm_mday = systemTime.u8Day;
+		tm.tm_mday = systemTime.u8Day + 1;
 		tm.tm_hour = systemTime.u8Hour;
 		tm.tm_min = systemTime.u8Minute;
 		tm.tm_sec = systemTime.u8Second;
