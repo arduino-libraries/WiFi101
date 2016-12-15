@@ -60,7 +60,6 @@ enum wl_enc_type {  /* Values map to 802.11 encryption suites... */
 typedef enum {
 	WL_RESET_MODE = 0,
 	WL_STA_MODE,
-	WL_PROV_MODE,
 	WL_AP_MODE
 } wl_mode_t;
 
@@ -118,11 +117,6 @@ public:
 	uint8_t beginAP(const char *ssid, uint8_t channel);
 	uint8_t beginAP(const char *ssid, uint8_t key_idx, const char* key);
 	uint8_t beginAP(const char *ssid, uint8_t key_idx, const char* key, uint8_t channel);
-
-	uint8_t beginProvision(char *ssid, char *url);
-	uint8_t beginProvision(char *ssid, char *url, uint8_t channel);
-
-	uint32_t provisioned();
 
 	void config(IPAddress local_ip);
 	void config(IPAddress local_ip, IPAddress dns_server);
