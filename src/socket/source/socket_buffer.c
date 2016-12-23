@@ -167,7 +167,7 @@ sint8 socketBufferSendWait(SOCKET sock)
 		}
 	}
 
-	gastrSocketBuffer[sock].flag = SOCKET_BUFFER_FLAG_SENDING;
+	gastrSocketBuffer[sock].flag |= SOCKET_BUFFER_FLAG_SENDING;
 
 	while (gastrSocketBuffer[sock].flag & SOCKET_BUFFER_FLAG_SENDING) {
 		m2m_wifi_handle_events(NULL);
