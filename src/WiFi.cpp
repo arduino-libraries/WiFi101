@@ -745,6 +745,8 @@ char* WiFiClass::SSID(uint8_t pos)
 	}
 
 	_status = tmp;
+	_resolve = 0;
+
 	return _scan_ssid;
 }
 
@@ -804,6 +806,8 @@ uint8_t WiFiClass::encryptionType(uint8_t pos)
 	}
 
 	_status = tmp;
+	_resolve = 0;
+
 	return _scan_auth;
 }
 
