@@ -988,7 +988,7 @@ uint32_t WiFiClass::getTime()
 
 	time_t t = -1;
 
-	if (_resolve == 0) {
+	if (_resolve == 0 && systemTime.u16Year > 0) {
 		struct tm tm;
 
 		tm.tm_year = systemTime.u16Year - 1900;
