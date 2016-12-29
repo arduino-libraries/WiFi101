@@ -995,7 +995,7 @@ uint32_t WiFiClass::getTime()
 		m2m_wifi_handle_events(NULL);
 	}
 
-	time_t t = -1;
+	time_t t = 0;
 
 	if (_resolve == 0 && systemTime.u16Year > 0) {
 		struct tm tm;
@@ -1012,10 +1012,6 @@ uint32_t WiFiClass::getTime()
 	}
 
 	_resolve = 0;
-
-	if (t == (time_t)-1) {
-		t = 0;
-	}
 
 	return t;
 #endif
