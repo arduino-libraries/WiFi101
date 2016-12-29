@@ -1,9 +1,9 @@
 /*
- * This example check if the firmware loaded on the Wifi101
- * shield is updated.
+ * This example check if the firmware loaded on the WiFi
+ * shield 101 or MKR1000 board is updated.
  *
  * Circuit:
- * - WiFi101 Shield attached
+ * - WiFi Shield 101 attached or MKR1000 board
  *
  * Created 29 July 2015 by Cristian Maglie
  * This code is in the public domain.
@@ -48,6 +48,9 @@ void setup() {
     Serial.println(" - The firmware version on the shield do not match the");
     Serial.println("   version required by the library, you may experience");
     Serial.println("   issues or failures.");
+    Serial.println();
+    Serial.println("Please refer to https://github.com/arduino-libraries/WiFi101-FirmwareUpdater");
+    Serial.println("to upgrade your firmware");
   }
 }
 
