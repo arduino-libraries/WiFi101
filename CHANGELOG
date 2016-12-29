@@ -1,5 +1,9 @@
 WiFi101 ?.?.? - ????.??.??
 
+* Made provisioning mode easier and added example sketch
+* Fixed WiFi.getTime() not returning 0, if time has not been synced via NTP
+* Fixed crashing when connecting after scanning 
+
 WiFi101 0.11.2 - 2016.12.15
 
 * Fixed value of WiFi.getTime() being off by one day
