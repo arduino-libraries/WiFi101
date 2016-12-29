@@ -785,6 +785,8 @@ char* WiFiClass::SSID(uint8_t pos)
 	}
 
 	_status = tmp;
+	_resolve = 0;
+
 	return _scan_ssid;
 }
 
@@ -805,7 +807,12 @@ int32_t WiFiClass::RSSI(uint8_t pos)
 	}
 
 	_status = tmp;
-	return _resolve;
+
+	int32_t rssi = _resolve;
+
+	_resolve = 0;
+
+	return rssi;
 }
 
 uint8_t WiFiClass::encryptionType()
@@ -839,6 +846,8 @@ uint8_t WiFiClass::encryptionType(uint8_t pos)
 	}
 
 	_status = tmp;
+	_resolve = 0;
+
 	return _scan_auth;
 }
 
