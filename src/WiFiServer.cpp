@@ -103,7 +103,7 @@ WiFiClient WiFiServer::available(uint8_t* status)
 		for (int sock = 0; sock < TCP_SOCK_MAX; sock++) {
 			client = WiFi._client[sock];
 			if (client && client->_flag & SOCKET_BUFFER_FLAG_CONNECTED) {
-				if (((client->_flag >> SOCKET_BUFFER_FLAG_PARENT_SOCKET_POS) & 0xff) == (uint8)_socket) {
+				if (((client->_flag >> SOCKET_BUFFER_FLAG_PARENT_SOCKET_POS) & 0xff) == (uint8)(_socket + 1)) {
 					return *client;
 				}
 			}

@@ -41,7 +41,7 @@ WiFiClient::WiFiClient(uint8_t sock, uint8_t parentsock)
 	_socket = sock;
 	_flag = SOCKET_BUFFER_FLAG_CONNECTED;
 	if (parentsock) {
-		_flag |= ((uint32_t)(parentsock - 1)) << SOCKET_BUFFER_FLAG_PARENT_SOCKET_POS;
+		_flag |= ((uint32_t)parentsock) << SOCKET_BUFFER_FLAG_PARENT_SOCKET_POS;
 	}
 	_head = 0;
 	_tail = 0;
