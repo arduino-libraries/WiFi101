@@ -106,7 +106,7 @@ bool WiFiMDNSResponder::begin(const char* _name, uint32_t _ttlSeconds)
 
   // Open the MDNS UDP listening socket on port 5353 with multicast address
   // 224.0.0.251 (0xE00000FB)
-  if (!udpSocket.beginMulti(IPAddress(224, 0, 0, 251), 5353)) {
+  if (!udpSocket.beginMulticast(IPAddress(224, 0, 0, 251), 5353)) {
     return false;
   }
 

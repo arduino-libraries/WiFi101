@@ -94,7 +94,7 @@ uint8_t WiFiUDP::begin(uint16_t port)
 	return 1;
 }
 
-uint8_t WiFiUDP::beginMulti(IPAddress ip, uint16_t port)
+uint8_t WiFiUDP::beginMulticast(IPAddress ip, uint16_t port)
 {
 	uint32_t multiIp = ip;
 

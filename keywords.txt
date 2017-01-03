@@ -28,7 +28,7 @@ connected	KEYWORD2
 begin	KEYWORD2
 beginProvision	KEYWORD2
 beginOrProvision	KEYWORD2
-beginMulti	KEYWORD2
+beginMulticast	KEYWORD2
 disconnect	KEYWORD2
 macAddress	KEYWORD2
 localIP	KEYWORD2

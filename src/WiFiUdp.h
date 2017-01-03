@@ -40,7 +40,8 @@ private:
 public:
   WiFiUDP();  // Constructor
   virtual uint8_t begin(uint16_t);	// initialize, start listening on specified port. Returns 1 if successful, 0 if there are no sockets available to use
-  virtual uint8_t beginMulti(IPAddress, uint16_t);  // initialize, start listening on specified multicast IP address and port. Returns 1 if successful, 0 if there are no sockets available to use
+  virtual uint8_t beginMulticast(IPAddress, uint16_t);  // initialize, start listening on specified multicast IP address and port. Returns 1 if successful, 0 if there are no sockets available to use
+  virtual uint8_t beginMulti(IPAddress ip, uint16_t port) { return beginMulticast(ip, port); }
   virtual void stop();  // Finish with the UDP socket
 
   // Sending UDP packets
