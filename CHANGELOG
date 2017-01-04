@@ -3,7 +3,8 @@ WiFi101 ?.?.? - ????.??.??
 * Made provisioning mode easier and added example sketch
 * Fixed WiFi.getTime() not returning 0, if time has not been synced via NTP
 * Fixed crashing when connecting after scanning
-* Fixed WiFiServer::available() returning valid client on outbound client connection 
+* Fixed WiFiServer::available() returning valid client on outbound client connection
+* Added WiFiUdp::beginMulticast(port) function for compatiblity with EthernetUdp, as beginMulti was inconsistent
 
 WiFi101 0.11.2 - 2016.12.15
 
