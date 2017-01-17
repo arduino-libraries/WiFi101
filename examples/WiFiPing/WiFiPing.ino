@@ -1,7 +1,7 @@
 /*
 
-  This example connects to a encrypted Wifi network (WPA/WPA2).
-  Then it prints the  MAC address of the Wifi shield,
+  This example connects to a encrypted WiFi network (WPA/WPA2).
+  Then it prints the  MAC address of the WiFi shield,
   the IP address obtained, and other network details.
   Then it continuously pings given host specified by IP Address or name.
 
@@ -18,7 +18,7 @@
 
 char ssid[] = "yourNetwork";     //  your network SSID (name)
 char pass[] = "secretPassword";  // your network password
-int status = WL_IDLE_STATUS;     // the Wifi radio's status
+int status = WL_IDLE_STATUS;     // the WiFi radio's status
 
 // Specify IP address or hostname
 String hostName = "www.google.com";
@@ -38,7 +38,7 @@ void setup() {
     while (true);
   }
 
-  // attempt to connect to Wifi network:
+  // attempt to connect to WiFi network:
   while ( status != WL_CONNECTED) {
     Serial.print("Attempting to connect to WPA SSID: ");
     Serial.println(ssid);
@@ -52,7 +52,7 @@ void setup() {
   // you're connected now, so print out the data:
   Serial.println("You're connected to the network");
   printCurrentNet();
-  printWifiData();
+  printWiFiData();
 }
 
 void loop() {
@@ -74,7 +74,7 @@ void loop() {
   delay(5000);
 }
 
-void printWifiData() {
+void printWiFiData() {
   // print your WiFi shield's IP address:
   IPAddress ip = WiFi.localIP();
   Serial.print("IP address : ");

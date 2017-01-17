@@ -11,7 +11,7 @@
  http://yourAddress/L turns it off
 
  This example is written for a network using WPA encryption. For
- WEP or WPA, change the Wifi.begin() call accordingly.
+ WEP or WPA, change the WiFi.begin() call accordingly.
 
  Circuit:
  * WiFi shield attached
@@ -40,7 +40,7 @@ void setup() {
     while (true);       // don't continue
   }
 
-  // attempt to connect to Wifi network:
+  // attempt to connect to WiFi network:
   while ( status != WL_CONNECTED) {
     Serial.print("Attempting to connect to Network named: ");
     Serial.println(ssid);                   // print the network name (SSID);
@@ -51,7 +51,7 @@ void setup() {
     delay(10000);
   }
   server.begin();                           // start the web server on port 80
-  printWifiStatus();                        // you're connected now, so print out the status
+  printWiFiStatus();                        // you're connected now, so print out the status
 }
 
 
@@ -108,7 +108,7 @@ void loop() {
   }
 }
 
-void printWifiStatus() {
+void printWiFiStatus() {
   // print the SSID of the network you're attached to:
   Serial.print("SSID: ");
   Serial.println(WiFi.SSID());

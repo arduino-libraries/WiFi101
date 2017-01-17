@@ -1,5 +1,5 @@
 /*
- * This example check if the firmware loaded on the Wifi101
+ * This example check if the firmware loaded on the WiFi101
  * shield is updated.
  *
  * Circuit:

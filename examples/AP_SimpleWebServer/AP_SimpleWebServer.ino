@@ -69,7 +69,7 @@ void setup() {
   server.begin();
 
   // you're connected now, so print out the status
-  printWifiStatus();
+  printWiFiStatus();
 }
 
 
@@ -154,7 +154,7 @@ void loop() {
   }
 }
 
-void printWifiStatus() {
+void printWiFiStatus() {
   // print the SSID of the network you're attached to:
   Serial.print("SSID: ");
   Serial.println(WiFi.SSID());
