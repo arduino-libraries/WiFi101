@@ -13,7 +13,7 @@
  Then you can access the device in a browser at 'http://wifi101.local/'.
 
  This example is written for a network using WPA encryption. For
- WEP or WPA, change the Wifi.begin() call accordingly.
+ WEP or WPA, change the WiFi.begin() call accordingly.
 
  Circuit:
  * WiFi shield attached
@@ -62,7 +62,7 @@ void setup() {
     while (true);
   }
 
-  // attempt to connect to Wifi network:
+  // attempt to connect to WiFi network:
   while ( status != WL_CONNECTED) {
     Serial.print("Attempting to connect to SSID: ");
     Serial.println(ssid);
@@ -73,7 +73,7 @@ void setup() {
     delay(10000);
   }
   // you're connected now, so print out the status:
-  printWifiStatus();
+  printWiFiStatus();
 
   server.begin();
 
@@ -150,7 +150,7 @@ void loop() {
 }
 
 
-void printWifiStatus() {
+void printWiFiStatus() {
   // print the SSID of the network you're attached to:
   Serial.print("SSID: ");
   Serial.println(WiFi.SSID());

@@ -1,8 +1,8 @@
 /*
-  Repeating Wifi Web Client
+  Repeating WiFi Web Client
 
  This sketch connects to a a web server and makes a request
- using an Arduino Wifi shield.
+ using an Arduino WiFi shield.
 
  Circuit:
  * WiFi shield attached to pins SPI pins and pin 7
@@ -13,20 +13,20 @@
  modified 13 Jan 2014
  by Federico Vanzati
 
- http://arduino.cc/en/Tutorial/WifiWebClientRepeating
+ http://arduino.cc/en/Tutorial/WiFiWebClientRepeating
  This code is in the public domain.
  */
 
 #include <SPI.h>
 #include <WiFi101.h>
- 
+
 char ssid[] = "yourNetwork";      //  your network SSID (name)
 char pass[] = "secretPassword";   // your network password
 int keyIndex = 0;            // your network key Index number (needed only for WEP)
 
 int status = WL_IDLE_STATUS;
 
-// Initialize the Wifi client library
+// Initialize the WiFi client library
 WiFiClient client;
 
 // server address:
@@ -50,7 +50,7 @@ void setup() {
     while (true);
   }
 
-  // attempt to connect to Wifi network:
+  // attempt to connect to WiFi network:
   while ( status != WL_CONNECTED) {
     Serial.print("Attempting to connect to SSID: ");
     Serial.println(ssid);
@@ -61,7 +61,7 @@ void setup() {
     delay(10000);
   }
   // you're connected now, so print out the status:
-  printWifiStatus();
+  printWiFiStatus();
 }
 
 void loop() {
@@ -107,7 +107,7 @@ void httpRequest() {
 }
 
 
-void printWifiStatus() {
+void printWiFiStatus() {
   // print the SSID of the network you're attached to:
   Serial.print("SSID: ");
   Serial.println(WiFi.SSID());
@@ -123,5 +123,3 @@ void printWifiStatus() {
   Serial.print(rssi);
   Serial.println(" dBm");
 }
-
-

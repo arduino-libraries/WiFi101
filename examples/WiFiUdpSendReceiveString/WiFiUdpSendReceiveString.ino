@@ -43,7 +43,7 @@ void setup() {
     while (true);
   }
 
-  // attempt to connect to Wifi network:
+  // attempt to connect to WiFi network:
   while ( status != WL_CONNECTED) {
     Serial.print("Attempting to connect to SSID: ");
     Serial.println(ssid);
@@ -54,7 +54,7 @@ void setup() {
     delay(10000);
   }
   Serial.println("Connected to wifi");
-  printWifiStatus();
+  printWiFiStatus();
 
   Serial.println("\nStarting connection to server...");
   // if you get a connection, report back via serial:
@@ -89,7 +89,7 @@ void loop() {
 }
 
 
-void printWifiStatus() {
+void printWiFiStatus() {
   // print the SSID of the network you're attached to:
   Serial.print("SSID: ");
   Serial.println(WiFi.SSID());
