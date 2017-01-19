@@ -1,5 +1,9 @@
 WiFi101 ?.?.? - ????.??.??
 
+WiFi101 0.12.1 - 2017.01.19
+
+* Fixed tomorrow day issue in WiFi.getTime()
+
 WiFi101 0.12.0 - 2017.01.05
 
 * Made provisioning mode easier and added example sketch
