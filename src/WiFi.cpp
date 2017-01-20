@@ -167,8 +167,10 @@ static void wifi_cb(uint8_t u8MsgType, void *pvMsg)
 				memcpy(WiFi._scan_ssid, (const char *)pstrScanResult->au8SSID, scan_ssid_len);
 			}
 			WiFi._resolve = pstrScanResult->s8rssi;
+            printf("wifi_cb(): BSSID ");
             for (int i = 0; i < 6; i++) {
                 WiFi._bssid[i] = pstrScanResult->au8BSSID[i];
+                printf(" %u",WiFi._bssid[i]);
             }
             WiFi._channel = pstrScanResult->u8ch;
 			WiFi._scan_auth = pstrScanResult->u8AuthType;
@@ -697,10 +699,11 @@ uint8_t* WiFiClass::BSSID(uint8_t* bssid)
 	}
 }
 
+uint8_t bssid[6];
+
 uint8_t* WiFiClass::BSSID(uint8_t pos) {
     wl_status_t tmp = _status;
-    uint8_t bssid[6];
-
+    
     // Get scan RSSI result:
     if (m2m_wifi_req_scan_result(pos) < 0) {
         return 0;
@@ -715,9 +718,12 @@ uint8_t* WiFiClass::BSSID(uint8_t pos) {
 
     _status = tmp;
 
+    printf("BSSID():");
     for (int i = 0; i < 6; i++) {
         bssid[i] = _bssid[i];
+        printf(" %u",bssid[i]);
     }
+    printf("\n");
 
     return bssid;
 }
