@@ -691,10 +691,10 @@ char* WiFiClass::SSID()
 uint8_t* WiFiClass::BSSID(uint8_t* bssid)
 {
 	if (_mode == WL_AP_MODE) {
-		Serial.println("macAddress");
+		//Serial.println("macAddress");
 		return macAddress(bssid);
 	} else {
-		Serial.println("remoteMacAddress");
+		//Serial.println("remoteMacAddress");
 		return remoteMacAddress(bssid);
 	}
 }
