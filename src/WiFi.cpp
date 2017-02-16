@@ -174,6 +174,7 @@ static void wifi_cb(uint8_t u8MsgType, void *pvMsg)
 			}
 			WiFi._resolve = pstrScanResult->s8rssi;
 			WiFi._scan_auth = pstrScanResult->u8AuthType;
+			WiFi._scan_channel = pstrScanResult->u8ch;
 			WiFi._status = WL_SCAN_COMPLETED;
 		}
 		break;
@@ -880,6 +881,28 @@ uint8_t* WiFiClass::BSSID(uint8_t pos, uint8_t* bssid)
 	_remoteMacAddress = 0;
 
 	return bssid;
+}
+
+uint8_t WiFiClass::channel(uint8_t pos)
+{
+	wl_status_t tmp = _status;
+
+	// Get scan auth result:
+	if (m2m_wifi_req_scan_result(pos) < 0) {
+		return 0;
+	}
+
+	// Wait for connection or timeout:
+	_status = WL_IDLE_STATUS;
+	unsigned long start = millis();
+	while (!(_status & WL_SCAN_COMPLETED) && millis() - start < 2000) {
+		m2m_wifi_handle_events(NULL);
+	}
+
+	_status = tmp;
+	_resolve = 0;
+
+	return _scan_channel;
 }
 
 uint8_t WiFiClass::status()
