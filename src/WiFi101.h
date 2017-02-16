@@ -148,6 +148,7 @@ public:
 	char* SSID(uint8_t pos);
 	int32_t RSSI(uint8_t pos);
 	uint8_t encryptionType(uint8_t pos);
+	uint8_t* BSSID(uint8_t pos, uint8_t* bssid);
 
 	uint8_t status();
 
