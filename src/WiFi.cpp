@@ -167,6 +167,10 @@ static void wifi_cb(uint8_t u8MsgType, void *pvMsg)
 				memcpy(WiFi._scan_ssid, (const char *)pstrScanResult->au8SSID, scan_ssid_len);
 			}
 			WiFi._resolve = pstrScanResult->s8rssi;
+            for (int i = 0; i < 6; i++) {
+                WiFi._bssid[i] = pstrScanResult->au8BSSID[i];
+            }
+            WiFi._channel = pstrScanResult->u8ch;
 			WiFi._scan_auth = pstrScanResult->u8AuthType;
 			WiFi._status = WL_SCAN_COMPLETED;
 		}
@@ -687,10 +691,56 @@ char* WiFiClass::SSID()
 uint8_t* WiFiClass::BSSID(uint8_t* bssid)
 {
 	if (_mode == WL_AP_MODE) {
+		//Serial.println("macAddress");
 		return macAddress(bssid);
 	} else {
+		//Serial.println("remoteMacAddress");
 		return remoteMacAddress(bssid);
 	}
+}
+
+uint8_t* WiFiClass::BSSID(uint8_t pos) {
+    wl_status_t tmp = _status;
+
+    // Get scan RSSI result:
+    if (m2m_wifi_req_scan_result(pos) < 0) {
+        return 0;
+    }
+
+    // Wait for connection or timeout:
+    _status = WL_IDLE_STATUS;
+    unsigned long start = millis();
+    while (!(_status & WL_SCAN_COMPLETED) && millis() - start < 2000) {
+        m2m_wifi_handle_events(NULL);
+    }
+
+    _status = tmp;
+    _resolve = 0;
+
+    return _bssid;
+}
+
+uint8_t WiFiClass::channel(uint8_t pos) {
+    wl_status_t tmp = _status;
+    uint8_t chan;
+
+    // Get scan RSSI result:
+    if (m2m_wifi_req_scan_result(pos) < 0) {
+        return 0;
+    }
+
+    // Wait for connection or timeout:
+    _status = WL_IDLE_STATUS;
+    unsigned long start = millis();
+    while (!(_status & WL_SCAN_COMPLETED) && millis() - start < 2000) {
+        m2m_wifi_handle_events(NULL);
+    }
+
+    _status = tmp;
+
+    chan = _channel;
+
+    return chan;
 }
 
 uint8_t* WiFiClass::APClientMacAddress(uint8_t* mac)
