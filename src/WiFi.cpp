@@ -701,7 +701,6 @@ uint8_t* WiFiClass::BSSID(uint8_t* bssid)
 
 uint8_t* WiFiClass::BSSID(uint8_t pos) {
     wl_status_t tmp = _status;
-    uint8_t bssid[6];
 
     // Get scan RSSI result:
     if (m2m_wifi_req_scan_result(pos) < 0) {
@@ -716,12 +715,9 @@ uint8_t* WiFiClass::BSSID(uint8_t pos) {
     }
 
     _status = tmp;
+    _resolve = 0;
 
-    for (int i = 0; i < 6; i++) {
-        bssid[i] = _bssid[i];
-    }
-
-    return bssid;
+    return _bssid;
 }
 
 uint8_t WiFiClass::channel(uint8_t pos) {
