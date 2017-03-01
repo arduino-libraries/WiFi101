@@ -1,5 +1,8 @@
 WiFi101 ?.?.? - ????.??.??
 
+WiFi101 0.13.0 - 2017.03.01
+* Added WiFi.channel() and WiFi.BSSID()
+
 WiFi101 0.12.1 - 2017.01.19
 
 * Fixed tomorrow day issue in WiFi.getTime()
