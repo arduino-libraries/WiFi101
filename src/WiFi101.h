@@ -86,6 +86,7 @@ public:
 	wl_status_t _status;
 	char _scan_ssid[M2M_MAX_SSID_LEN];
 	uint8_t _scan_auth;
+	uint8_t _scan_channel;
 	char _ssid[M2M_MAX_SSID_LEN];
 	WiFiClient *_client[TCP_SOCK_MAX];
 
@@ -148,6 +149,8 @@ public:
 	char* SSID(uint8_t pos);
 	int32_t RSSI(uint8_t pos);
 	uint8_t encryptionType(uint8_t pos);
+	uint8_t* BSSID(uint8_t pos, uint8_t* bssid);
+	uint8_t channel(uint8_t pos);
 
 	uint8_t status();
 
