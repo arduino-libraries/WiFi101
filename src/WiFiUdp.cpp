@@ -287,3 +287,8 @@ uint16_t  WiFiUDP::remotePort()
 {
 	return _rcvPort;
 }
+
+IPAddress  WiFiUDP::destinationIP()
+{
+	return _sndIP;
+}
