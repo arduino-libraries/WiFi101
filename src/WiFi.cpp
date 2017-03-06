@@ -462,7 +462,7 @@ uint8_t WiFiClass::startAP(const char *ssid, uint8_t u8SecType, const void *pvAu
 	// Enter Access Point mode:
 	memset(&strM2MAPConfig, 0x00, sizeof(tstrM2MAPConfig));
 	strcpy((char *)&strM2MAPConfig.au8SSID, ssid);
-	strM2MAPConfig.u8ListenChannel = channel - 1;
+	strM2MAPConfig.u8ListenChannel = channel;
 	strM2MAPConfig.u8SecType = u8SecType;
 	if (_localip == 0) { 
 		strM2MAPConfig.au8DHCPServerIP[0] = 192;
