@@ -4,7 +4,7 @@
  *
  * \brief This module contains debug APIs declarations.
  *
- * Copyright (c) 2015 Atmel Corporation. All rights reserved.
+ * Copyright (c) 2016-2017 Atmel Corporation. All rights reserved.
  *
  * \asf_license_start
  *
@@ -58,7 +58,7 @@
 #define M2M_LOG_DBG										4
 
 #if (defined __APS3_CORTUS__)
-#define M2M_LOG_LEVEL									M2M_LOG_ERROR
+#define M2M_LOG_LEVEL									M2M_LOG_INFO
 #else
 #define M2M_LOG_LEVEL									M2M_LOG_REQ
 #endif
