@@ -260,7 +260,7 @@ int WiFiClass::init()
 	// Initialize WiFi module and register status callback:
 	param.pfAppWifiCb = wifi_cb;
 	ret = m2m_wifi_init(&param);
-	if (M2M_SUCCESS != ret) {
+	if (M2M_SUCCESS != ret && M2M_ERR_FW_VER_MISMATCH != ret) {
 		// Error led ON (rev A then rev B).
 		m2m_periph_gpio_set_val(M2M_PERIPH_GPIO18, 0);
 		m2m_periph_gpio_set_dir(M2M_PERIPH_GPIO6, 1);
