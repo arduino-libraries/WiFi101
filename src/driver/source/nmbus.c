@@ -108,6 +108,9 @@ sint8 nm_bus_reset(void)
 */
 sint8 nm_bus_iface_reconfigure(void *ptr)
 {
+#ifdef ARDUINO
+	(void)ptr; // Silence "unused" warning
+#endif
 	sint8 ret = M2M_SUCCESS;
 #ifdef CONF_WINC_USE_UART
 	ret = nm_uart_reconfigure(ptr);

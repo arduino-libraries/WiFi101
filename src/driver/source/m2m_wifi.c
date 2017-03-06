@@ -83,6 +83,9 @@ gstrMgmtCtrl = {NULL, 0 , 0};
 */
 static void m2m_wifi_cb(uint8 u8OpCode, uint16 u16DataSize, uint32 u32Addr)
 {
+#ifdef ARDUINO
+	(void)u16DataSize; // Silence "unused" warning
+#endif
 	uint8 rx_buf[8];
 	if (u8OpCode == M2M_WIFI_RESP_CON_STATE_CHANGED)
 	{
@@ -497,7 +500,9 @@ _EXIT0:
 
 sint8  m2m_wifi_deinit(void * arg)
 {
-
+#ifdef ARDUINO
+	(void)arg; // Silence "unused" warning
+#endif
 	hif_deinit(NULL);
 
 	nm_drv_deinit(NULL);
@@ -514,6 +519,8 @@ extern tstrSocketBuffer gastrSocketBuffer[];
 sint8 m2m_wifi_handle_events(void * arg)
 {
 #ifdef ARDUINO
+	(void)arg; // Silence "unused" warning
+
 	uint8 i;
 
 	/* Arduino API LIMITATION: */
@@ -698,6 +705,9 @@ sint8 m2m_wifi_request_dhcp_client(void)
 }
 sint8 m2m_wifi_request_dhcp_server(uint8* addr)
 {
+#ifdef ARDUINO
+	(void)addr; // Silence "unused" warning
+#endif
     /*legacy API should be removed */
 	return 0;
 }
@@ -895,6 +905,9 @@ sint8 m2m_wifi_req_client_ctrl(uint8 u8Cmd)
 	strCmd.u8cmd = u8Cmd;
 	ret = hif_send(M2M_REQ_GROUP_WIFI, M2M_WIFI_REQ_CLIENT_CTRL, (uint8*)&strCmd, sizeof(tstrM2Mservercmd), NULL, 0, 0);
 #else
+#ifdef ARDUINO
+	(void)u8Cmd; // Silence "unused" warning
+#endif
 	M2M_ERR("_PS_SERVER_ is not defined\n");
 #endif
 	return ret;
@@ -917,6 +930,9 @@ sint8 m2m_wifi_req_server_init(uint8 ch)
 	strServer.u8Channel = ch;
 	ret = hif_send(M2M_REQ_GROUP_WIFI,M2M_WIFI_REQ_SERVER_INIT, (uint8*)&strServer, sizeof(tstrM2mServerInit), NULL, 0, 0);
 #else
+#ifdef ARDUINO
+	(void)ch; // Silence "unused" warning
+#endif
 	M2M_ERR("_PS_SERVER_ is not defined\n");
 #endif
 	return ret;

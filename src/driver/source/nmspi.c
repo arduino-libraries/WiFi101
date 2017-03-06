@@ -310,6 +310,9 @@ static sint8 spi_cmd(uint8 cmd, uint32 adr, uint32 u32data, uint32 sz,uint8 cloc
 
 static sint8 spi_data_rsp(uint8 cmd)
 {
+#ifdef ARDUINO
+	(void)cmd; // Silence "unused" warning
+#endif
 	uint8 len;
 	uint8 rsp[3];
 	sint8 result = N_OK;

@@ -445,7 +445,13 @@ static void m2m_ip_cb(uint8 u8OpCode, uint16 u16BufferSize,uint32 u32Address)
 					if(hif_receive(0, NULL, 0, 1) == M2M_SUCCESS)
 						M2M_DBG("hif_receive Success\n");
 					else
+#ifdef ARDUINO
+					{
+#endif
 						M2M_DBG("hif_receive Fail\n");
+#ifdef ARDUINO
+					}
+#endif
 				}
 			}
 		}
@@ -763,6 +769,11 @@ Date
 *********************************************************************/
 sint8 accept(SOCKET sock, struct sockaddr *addr, uint8 *addrlen)
 {
+#ifdef ARDUINO
+	// Silence "unused" warning
+	(void)addr;
+	(void)addrlen;
+#endif
 	sint8	s8Ret = SOCK_ERR_INVALID_ARG;
 	
 	if(sock >= 0 && (gastrSockets[sock].bIsUsed == 1) )
@@ -837,6 +848,9 @@ Date
 *********************************************************************/
 sint16 send(SOCKET sock, void *pvSendBuffer, uint16 u16SendLength, uint16 flags)
 {
+#ifdef ARDUINO
+	(void)flags; // Silence "unused" warning
+#endif
 	sint16	s16Ret = SOCK_ERR_INVALID_ARG;
 	
 	if((sock >= 0) && (pvSendBuffer != NULL) && (u16SendLength <= SOCKET_BUFFER_MAX_LENGTH) && (gastrSockets[sock].bIsUsed == 1))
@@ -895,6 +909,11 @@ Date
 *********************************************************************/
 sint16 sendto(SOCKET sock, void *pvSendBuffer, uint16 u16SendLength, uint16 flags, struct sockaddr *pstrDestAddr, uint8 u8AddrLen)
 {
+#ifdef ARDUINO
+	// Silence "unused" warning
+	(void)flags;
+	(void)u8AddrLen;
+#endif
 	sint16	s16Ret = SOCK_ERR_INVALID_ARG;
 	
 	if((sock >= 0) && (pvSendBuffer != NULL) && (u16SendLength <= SOCKET_BUFFER_MAX_LENGTH) && (gastrSockets[sock].bIsUsed == 1))
@@ -1344,6 +1363,14 @@ Date
 *********************************************************************/
 sint8 getsockopt(SOCKET sock, uint8 u8Level, uint8 u8OptName, const void *pvOptValue, uint8* pu8OptLen)
 {
+#ifdef ARDUINO
+	// Silence "unused" warning
+	(void)sock;
+	(void)u8Level;
+	(void)u8OptName;
+	(void)pvOptValue;
+	(void)pu8OptLen;
+#endif
 	/* TBD */
 	return M2M_SUCCESS;
 }

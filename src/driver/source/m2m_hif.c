@@ -130,8 +130,12 @@ ERR1:
 */
 static void m2m_hif_cb(uint8 u8OpCode, uint16 u16DataSize, uint32 u32Addr)
 {
-
-
+#ifdef ARDUINO
+	// Silence "unused" warning
+	(void)u8OpCode;
+	(void)u16DataSize;
+	(void)u32Addr;
+#endif
 }
 /**
 *	@fn		NMI_API sint8 hif_chip_wake(void);
@@ -250,6 +254,9 @@ ERR1:
 
 sint8 hif_init(void * arg)
 {
+#ifdef ARDUINO
+	(void)arg; // Silence "unused" warning
+#endif
 	m2m_memset((uint8*)&gstrHifCxt,0,sizeof(tstrHifContext));
 	nm_bsp_register_isr(isr);
 	hif_register_cb(M2M_REQ_GROUP_HIF,m2m_hif_cb);
@@ -264,6 +271,9 @@ sint8 hif_init(void * arg)
 */
 sint8 hif_deinit(void * arg)
 {
+#ifdef ARDUINO
+	(void)arg; // Silence "unused" warning
+#endif
 	sint8 ret = M2M_SUCCESS;
 	ret = hif_chip_wake();
 	m2m_memset((uint8*)&gstrHifCxt,0,sizeof(tstrHifContext));
@@ -435,7 +445,11 @@ static sint8 hif_isr(void)
 	volatile uint32 reg;
 	volatile tstrHifHdr strHif;
 
+#ifdef ARDUINO
+	ret = nm_read_reg_with_ret(WIFI_HOST_RCV_CTRL_0, (uint32*)&reg);
+#else
 	ret = nm_read_reg_with_ret(WIFI_HOST_RCV_CTRL_0, &reg);
+#endif
 	if(M2M_SUCCESS == ret)
 	{
 		if(reg & 0x1)	/* New interrupt has been received */
@@ -488,24 +502,39 @@ static sint8 hif_isr(void)
 					if(gstrHifCxt.pfWifiCb)
 						gstrHifCxt.pfWifiCb(strHif.u8Opcode,strHif.u16Length - M2M_HIF_HDR_OFFSET, address + M2M_HIF_HDR_OFFSET);
 					else
+#ifdef ARDUINO
+					{
+#endif
 						M2M_ERR("WIFI callback is not registered\n");
-
+#ifdef ARDUINO
+					}
+#endif
 				}
 				else if(M2M_REQ_GROUP_IP == strHif.u8Gid)
 				{
 					if(gstrHifCxt.pfIpCb)
 						gstrHifCxt.pfIpCb(strHif.u8Opcode,strHif.u16Length - M2M_HIF_HDR_OFFSET, address + M2M_HIF_HDR_OFFSET);
 					else
+#ifdef ARDUINO
+					{
+#endif
 						M2M_ERR("Scoket callback is not registered\n");
-
+#ifdef ARDUINO
+					}
+#endif
 				}
 				else if(M2M_REQ_GROUP_OTA == strHif.u8Gid)
 				{
 					if(gstrHifCxt.pfOtaCb)
 						gstrHifCxt.pfOtaCb(strHif.u8Opcode,strHif.u16Length - M2M_HIF_HDR_OFFSET, address + M2M_HIF_HDR_OFFSET);
 					else
+#ifdef ARDUINO
+					{
+#endif
 						M2M_ERR("Ota callback is not registered\n");
-
+#ifdef ARDUINO
+					}
+#endif
 				}
 				else if(M2M_REQ_GROUP_CRYPTO == strHif.u8Gid)
 				{
@@ -513,14 +542,26 @@ static sint8 hif_isr(void)
 						gstrHifCxt.pfCryptoCb(strHif.u8Opcode,strHif.u16Length - M2M_HIF_HDR_OFFSET, address + M2M_HIF_HDR_OFFSET);
 
 					else
+#ifdef ARDUINO
+					{
+#endif
 						M2M_ERR("Crypto callback is not registered\n");
+#ifdef ARDUINO
+					}
+#endif
 				}
 				else if(M2M_REQ_GROUP_SIGMA == strHif.u8Gid)
 				{
 					if(gstrHifCxt.pfSigmaCb)
 						gstrHifCxt.pfSigmaCb(strHif.u8Opcode,strHif.u16Length - M2M_HIF_HDR_OFFSET, address + M2M_HIF_HDR_OFFSET);
 					else
+#ifdef ARDUINO
+					{
+#endif
 						M2M_ERR("Sigma callback is not registered\n");
+#ifdef ARDUINO
+					}
+#endif
 				}
 				else if(M2M_REQ_GROUP_SSL == strHif.u8Gid)
 				{
