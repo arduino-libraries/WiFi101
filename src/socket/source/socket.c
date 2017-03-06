@@ -416,7 +416,11 @@ static void m2m_ip_cb(uint8 u8OpCode, uint16 u16BufferSize,uint32 u32Address)
 
 			if(u16SessionID == gastrSockets[sock].u16SessionID)
 			{
+#ifdef ARDUINO
+				if((s16RecvStatus > 0) && (s16RecvStatus < (sint16)u16BufferSize))
+#else
 				if((s16RecvStatus > 0) && (s16RecvStatus < u16BufferSize))
+#endif
 				{
 					/* Skip incoming bytes until reaching the Start of Application Data. 
 					*/
@@ -492,7 +496,7 @@ static void m2m_ip_cb(uint8 u8OpCode, uint16 u16BufferSize,uint32 u32Address)
 		tstrPingReply	strPingReply;
 		if(hif_receive(u32Address, (uint8*)&strPingReply, sizeof(tstrPingReply), 1) == M2M_SUCCESS)
 		{
-			gfpPingCb = (void (*)(uint32 , uint32 , uint8))strPingReply.u32CmdPrivate;
+			gfpPingCb = (void (*)(uint32 , uint32 , uint8))(uintptr_t)strPingReply.u32CmdPrivate;
 			if(gfpPingCb != NULL)
 			{
 				gfpPingCb(strPingReply.u32IPAddr, strPingReply.u32RTT, strPingReply.u8ErrorCode);
@@ -1402,7 +1406,11 @@ sint8 m2m_ping_req(uint32 u32DstIP, uint8 u8TTL, tpfPingCb fpPingCb)
 
 		strPingCmd.u16PingCount		= 1;
 		strPingCmd.u32DestIPAddr	= u32DstIP;
-		strPingCmd.u32CmdPrivate	= (uint32)fpPingCb;
+#ifdef ARDUINO
+		strPingCmd.u32CmdPrivate	= (uint32)(uintptr_t)(fpPingCb);
+#else
+		strPingCmd.u32CmdPrivate	= (uint32)(fpPingCb);
+#endif
 		strPingCmd.u8TTL			= u8TTL;
 
 		s8Ret = SOCKET_REQUEST(SOCKET_CMD_PING, (uint8*)&strPingCmd, sizeof(tstrPingCmd), NULL, 0, 0);
