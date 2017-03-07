@@ -134,6 +134,8 @@ public:
 	void config(IPAddress local_ip, IPAddress dns_server, IPAddress gateway);
 	void config(IPAddress local_ip, IPAddress dns_server, IPAddress gateway, IPAddress subnet);
 
+	void hostname(const char* name);
+
 	void disconnect();
 	void end();
 

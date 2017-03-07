@@ -632,6 +632,15 @@ void WiFiClass::config(IPAddress local_ip, IPAddress dns_server, IPAddress gatew
 	_gateway = conf.u32Gateway;
 }
 
+void WiFiClass::hostname(const char* name)
+{
+	if (!_init) {
+		init();
+	}
+
+	m2m_wifi_set_device_name((uint8 *)name, strlen(name));
+}
+
 void WiFiClass::disconnect()
 {
 	m2m_wifi_disconnect();
