@@ -121,6 +121,8 @@ public:
 	uint8_t beginAP(const char *ssid, uint8_t channel);
 	uint8_t beginAP(const char *ssid, uint8_t key_idx, const char* key);
 	uint8_t beginAP(const char *ssid, uint8_t key_idx, const char* key, uint8_t channel);
+	uint8_t beginAP(const char *ssid, const char* key);
+	uint8_t beginAP(const char *ssid, const char* key, uint8_t channel);
 
 	uint8_t beginProvision();
 	uint8_t beginProvision(uint8_t channel);

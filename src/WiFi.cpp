@@ -447,6 +447,16 @@ uint8_t WiFiClass::beginAP(const char *ssid, uint8_t key_idx, const char* key, u
 	return startAP(ssid, M2M_WIFI_SEC_WEP, &wep_params, channel);
 }
 
+uint8_t WiFiClass::beginAP(const char *ssid, const char* key)
+{
+	return beginAP(ssid, key, 1);
+}
+
+uint8_t WiFiClass::beginAP(const char *ssid, const char* key, uint8_t channel)
+{
+	return startAP(ssid, M2M_WIFI_SEC_WPA_PSK, key, channel);
+}
+
 uint8_t WiFiClass::startAP(const char *ssid, uint8_t u8SecType, const void *pvAuthInfo, uint8_t channel)
 {
 	tstrM2MAPConfig strM2MAPConfig;
@@ -484,6 +494,11 @@ uint8_t WiFiClass::startAP(const char *ssid, uint8_t u8SecType, const void *pvAu
 		strM2MAPConfig.u8KeyIndx = wep_params->u8KeyIndx;
 		strM2MAPConfig.u8KeySz = wep_params->u8KeySz;
 		strcpy((char*)strM2MAPConfig.au8WepKey, (char *)wep_params->au8WepKey);
+	}
+
+	if (u8SecType == M2M_WIFI_SEC_WPA_PSK) {
+		strM2MAPConfig.u8KeySz = strlen((char*)pvAuthInfo);
+		strcpy((char*)strM2MAPConfig.au8Key, (char *)pvAuthInfo);
 	}
 
 	if (m2m_wifi_enable_ap(&strM2MAPConfig) < 0) {
