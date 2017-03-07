@@ -877,13 +877,15 @@ sint16 send(SOCKET sock, void *pvSendBuffer, uint16 u16SendLength, uint16 flags)
 		if(gastrSockets[sock].u8SSLFlags & SSL_FLAGS_ACTIVE)
 		{
 			u8Cmd			= SOCKET_CMD_SSL_SEND;
-// #ifdef ARDUINO
-//           THIS CHANGE IS NEEDED TO SUPPORT FIRMARE 19.3.0, but breaks 19.5.2
-//			u16DataOffset	= SSL_TX_PACKET_OFFSET;
-// #else
-#warning "SSL sockets with firmware 19.3.0 are broken"
 			u16DataOffset	= gastrSockets[sock].u16DataOffset;
-// #endif
+#ifdef ARDUINO
+			extern uint32 nmdrv_firm_ver;
+
+			if (nmdrv_firm_ver < M2M_MAKE_VERSION(19, 4, 0)) {
+				// firmware 19.3.0 and older only works with this specific offset
+				u16DataOffset	= SSL_TX_PACKET_OFFSET;
+			}
+#endif
 		}
 
 		s16Ret =  SOCKET_REQUEST(u8Cmd|M2M_REQ_DATA_PKT, (uint8*)&strSend, sizeof(tstrSendCmd), pvSendBuffer, u16SendLength, u16DataOffset);

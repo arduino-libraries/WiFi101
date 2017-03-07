@@ -702,12 +702,7 @@ sint8 hif_receive(uint32 u32Addr, uint8 *pu8Buf, uint16 u16Sz, uint8 isDone)
 	{
 		ret = M2M_ERR_FAIL;
 		M2M_ERR("APP Requested Address beyond the recived buffer address and length\n");
-#ifdef ARDUINO
-		// For compatibility with firmware 19.4.4 and below, M2M_WIFI_REQ_DHCP_CONF is 4 bytes smaller
-		u16Sz -= (u32Addr + u16Sz) - (gstrHifCxt.u32RxAddr + gstrHifCxt.u32RxSize);
-#else
 		goto ERR1;
-#endif
 	}
 	
 	/* Receive the payload */

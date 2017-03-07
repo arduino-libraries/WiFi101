@@ -129,7 +129,20 @@ static void m2m_wifi_cb(uint8 u8OpCode, uint16 u16DataSize, uint32 u32Addr)
 	else if (u8OpCode == M2M_WIFI_REQ_DHCP_CONF)
 	{
 		tstrM2MIPConfig strIpConfig;
+#ifdef ARDUINO
+		extern uint32 nmdrv_firm_ver;
+		uint16 rxSize = sizeof(tstrM2MIPConfig);
+
+		if (nmdrv_firm_ver < M2M_MAKE_VERSION(19, 5, 0)) {
+			// for backwards compatibility with firmware 19.4.4 and older,
+			// the old tstrM2MIPConfig does not contain the u32DhcpLeaseTime field
+			rxSize -= sizeof(strIpConfig.u32DhcpLeaseTime);
+		}
+
+		if (hif_receive(u32Addr, (uint8 *)&strIpConfig, rxSize, 0) == M2M_SUCCESS)
+#else
 		if (hif_receive(u32Addr, (uint8 *)&strIpConfig, sizeof(tstrM2MIPConfig), 0) == M2M_SUCCESS)
+#endif
 		{
 			if (gpfAppWifiCb)
 				gpfAppWifiCb(M2M_WIFI_REQ_DHCP_CONF, (uint8 *)&strIpConfig);
@@ -480,6 +493,13 @@ sint8 m2m_wifi_init(tstrWifiInitParam * param)
 
 	ret = nm_get_firmware_full_info(&strtmp);
 
+#ifdef ARDUINO
+	if (M2M_ERR_FAIL == ret)
+	{
+		// for compatibility with firmware version 19.3.0
+		ret = nm_get_firmware_info(&strtmp);
+	}
+#endif
 	M2M_INFO("Firmware ver   : %u.%u.%u Svnrev %u\n", strtmp.u8FirmwareMajor, strtmp.u8FirmwareMinor, strtmp.u8FirmwarePatch,strtmp.u16FirmwareSvnNum);
 	M2M_INFO("Firmware Build %s Time %s\n",strtmp.BuildDate,strtmp.BuildTime);
 	M2M_INFO("Firmware Min driver ver : %u.%u.%u\n", strtmp.u8DriverMajor, strtmp.u8DriverMinor, strtmp.u8DriverPatch);
@@ -964,7 +984,21 @@ sint8 m2m_wifi_enable_ap(CONST tstrM2MAPConfig* pstrM2MAPConfig)
 	sint8 ret = M2M_ERR_FAIL;
 	if(M2M_SUCCESS == m2m_validate_ap_parameters(pstrM2MAPConfig))
 	{
-		ret = hif_send(M2M_REQ_GROUP_WIFI, M2M_WIFI_REQ_ENABLE_AP, (uint8 *)pstrM2MAPConfig, sizeof(tstrM2MAPConfig), NULL, 0, 0);	
+#ifdef ARDUINO
+		extern uint32 nmdrv_firm_ver;
+		uint16 rxSize = sizeof(tstrM2MAPConfig);
+
+		if (nmdrv_firm_ver < M2M_MAKE_VERSION(19, 5, 0)) {
+			// for backwards compat with firmwware 19.4.x and older 
+			// (listen channel is 0 based, there is no au8Key field)
+			((tstrM2MAPConfig*)pstrM2MAPConfig)->u8ListenChannel--;
+			rxSize -= sizeof(pstrM2MAPConfig->au8Key) + 1;
+		}
+
+		ret = hif_send(M2M_REQ_GROUP_WIFI, M2M_WIFI_REQ_ENABLE_AP, (uint8 *)pstrM2MAPConfig, rxSize, NULL, 0, 0);
+#else
+		ret = hif_send(M2M_REQ_GROUP_WIFI, M2M_WIFI_REQ_ENABLE_AP, (uint8 *)pstrM2MAPConfig, sizeof(tstrM2MAPConfig), NULL, 0, 0);
+#endif
 	}
 	return ret;
 }
