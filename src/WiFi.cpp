@@ -42,6 +42,7 @@ extern "C" {
   #include "socket/include/m2m_socket_host_if.h"
   #include "driver/source/nmasic.h"
   #include "driver/include/m2m_periph.h"
+  #include "driver/include/m2m_ssl.h"
 }
 
 static void wifi_cb(uint8_t u8MsgType, void *pvMsg)
@@ -280,6 +281,13 @@ int WiFiClass::init()
 	_resolve = 0;
 	_remoteMacAddress = 0;
 	memset(_client, 0, sizeof(WiFiClient *) * TCP_SOCK_MAX);
+
+	extern uint32 nmdrv_firm_ver;
+
+	if (nmdrv_firm_ver >= M2M_MAKE_VERSION(19, 5, 0)) {
+		// enable AES-128 and AES-256 Ciphers, if firmware is 19.5.0 or higher
+		m2m_ssl_set_active_ciphersuites(SSL_NON_ECC_CIPHERS_AES_128 | SSL_NON_ECC_CIPHERS_AES_256);
+	}
 
 	// Initialize IO expander LED control (rev A then rev B)..
 	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO15, 1);
