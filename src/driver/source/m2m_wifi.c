@@ -986,16 +986,16 @@ sint8 m2m_wifi_enable_ap(CONST tstrM2MAPConfig* pstrM2MAPConfig)
 	{
 #ifdef ARDUINO
 		extern uint32 nmdrv_firm_ver;
-		uint16 rxSize = sizeof(tstrM2MAPConfig);
+		uint16 txSize = sizeof(tstrM2MAPConfig);
 
 		if (nmdrv_firm_ver < M2M_MAKE_VERSION(19, 5, 0)) {
 			// for backwards compat with firmwware 19.4.x and older 
 			// (listen channel is 0 based, there is no au8Key field)
 			((tstrM2MAPConfig*)pstrM2MAPConfig)->u8ListenChannel--;
-			rxSize -= sizeof(pstrM2MAPConfig->au8Key) + 1;
+			txSize -= sizeof(pstrM2MAPConfig->au8Key) + 1;
 		}
 
-		ret = hif_send(M2M_REQ_GROUP_WIFI, M2M_WIFI_REQ_ENABLE_AP, (uint8 *)pstrM2MAPConfig, rxSize, NULL, 0, 0);
+		ret = hif_send(M2M_REQ_GROUP_WIFI, M2M_WIFI_REQ_ENABLE_AP, (uint8 *)pstrM2MAPConfig, txSize, NULL, 0, 0);
 #else
 		ret = hif_send(M2M_REQ_GROUP_WIFI, M2M_WIFI_REQ_ENABLE_AP, (uint8 *)pstrM2MAPConfig, sizeof(tstrM2MAPConfig), NULL, 0, 0);
 #endif
@@ -1287,8 +1287,26 @@ sint8 m2m_wifi_start_provision_mode(tstrM2MAPConfig *pstrAPConfig, char *pcHttpS
 			/* Stop Scan if it is ongoing.
 			*/
 			gu8scanInProgress = 0;
+#ifdef ARDUINO
+			extern uint32 nmdrv_firm_ver;
+			uint16 txSize = sizeof(tstrM2MProvisionModeConfig);
+
+			if (nmdrv_firm_ver < M2M_MAKE_VERSION(19, 5, 0)) {
+				// for backwards compat with firmwware 19.4.x and older 
+				// (listen channel is 0 based, there is no au8Key field)
+				strProvConfig.strApConfig.u8ListenChannel--;
+				txSize -= sizeof(strProvConfig.strApConfig.au8Key) + 1;
+				m2m_memcpy((uint8*)&strProvConfig.strApConfig.au8Key[3], (uint8*)pcHttpServerDomainName, 64);
+				uint8* pu8EnableRedirect = (uint8*)strProvConfig.strApConfig.au8Key;
+				pu8EnableRedirect[3 + 64] = bEnableHttpRedirect;
+			}
+
+			s8Ret = hif_send(M2M_REQ_GROUP_WIFI, M2M_WIFI_REQ_START_PROVISION_MODE | M2M_REQ_DATA_PKT, 
+						(uint8*)&strProvConfig, txSize, NULL, 0, 0);
+#else
 			s8Ret = hif_send(M2M_REQ_GROUP_WIFI, M2M_WIFI_REQ_START_PROVISION_MODE | M2M_REQ_DATA_PKT, 
 						(uint8*)&strProvConfig, sizeof(tstrM2MProvisionModeConfig), NULL, 0, 0);
+#endif
 		}
 		else
 		{
