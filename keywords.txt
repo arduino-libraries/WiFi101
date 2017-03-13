@@ -45,6 +45,7 @@ getResult	KEYWORD2
 getSocket	KEYWORD2
 poll	KEYWORD2
 getTime	KEYWORD2
+hostname	KEYWORD2
 WiFiClient	KEYWORD2
 WiFiServer	KEYWORD2
 WiFiSSLClient	KEYWORD2

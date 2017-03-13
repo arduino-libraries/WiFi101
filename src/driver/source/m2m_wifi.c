@@ -4,7 +4,7 @@
  *
  * \brief This module contains M2M Wi-Fi APIs implementation.
  *
- * Copyright (c) 2014 Atmel Corporation. All rights reserved.
+ * Copyright (c) 2016-2017 Atmel Corporation. All rights reserved.
  *
  * \asf_license_start
  *
@@ -22,9 +22,6 @@
  *
  * 3. The name of Atmel may not be used to endorse or promote products derived
  *    from this software without specific prior written permission.
- *
- * 4. This software may only be redistributed and used in connection with an
- *    Atmel microcontroller product.
  *
  * THIS SOFTWARE IS PROVIDED BY ATMEL "AS IS" AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -57,8 +54,8 @@ static uint8* 	        gau8ethRcvBuf=NULL;
 static uint16 	        gu16ethRcvBufSize ;
 #endif
 
-//#define CONF_MGMT
 
+//#define CONF_MGMT
 #ifdef CONF_MGMT
 static tpfAppMonCb  gpfAppMonCb  = NULL;
 static struct _tstrMgmtCtrl
@@ -86,8 +83,9 @@ gstrMgmtCtrl = {NULL, 0 , 0};
 */
 static void m2m_wifi_cb(uint8 u8OpCode, uint16 u16DataSize, uint32 u32Addr)
 {
+#ifdef ARDUINO
 	(void)u16DataSize; // Silence "unused" warning
-
+#endif
 	uint8 rx_buf[8];
 	if (u8OpCode == M2M_WIFI_RESP_CON_STATE_CHANGED)
 	{
@@ -131,10 +129,23 @@ static void m2m_wifi_cb(uint8 u8OpCode, uint16 u16DataSize, uint32 u32Addr)
 	else if (u8OpCode == M2M_WIFI_REQ_DHCP_CONF)
 	{
 		tstrM2MIPConfig strIpConfig;
+#ifdef ARDUINO
+		extern uint32 nmdrv_firm_ver;
+		uint16 rxSize = sizeof(tstrM2MIPConfig);
+
+		if (nmdrv_firm_ver < M2M_MAKE_VERSION(19, 5, 0)) {
+			// for backwards compatibility with firmware 19.4.4 and older,
+			// the old tstrM2MIPConfig does not contain the u32DhcpLeaseTime field
+			rxSize -= sizeof(strIpConfig.u32DhcpLeaseTime);
+		}
+
+		if (hif_receive(u32Addr, (uint8 *)&strIpConfig, rxSize, 0) == M2M_SUCCESS)
+#else
 		if (hif_receive(u32Addr, (uint8 *)&strIpConfig, sizeof(tstrM2MIPConfig), 0) == M2M_SUCCESS)
+#endif
 		{
 			if (gpfAppWifiCb)
-				gpfAppWifiCb(M2M_WIFI_REQ_DHCP_CONF, (uint8 *)&strIpConfig.u32StaticIP);
+				gpfAppWifiCb(M2M_WIFI_REQ_DHCP_CONF, (uint8 *)&strIpConfig);
 		}
 	}
 	else if (u8OpCode == M2M_WIFI_REQ_WPS)
@@ -304,9 +315,9 @@ sint8 m2m_wifi_download_mode()
 	/* Apply device specific initialization. */
 	ret = nm_drv_init_download_mode();
 	if(ret != M2M_SUCCESS) 	goto _EXIT0;
-	
 
-	
+
+
 	enable_interrupts();
 
 _EXIT0:
@@ -331,8 +342,7 @@ static sint8 m2m_validate_ap_parameters(CONST tstrM2MAPConfig* pstrM2MAPConfig)
 		goto ERR1;
 	}
 	/* Check for Channel */
-	int listenChannel = pstrM2MAPConfig->u8ListenChannel;
-	if(listenChannel > M2M_WIFI_CH_14 || listenChannel < M2M_WIFI_CH_1)
+	if(pstrM2MAPConfig->u8ListenChannel > M2M_WIFI_CH_14 || pstrM2MAPConfig->u8ListenChannel < M2M_WIFI_CH_1)
 	{
 		M2M_ERR("INVALID CH\n");
 		s8Ret = M2M_ERR_FAIL;
@@ -367,14 +377,24 @@ static sint8 m2m_validate_ap_parameters(CONST tstrM2MAPConfig* pstrM2MAPConfig)
 			(pstrM2MAPConfig->u8KeySz != WEP_104_KEY_STRING_SIZE)
 		)
 		{
+			M2M_ERR("INVALID KEY STRING SIZE\n");
+			s8Ret = M2M_ERR_FAIL;
+			goto ERR1;
+		}
+
+		if((m2m_strlen((uint8 *)pstrM2MAPConfig->au8WepKey) <= 0) || (m2m_strlen((uint8 *)pstrM2MAPConfig->au8WepKey) > WEP_104_KEY_STRING_SIZE))
+		{
 			M2M_ERR("INVALID KEY SIZE\n");
 			s8Ret = M2M_ERR_FAIL;
 			goto ERR1;
 		}
-		/* Check for WEP Key */
-		if((pstrM2MAPConfig->au8WepKey == NULL) || (m2m_strlen((uint8 *)pstrM2MAPConfig->au8WepKey) <= 0) || (m2m_strlen((uint8 *)pstrM2MAPConfig->au8WepKey) > WEP_104_KEY_STRING_SIZE))
+	}
+	else if(pstrM2MAPConfig->u8SecType == M2M_WIFI_SEC_WPA_PSK)
+	{
+		/* Check for WPA Key size */
+		if(	((pstrM2MAPConfig->u8KeySz + 1) < M2M_MIN_PSK_LEN) || ((pstrM2MAPConfig->u8KeySz + 1) > M2M_MAX_PSK_LEN))
 		{
-			M2M_ERR("INVALID WEP KEY\n");
+			M2M_ERR("INVALID WPA KEY SIZE\n");
 			s8Ret = M2M_ERR_FAIL;
 			goto ERR1;
 		}
@@ -389,7 +409,6 @@ static sint8 m2m_validate_ap_parameters(CONST tstrM2MAPConfig* pstrM2MAPConfig)
 ERR1:
 	return s8Ret;
 }
-
 static sint8 m2m_validate_scan_options(tstrM2MScanOption* ptstrM2MScanOption)
 {
 	sint8 s8Ret = M2M_SUCCESS;
@@ -398,32 +417,44 @@ static sint8 m2m_validate_scan_options(tstrM2MScanOption* ptstrM2MScanOption)
 	{
 		M2M_ERR("INVALID POINTER\n");
 		s8Ret = M2M_ERR_FAIL;
+		goto ERR;
 	}	
 	/* Check for valid No of slots */
-	 if(ptstrM2MScanOption->u8NumOfSlot < 1)
+	if(ptstrM2MScanOption->u8NumOfSlot == 0)
 	{
-		M2M_ERR("INVALID No of scan slots!\n");
+		M2M_ERR("INVALID No of scan slots! %d\n",ptstrM2MScanOption->u8NumOfSlot);
 		s8Ret = M2M_ERR_FAIL;
+		goto ERR;
 	}	
 	/* Check for valid time of slots */
-	 if(ptstrM2MScanOption->u8SlotTime < 1)
+	if(ptstrM2MScanOption->u8SlotTime < 10 || ptstrM2MScanOption->u8SlotTime > 250)
 	{
-		M2M_ERR("INVALID scan slot time!\n");
+		M2M_ERR("INVALID scan slot time! %d\n",ptstrM2MScanOption->u8SlotTime);
 		s8Ret = M2M_ERR_FAIL;
+		goto ERR;
 	}	
 	/* Check for valid No of probe requests per slot */
-	int probesPerSlot = ptstrM2MScanOption->u8ProbesPerSlot;
-	if((probesPerSlot < 0)||(probesPerSlot > M2M_SCAN_DEFAULT_NUM_PROBE))
+	if((ptstrM2MScanOption->u8ProbesPerSlot == 0)||(ptstrM2MScanOption->u8ProbesPerSlot > M2M_SCAN_DEFAULT_NUM_PROBE))
 	{
-		M2M_ERR("INVALID No of probe requests per scan slot\n");
+		M2M_ERR("INVALID No of probe requests per scan slot %d\n",ptstrM2MScanOption->u8ProbesPerSlot);
 		s8Ret = M2M_ERR_FAIL;
+		goto ERR;
 	}	
 	/* Check for valid RSSI threshold */
-	 if((ptstrM2MScanOption->s8RssiThresh  < -99) || (ptstrM2MScanOption->s8RssiThresh >= 0))
+	if((ptstrM2MScanOption->s8RssiThresh  < -99) || (ptstrM2MScanOption->s8RssiThresh >= 0))
 	{
 		M2M_ERR("INVALID RSSI threshold %d \n",ptstrM2MScanOption->s8RssiThresh);
 		s8Ret = M2M_ERR_FAIL;
-	}	
+	}
+
+ERR:
+	return s8Ret;
+}
+
+sint8 m2m_wifi_send_crl(tstrTlsCrlInfo* pCRL)
+{
+	sint8 s8Ret = M2M_ERR_FAIL;
+	s8Ret = hif_send(M2M_REQ_GROUP_SSL, M2M_SSL_IND_CRL|M2M_REQ_DATA_PKT, NULL, 0, (uint8*)pCRL, sizeof(tstrTlsCrlInfo), 0);
 	return s8Ret;
 }
 
@@ -460,11 +491,20 @@ sint8 m2m_wifi_init(tstrWifiInitParam * param)
 
 	hif_register_cb(M2M_REQ_GROUP_WIFI,m2m_wifi_cb);
 
-	ret = nm_get_firmware_info(&strtmp);
+	ret = nm_get_firmware_full_info(&strtmp);
 
-	M2M_INFO("Firmware ver   : %u.%u.%u\n", strtmp.u8FirmwareMajor, strtmp.u8FirmwareMinor, strtmp.u8FirmwarePatch);
-	M2M_INFO("Min driver ver : %u.%u.%u\n", strtmp.u8DriverMajor, strtmp.u8DriverMinor, strtmp.u8DriverPatch);
-	M2M_INFO("Curr driver ver: %u.%u.%u\n", M2M_DRIVER_VERSION_MAJOR_NO, M2M_DRIVER_VERSION_MINOR_NO, M2M_DRIVER_VERSION_PATCH_NO);
+#ifdef ARDUINO
+	if (M2M_ERR_FAIL == ret)
+	{
+		// for compatibility with firmware version 19.3.0
+		ret = nm_get_firmware_info(&strtmp);
+	}
+#endif
+	M2M_INFO("Firmware ver   : %u.%u.%u Svnrev %u\n", strtmp.u8FirmwareMajor, strtmp.u8FirmwareMinor, strtmp.u8FirmwarePatch,strtmp.u16FirmwareSvnNum);
+	M2M_INFO("Firmware Build %s Time %s\n",strtmp.BuildDate,strtmp.BuildTime);
+	M2M_INFO("Firmware Min driver ver : %u.%u.%u\n", strtmp.u8DriverMajor, strtmp.u8DriverMinor, strtmp.u8DriverPatch);
+	M2M_INFO("Driver ver: %u.%u.%u\n", M2M_RELEASE_VERSION_MAJOR_NO, M2M_RELEASE_VERSION_MINOR_NO, M2M_RELEASE_VERSION_PATCH_NO);
+	M2M_INFO("Driver built at %s\t%s\n",__DATE__,__TIME__);
 	if(M2M_ERR_FW_VER_MISMATCH == ret)
 	{
 		M2M_ERR("Mismatch Firmawre Version\n");
@@ -480,8 +520,9 @@ _EXIT0:
 
 sint8  m2m_wifi_deinit(void * arg)
 {
+#ifdef ARDUINO
 	(void)arg; // Silence "unused" warning
-
+#endif
 	hif_deinit(NULL);
 
 	nm_drv_deinit(NULL);
@@ -489,10 +530,15 @@ sint8  m2m_wifi_deinit(void * arg)
 	return M2M_SUCCESS;
 }
 
+
+#ifdef ARDUINO
 #include "socket/include/socket_buffer.h"
 extern tstrSocketBuffer gastrSocketBuffer[];
+#endif
+
 sint8 m2m_wifi_handle_events(void * arg)
 {
+#ifdef ARDUINO
 	(void)arg; // Silence "unused" warning
 
 	uint8 i;
@@ -514,6 +560,7 @@ sint8 m2m_wifi_handle_events(void * arg)
 			return M2M_ERR_FAIL;
 		}
 	}
+#endif
 	return hif_handle_isr();
 }
 
@@ -522,11 +569,11 @@ sint8 m2m_wifi_default_connect(void)
 	return hif_send(M2M_REQ_GROUP_WIFI, M2M_WIFI_REQ_DEFAULT_CONNECT, NULL, 0,NULL, 0,0);
 }
 
-sint8 m2m_wifi_connect(const char *pcSsid, uint8 u8SsidLen, uint8 u8SecType, const void *pvAuthInfo, uint16 u16Ch)
+sint8 m2m_wifi_connect(char *pcSsid, uint8 u8SsidLen, uint8 u8SecType, void *pvAuthInfo, uint16 u16Ch)
 {
 	return m2m_wifi_connect_sc(pcSsid, u8SsidLen, u8SecType, pvAuthInfo,  u16Ch,0);
 }
-sint8 m2m_wifi_connect_sc(const char *pcSsid, uint8 u8SsidLen, uint8 u8SecType, const void *pvAuthInfo, uint16 u16Ch, uint8 u8NoSaveCred)
+sint8 m2m_wifi_connect_sc(char *pcSsid, uint8 u8SsidLen, uint8 u8SecType, void *pvAuthInfo, uint16 u16Ch, uint8 u8NoSaveCred)
 {
 	sint8				ret = M2M_SUCCESS;
 	tstrM2mWifiConnect	strConnect;
@@ -540,7 +587,7 @@ sint8 m2m_wifi_connect_sc(const char *pcSsid, uint8 u8SsidLen, uint8 u8SecType, 
 			ret = M2M_ERR_FAIL;
 			goto ERR1;
 		}
-		if((u8SecType == M2M_WIFI_SEC_WPA_PSK) && (m2m_strlen((void *)pvAuthInfo) == (M2M_MAX_PSK_LEN-1)))
+		if((u8SecType == M2M_WIFI_SEC_WPA_PSK) && (m2m_strlen(pvAuthInfo) == (M2M_MAX_PSK_LEN-1)))
 		{
 			uint8 i = 0;
 			uint8* pu8Psk = (uint8*)pvAuthInfo;
@@ -563,7 +610,7 @@ sint8 m2m_wifi_connect_sc(const char *pcSsid, uint8 u8SsidLen, uint8 u8SecType, 
 		goto ERR1;
 	}
 
-	if(u16Ch>M2M_WIFI_CH_14)
+	if(u16Ch < M2M_WIFI_CH_1|| u16Ch > M2M_WIFI_CH_14)
 	{
 		if(u16Ch!=M2M_WIFI_CH_ALL)
 		{
@@ -586,7 +633,11 @@ sint8 m2m_wifi_connect_sc(const char *pcSsid, uint8 u8SsidLen, uint8 u8SecType, 
 	{
 		tstrM2mWifiWepParams	* pstrWepParams = (tstrM2mWifiWepParams*)pvAuthInfo;
 		tstrM2mWifiWepParams	*pstrWep = &pstrAuthInfo->uniAuth.strWepInfo;
+#ifdef ARDUINO
 		pstrWep->u8KeyIndx =pstrWepParams->u8KeyIndx;
+#else
+		pstrWep->u8KeyIndx =pstrWepParams->u8KeyIndx-1;
+#endif
 
 		if(pstrWep->u8KeyIndx >= WEP_KEY_MAX_INDEX)
 		{
@@ -594,7 +645,11 @@ sint8 m2m_wifi_connect_sc(const char *pcSsid, uint8 u8SsidLen, uint8 u8SecType, 
 			ret = M2M_ERR_FAIL;
 			goto ERR1;
 		}
+#ifdef ARDUINO
 		pstrWep->u8KeySz = pstrWepParams->u8KeySz;
+#else
+		pstrWep->u8KeySz = pstrWepParams->u8KeySz-1;
+#endif
 		if ((pstrWep->u8KeySz != WEP_40_KEY_STRING_SIZE)&& (pstrWep->u8KeySz != WEP_104_KEY_STRING_SIZE))
 		{
 			M2M_ERR("Invalid Wep key length %d\n", pstrWep->u8KeySz);
@@ -670,8 +725,9 @@ sint8 m2m_wifi_request_dhcp_client(void)
 }
 sint8 m2m_wifi_request_dhcp_server(uint8* addr)
 {
+#ifdef ARDUINO
 	(void)addr; // Silence "unused" warning
-
+#endif
     /*legacy API should be removed */
 	return 0;
 }
@@ -738,8 +794,7 @@ sint8 m2m_wifi_request_scan(uint8 ch)
 
 	if(!gu8scanInProgress)
 	{
-		int channel = ch;
-		if(((channel >= M2M_WIFI_CH_1) && (channel <= M2M_WIFI_CH_14)) || (channel == M2M_WIFI_CH_ALL))
+		if(((ch >= M2M_WIFI_CH_1) && (ch <= M2M_WIFI_CH_14)) || (ch == M2M_WIFI_CH_ALL))
 		{
 			tstrM2MScan strtmp;
 			strtmp.u8ChNum = ch;
@@ -758,6 +813,77 @@ sint8 m2m_wifi_request_scan(uint8 ch)
 	{
 		s8Ret = M2M_ERR_SCAN_IN_PROGRESS;
 	}
+	return s8Ret;
+}
+
+sint8 m2m_wifi_request_scan_passive(uint8 ch, uint16 scan_time)
+{
+	sint8	s8Ret = M2M_SUCCESS;
+
+	if(!gu8scanInProgress)
+	{
+		if(((ch >= M2M_WIFI_CH_1) && (ch <= M2M_WIFI_CH_14)) || (ch == M2M_WIFI_CH_ALL))
+		{
+			tstrM2MScan strtmp;
+			strtmp.u8ChNum = ch;
+			
+			strtmp.u16PassiveScanTime = scan_time;
+			
+			s8Ret = hif_send(M2M_REQ_GROUP_WIFI, M2M_WIFI_REQ_PASSIVE_SCAN, (uint8*)&strtmp, sizeof(tstrM2MScan),NULL, 0,0);
+			if(s8Ret == M2M_SUCCESS)
+			{
+				gu8scanInProgress = 1;
+			}
+		}
+		else
+		{
+			s8Ret = M2M_ERR_INVALID_ARG;
+		}
+	}
+	else
+	{
+		s8Ret = M2M_ERR_SCAN_IN_PROGRESS;
+	}
+	return s8Ret;
+}
+
+sint8 m2m_wifi_request_scan_ssid_list(uint8 ch,uint8 * u8Ssidlist)
+{
+	sint8	s8Ret = M2M_ERR_INVALID_ARG;
+
+	if(!gu8scanInProgress)
+	{
+		if((((ch >= M2M_WIFI_CH_1) && (ch <= M2M_WIFI_CH_14)) || (ch == M2M_WIFI_CH_ALL))&&(u8Ssidlist != NULL))
+		{
+			tstrM2MScan strtmp;
+			uint16 u16Lsize = 0;
+			uint8 u8Apnum = u8Ssidlist[u16Lsize];
+			if(u8Apnum <= MAX_HIDDEN_SITES)
+			{
+				u16Lsize++;
+				while(u8Apnum)
+				{
+					if(u8Ssidlist[u16Lsize] >= M2M_MAX_SSID_LEN){ 
+						goto EXIT;
+					}else {
+						u16Lsize += u8Ssidlist[u16Lsize] + 1;
+						u8Apnum--;
+					}
+				}
+				strtmp.u8ChNum = ch;
+				s8Ret = hif_send(M2M_REQ_GROUP_WIFI, M2M_WIFI_REQ_SCAN_SSID_LIST|M2M_REQ_DATA_PKT, (uint8*)&strtmp, sizeof(tstrM2MScan),u8Ssidlist, u16Lsize,sizeof(tstrM2MScan));
+				if(s8Ret == M2M_SUCCESS)
+				{
+					gu8scanInProgress = 1;
+				}
+			}
+		}
+	}
+	else
+	{
+		s8Ret = M2M_ERR_SCAN_IN_PROGRESS;
+	}
+EXIT:
 	return s8Ret;
 }
 sint8 m2m_wifi_wps(uint8 u8TriggerType,const char  *pcPinNumber)
@@ -799,7 +925,9 @@ sint8 m2m_wifi_req_client_ctrl(uint8 u8Cmd)
 	strCmd.u8cmd = u8Cmd;
 	ret = hif_send(M2M_REQ_GROUP_WIFI, M2M_WIFI_REQ_CLIENT_CTRL, (uint8*)&strCmd, sizeof(tstrM2Mservercmd), NULL, 0, 0);
 #else
+#ifdef ARDUINO
 	(void)u8Cmd; // Silence "unused" warning
+#endif
 	M2M_ERR("_PS_SERVER_ is not defined\n");
 #endif
 	return ret;
@@ -822,7 +950,9 @@ sint8 m2m_wifi_req_server_init(uint8 ch)
 	strServer.u8Channel = ch;
 	ret = hif_send(M2M_REQ_GROUP_WIFI,M2M_WIFI_REQ_SERVER_INIT, (uint8*)&strServer, sizeof(tstrM2mServerInit), NULL, 0, 0);
 #else
+#ifdef ARDUINO
 	(void)ch; // Silence "unused" warning
+#endif
 	M2M_ERR("_PS_SERVER_ is not defined\n");
 #endif
 	return ret;
@@ -838,7 +968,7 @@ sint8 m2m_wifi_p2p(uint8 u8Channel)
 	}
 	else
 	{
-		M2M_ERR("Listen channel should only be 1, 6 or 11\n");
+		M2M_ERR("Listen channel should only be M2M_WIFI_CH_1/6/11 \n");
 		ret = M2M_ERR_FAIL;
 	}
 	return ret;
@@ -854,7 +984,31 @@ sint8 m2m_wifi_enable_ap(CONST tstrM2MAPConfig* pstrM2MAPConfig)
 	sint8 ret = M2M_ERR_FAIL;
 	if(M2M_SUCCESS == m2m_validate_ap_parameters(pstrM2MAPConfig))
 	{
-		ret = hif_send(M2M_REQ_GROUP_WIFI, M2M_WIFI_REQ_ENABLE_AP, (uint8 *)pstrM2MAPConfig, sizeof(tstrM2MAPConfig), NULL, 0, 0);	
+#ifdef ARDUINO
+		extern uint32 nmdrv_firm_ver;
+		uint16 txSize = sizeof(tstrM2MAPConfig);
+
+		if (nmdrv_firm_ver < M2M_MAKE_VERSION(19, 5, 0)) {
+			// for backwards compat with firmwware 19.4.x and older 
+			// (listen channel is 0 based, there is no au8Key field)
+			((tstrM2MAPConfig*)pstrM2MAPConfig)->u8ListenChannel--;
+			txSize -= sizeof(pstrM2MAPConfig->au8Key) + 1;
+		}
+
+		ret = hif_send(M2M_REQ_GROUP_WIFI, M2M_WIFI_REQ_ENABLE_AP, (uint8 *)pstrM2MAPConfig, txSize, NULL, 0, 0);
+#else
+		ret = hif_send(M2M_REQ_GROUP_WIFI, M2M_WIFI_REQ_ENABLE_AP, (uint8 *)pstrM2MAPConfig, sizeof(tstrM2MAPConfig), NULL, 0, 0);
+#endif
+	}
+	return ret;
+}
+
+sint8 m2m_wifi_set_gains(tstrM2mWifiGainsParams* pstrM2mGain)
+{
+	sint8 ret = M2M_ERR_FAIL;
+	if(pstrM2mGain != NULL)
+	{
+		ret = hif_send(M2M_REQ_GROUP_WIFI, M2M_WIFI_REQ_SET_GAINS, (uint8 *)pstrM2mGain, sizeof(tstrM2mWifiGainsParams), NULL, 0, 0);	
 	}
 	return ret;
 }
@@ -1129,12 +1283,30 @@ sint8 m2m_wifi_start_provision_mode(tstrM2MAPConfig *pstrAPConfig, char *pcHttpS
 			}
 			m2m_memcpy((uint8*)strProvConfig.acHttpServerDomainName, (uint8*)pcHttpServerDomainName, 64);
 			strProvConfig.u8EnableRedirect = bEnableHttpRedirect;
-
+		
 			/* Stop Scan if it is ongoing.
 			*/
 			gu8scanInProgress = 0;
+#ifdef ARDUINO
+			extern uint32 nmdrv_firm_ver;
+			uint16 txSize = sizeof(tstrM2MProvisionModeConfig);
+
+			if (nmdrv_firm_ver < M2M_MAKE_VERSION(19, 5, 0)) {
+				// for backwards compat with firmwware 19.4.x and older 
+				// (listen channel is 0 based, there is no au8Key field)
+				strProvConfig.strApConfig.u8ListenChannel--;
+				txSize -= sizeof(strProvConfig.strApConfig.au8Key) + 1;
+				m2m_memcpy((uint8*)&strProvConfig.strApConfig.au8Key[3], (uint8*)pcHttpServerDomainName, 64);
+				uint8* pu8EnableRedirect = (uint8*)strProvConfig.strApConfig.au8Key;
+				pu8EnableRedirect[3 + 64] = bEnableHttpRedirect;
+			}
+
+			s8Ret = hif_send(M2M_REQ_GROUP_WIFI, M2M_WIFI_REQ_START_PROVISION_MODE | M2M_REQ_DATA_PKT, 
+						(uint8*)&strProvConfig, txSize, NULL, 0, 0);
+#else
 			s8Ret = hif_send(M2M_REQ_GROUP_WIFI, M2M_WIFI_REQ_START_PROVISION_MODE | M2M_REQ_DATA_PKT, 
 						(uint8*)&strProvConfig, sizeof(tstrM2MProvisionModeConfig), NULL, 0, 0);
+#endif
 		}
 		else
 		{
@@ -1347,5 +1519,4 @@ NMI_API sint8  m2m_wifi_set_receive_buffer(void* pvBuffer,uint16 u16BufferLen)
 	}
 	return s8ret;
 }
-#endif
-
+#endif /* ETH_MODE */

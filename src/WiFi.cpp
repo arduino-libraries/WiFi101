@@ -42,6 +42,7 @@ extern "C" {
   #include "socket/include/m2m_socket_host_if.h"
   #include "driver/source/nmasic.h"
   #include "driver/include/m2m_periph.h"
+  #include "driver/include/m2m_ssl.h"
 }
 
 static void wifi_cb(uint8_t u8MsgType, void *pvMsg)
@@ -260,7 +261,7 @@ int WiFiClass::init()
 	// Initialize WiFi module and register status callback:
 	param.pfAppWifiCb = wifi_cb;
 	ret = m2m_wifi_init(&param);
-	if (M2M_SUCCESS != ret) {
+	if (M2M_SUCCESS != ret && M2M_ERR_FW_VER_MISMATCH != ret) {
 		// Error led ON (rev A then rev B).
 		m2m_periph_gpio_set_val(M2M_PERIPH_GPIO18, 0);
 		m2m_periph_gpio_set_dir(M2M_PERIPH_GPIO6, 1);
@@ -280,6 +281,13 @@ int WiFiClass::init()
 	_resolve = 0;
 	_remoteMacAddress = 0;
 	memset(_client, 0, sizeof(WiFiClient *) * TCP_SOCK_MAX);
+
+	extern uint32 nmdrv_firm_ver;
+
+	if (nmdrv_firm_ver >= M2M_MAKE_VERSION(19, 5, 0)) {
+		// enable AES-128 and AES-256 Ciphers, if firmware is 19.5.0 or higher
+		m2m_ssl_set_active_ciphersuites(SSL_NON_ECC_CIPHERS_AES_128 | SSL_NON_ECC_CIPHERS_AES_256);
+	}
 
 	// Initialize IO expander LED control (rev A then rev B)..
 	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO15, 1);
@@ -393,7 +401,7 @@ uint8_t WiFiClass::startConnect(const char *ssid, uint8_t u8SecType, const void 
 		_submask = 0;
 		_gateway = 0;
 	}
-	if (m2m_wifi_connect(ssid, strlen(ssid), u8SecType, pvAuthInfo, M2M_WIFI_CH_ALL) < 0) {
+	if (m2m_wifi_connect((char*)ssid, strlen(ssid), u8SecType, (void*)pvAuthInfo, M2M_WIFI_CH_ALL) < 0) {
 		_status = WL_CONNECT_FAILED;
 		return _status;
 	}
@@ -447,6 +455,16 @@ uint8_t WiFiClass::beginAP(const char *ssid, uint8_t key_idx, const char* key, u
 	return startAP(ssid, M2M_WIFI_SEC_WEP, &wep_params, channel);
 }
 
+uint8_t WiFiClass::beginAP(const char *ssid, const char* key)
+{
+	return beginAP(ssid, key, 1);
+}
+
+uint8_t WiFiClass::beginAP(const char *ssid, const char* key, uint8_t channel)
+{
+	return startAP(ssid, M2M_WIFI_SEC_WPA_PSK, key, channel);
+}
+
 uint8_t WiFiClass::startAP(const char *ssid, uint8_t u8SecType, const void *pvAuthInfo, uint8_t channel)
 {
 	tstrM2MAPConfig strM2MAPConfig;
@@ -462,7 +480,7 @@ uint8_t WiFiClass::startAP(const char *ssid, uint8_t u8SecType, const void *pvAu
 	// Enter Access Point mode:
 	memset(&strM2MAPConfig, 0x00, sizeof(tstrM2MAPConfig));
 	strcpy((char *)&strM2MAPConfig.au8SSID, ssid);
-	strM2MAPConfig.u8ListenChannel = channel - 1;
+	strM2MAPConfig.u8ListenChannel = channel;
 	strM2MAPConfig.u8SecType = u8SecType;
 	if (_localip == 0) { 
 		strM2MAPConfig.au8DHCPServerIP[0] = 192;
@@ -484,6 +502,11 @@ uint8_t WiFiClass::startAP(const char *ssid, uint8_t u8SecType, const void *pvAu
 		strM2MAPConfig.u8KeyIndx = wep_params->u8KeyIndx;
 		strM2MAPConfig.u8KeySz = wep_params->u8KeySz;
 		strcpy((char*)strM2MAPConfig.au8WepKey, (char *)wep_params->au8WepKey);
+	}
+
+	if (u8SecType == M2M_WIFI_SEC_WPA_PSK) {
+		strM2MAPConfig.u8KeySz = strlen((char*)pvAuthInfo);
+		strcpy((char*)strM2MAPConfig.au8Key, (char *)pvAuthInfo);
 	}
 
 	if (m2m_wifi_enable_ap(&strM2MAPConfig) < 0) {
@@ -615,6 +638,15 @@ void WiFiClass::config(IPAddress local_ip, IPAddress dns_server, IPAddress gatew
 	_localip = conf.u32StaticIP;
 	_submask = conf.u32SubnetMask;
 	_gateway = conf.u32Gateway;
+}
+
+void WiFiClass::hostname(const char* name)
+{
+	if (!_init) {
+		init();
+	}
+
+	m2m_wifi_set_device_name((uint8 *)name, strlen(name));
 }
 
 void WiFiClass::disconnect()

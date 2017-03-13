@@ -4,7 +4,7 @@
  *
  * \brief This module contains NMC1000 UART protocol bus APIs implementation.
  *
- * Copyright (c) 2015 Atmel Corporation. All rights reserved.
+ * Copyright (c) 2016 Atmel Corporation. All rights reserved.
  *
  * \asf_license_start
  *
@@ -45,6 +45,7 @@
 
 #include "driver/source/nmuart.h"
 #include "bus_wrapper/include/nm_bus_wrapper.h"
+
 #define HDR_SZ  12
 
 static uint8 get_cs(uint8* b, uint8 sz){

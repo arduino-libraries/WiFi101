@@ -52,4 +52,8 @@
 #include "bsp/include/nm_bsp_samd21.h"
 #endif
 
+#ifdef ARDUINO
+#define CONF_PERIPH
+#endif
+
 #endif //_NM_BSP_INTERNAL_H_

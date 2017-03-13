@@ -2,9 +2,9 @@
  *
  * \file
  *
- * \brief BSD alike socket interface internal types.
+ * \brief BSD compatible socket interface internal types.
  *
- * Copyright (c) 2015 Atmel Corporation. All rights reserved.
+ * Copyright (c) 2016-2017 Atmel Corporation. All rights reserved.
  *
  * \asf_license_start
  *
@@ -60,7 +60,9 @@ FUNCTION PROTOTYPES
 
 NMI_API void Socket_ReadSocketData(SOCKET sock, tstrSocketRecvMsg *pstrRecv,uint8 u8SocketMsg,
 								uint32 u32StartAddress,uint16 u16ReadCount);
+#ifdef ARDUINO
 NMI_API void Socket_ReadSocketData_Small(void);
+#endif
 
 #ifdef  __cplusplus
 }

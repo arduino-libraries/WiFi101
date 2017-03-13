@@ -2,9 +2,9 @@
  *
  * \file
  *
- * \brief BSD alike socket interface.
+ * \brief BSD compatible socket interface.
  *
- * Copyright (c) 2015 Atmel Corporation. All rights reserved.
+ * Copyright (c) 2016-2017 Atmel Corporation. All rights reserved.
  *
  * \asf_license_start
  *
@@ -42,7 +42,6 @@
 /*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
 INCLUDES
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*/
-
 #include <stdint.h>
 
 #include "bsp/include/nm_bsp.h"
@@ -78,6 +77,7 @@ MACROS
 #define SSL_FLAGS_3_RESERVD					NBIT3
 #define SSL_FLAGS_CACHE_SESSION				NBIT4
 #define SSL_FLAGS_NO_TX_COPY				NBIT5
+#define SSL_FLAGS_CHECK_SNI					NBIT6
 
 /*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
 PRIVATE DATA TYPES
@@ -142,25 +142,34 @@ Version
 Date
 		17 July 2012
 *********************************************************************/
+#ifdef ARDUINO
 extern uint8 hif_small_xfer;
 static uint32 u32Address;
 static SOCKET sock_xfer;
 static uint8 type_xfer;
 static tstrSocketRecvMsg msg_xfer;
+#endif
 NMI_API void Socket_ReadSocketData(SOCKET sock, tstrSocketRecvMsg *pstrRecv,uint8 u8SocketMsg,
 								  uint32 u32StartAddress,uint16 u16ReadCount)
 {
 	if((u16ReadCount > 0) && (gastrSockets[sock].pu8UserBuffer != NULL) && (gastrSockets[sock].u16UserBufferSize > 0) && (gastrSockets[sock].bIsUsed == 1))
 	{
+#ifdef ARDUINO
 		u32Address = u32StartAddress;
+#else
+		uint32	u32Address = u32StartAddress;
+#endif
 		uint16	u16Read;
 		sint16	s16Diff;
 		uint8	u8SetRxDone;
-
+#ifdef ARDUINO
 		m2m_memcpy((uint8 *)&msg_xfer, (uint8 *)pstrRecv, sizeof(tstrSocketRecvMsg));
 		msg_xfer.u16RemainingSize = u16ReadCount;
-		//do
-		//{
+#else
+		pstrRecv->u16RemainingSize = u16ReadCount;
+#endif
+		do
+		{
 			u8SetRxDone = 1;
 			u16Read = u16ReadCount;
 			s16Diff	= u16Read - gastrSockets[sock].u16UserBufferSize;
@@ -168,12 +177,16 @@ NMI_API void Socket_ReadSocketData(SOCKET sock, tstrSocketRecvMsg *pstrRecv,uint
 			{
 				u8SetRxDone = 0;
 				u16Read		= gastrSockets[sock].u16UserBufferSize;
+#ifdef ARDUINO
 				hif_small_xfer = 1;
 				sock_xfer = sock;
 				type_xfer = u8SocketMsg;
+#endif
 			}
+			
 			if(hif_receive(u32Address, gastrSockets[sock].pu8UserBuffer, u16Read, u8SetRxDone) == M2M_SUCCESS)
 			{
+#ifdef ARDUINO
 				msg_xfer.pu8Buffer			= gastrSockets[sock].pu8UserBuffer;
 				msg_xfer.s16BufferSize		= u16Read;
 				msg_xfer.u16RemainingSize	-= u16Read;
@@ -182,15 +195,41 @@ NMI_API void Socket_ReadSocketData(SOCKET sock, tstrSocketRecvMsg *pstrRecv,uint
 					gpfAppSocketCb(sock,u8SocketMsg, &msg_xfer);
 
 				u32Address += u16Read;
+#else
+				pstrRecv->pu8Buffer			= gastrSockets[sock].pu8UserBuffer;
+				pstrRecv->s16BufferSize		= u16Read;
+				pstrRecv->u16RemainingSize	-= u16Read;
+
+				if (gpfAppSocketCb)
+					gpfAppSocketCb(sock,u8SocketMsg, pstrRecv);
+
+				u16ReadCount -= u16Read;
+				u32Address += u16Read;
+
+				if((!gastrSockets[sock].bIsUsed) && (u16ReadCount))
+				{
+					M2M_DBG("Application Closed Socket While Rx Is not Complete\n");
+					if(hif_receive(0, NULL, 0, 1) == M2M_SUCCESS)
+						M2M_DBG("hif_receive Success\n");
+					else
+						M2M_DBG("hif_receive Fail\n");
+					break;
+				}
+#endif
 			}
 			else
 			{
 				M2M_INFO("(ERRR)Current <%d>\n", u16ReadCount);
-				//break;
+				break;
 			}
-		//}while(u16ReadCount != 0);
+#ifdef ARDUINO
+		}while(0);
+#else
+		}while(u16ReadCount != 0);
+#endif
 	}
 }
+#ifdef ARDUINO
 NMI_API void Socket_ReadSocketData_Small(void)
 {
 	if((msg_xfer.u16RemainingSize > 0) && (gastrSockets[sock_xfer].pu8UserBuffer != NULL) && (gastrSockets[sock_xfer].u16UserBufferSize > 0) && (gastrSockets[sock_xfer].bIsUsed == 1))
@@ -242,6 +281,7 @@ NMI_API void Socket_ReadSocketData_Small(void)
 		//}while(u16ReadCount != 0);
 	}
 }
+#endif
 /*********************************************************************
 Function
 		m2m_ip_cb
@@ -263,8 +303,8 @@ Date
 		17 July 2012
 *********************************************************************/
 static void m2m_ip_cb(uint8 u8OpCode, uint16 u16BufferSize,uint32 u32Address)
-{
-	if(u8OpCode == SOCKET_CMD_BIND)
+{	
+	if((u8OpCode == SOCKET_CMD_BIND) || (u8OpCode == SOCKET_CMD_SSL_BIND))
 	{
 		tstrBindReply		strBindReply;
 		tstrSocketBindMsg	strBind;
@@ -295,8 +335,9 @@ static void m2m_ip_cb(uint8 u8OpCode, uint16 u16BufferSize,uint32 u32Address)
 		{
 			if(strAcceptReply.sConnectedSock >= 0)
 			{
-				gastrSockets[strAcceptReply.sConnectedSock].u8SSLFlags 	= 0;
-				gastrSockets[strAcceptReply.sConnectedSock].bIsUsed 	= 1;
+				gastrSockets[strAcceptReply.sConnectedSock].u8SSLFlags 		= gastrSockets[strAcceptReply.sListenSock].u8SSLFlags;
+				gastrSockets[strAcceptReply.sConnectedSock].bIsUsed 		= 1;
+				gastrSockets[strAcceptReply.sConnectedSock].u16DataOffset 	= strAcceptReply.u16AppDataOffset - M2M_HIF_HDR_OFFSET;
 
 				/* The session ID is used to distinguish different socket connections
 					by comparing the assigned session ID to the one reported by the firmware*/
@@ -336,7 +377,6 @@ static void m2m_ip_cb(uint8 u8OpCode, uint16 u16BufferSize,uint32 u32Address)
 		tstrDnsReply	strDnsReply;
 		if(hif_receive(u32Address, (uint8*)&strDnsReply, sizeof(tstrDnsReply), 0) == M2M_SUCCESS)
 		{
-			strDnsReply.u32HostIP = strDnsReply.u32HostIP;
 			if(gpfAppResolveCb)
 				gpfAppResolveCb((uint8*)strDnsReply.acHostName, strDnsReply.u32HostIP);
 		}
@@ -376,7 +416,11 @@ static void m2m_ip_cb(uint8 u8OpCode, uint16 u16BufferSize,uint32 u32Address)
 
 			if(u16SessionID == gastrSockets[sock].u16SessionID)
 			{
-				if((s16RecvStatus > 0) && (s16RecvStatus < (sint32)u16BufferSize))
+#ifdef ARDUINO
+				if((s16RecvStatus > 0) && (s16RecvStatus < (sint16)u16BufferSize))
+#else
+				if((s16RecvStatus > 0) && (s16RecvStatus < u16BufferSize))
+#endif
 				{
 					/* Skip incoming bytes until reaching the Start of Application Data. 
 					*/
@@ -401,7 +445,18 @@ static void m2m_ip_cb(uint8 u8OpCode, uint16 u16BufferSize,uint32 u32Address)
 			{
 				M2M_DBG("Discard recv callback %d %d \r\n",u16SessionID , gastrSockets[sock].u16SessionID);
 				if(u16ReadSize < u16BufferSize)
-					hif_receive(0, NULL, 0, 1);
+				{
+					if(hif_receive(0, NULL, 0, 1) == M2M_SUCCESS)
+						M2M_DBG("hif_receive Success\n");
+					else
+#ifdef ARDUINO
+					{
+#endif
+						M2M_DBG("hif_receive Fail\n");
+#ifdef ARDUINO
+					}
+#endif
+				}
 			}
 		}
 	}
@@ -469,12 +524,12 @@ Date
 *********************************************************************/
 void socketInit(void)
 {
-	if(gbSocketInit==0)
+	if(gbSocketInit == 0)
 	{
 		m2m_memset((uint8*)gastrSockets, 0, MAX_SOCKET * sizeof(tstrSocket));
 		hif_register_cb(M2M_REQ_GROUP_IP,m2m_ip_cb);
-		gbSocketInit=1;
-		gu16SessionID = 0;
+		gbSocketInit	= 1;
+		gu16SessionID	= 0;
 	}
 }
 /*********************************************************************
@@ -499,9 +554,9 @@ void socketDeinit(void)
 {	
 	m2m_memset((uint8*)gastrSockets, 0, MAX_SOCKET * sizeof(tstrSocket));
 	hif_register_cb(M2M_REQ_GROUP_IP, NULL);
-	gpfAppSocketCb = NULL;
-	gpfAppResolveCb = NULL;
-	gbSocketInit = 0;
+	gpfAppSocketCb	= NULL;
+	gpfAppResolveCb	= NULL;
+	gbSocketInit	= 0;
 }
 /*********************************************************************
 Function
@@ -549,58 +604,66 @@ Date
 *********************************************************************/
 SOCKET socket(uint16 u16Domain, uint8 u8Type, uint8 u8Flags)
 {
-	SOCKET		sock = -1;
-	uint8		u8Count,u8SocketCount = MAX_SOCKET;
-	volatile tstrSocket	*pstrSock;
-	
+	SOCKET					sock = -1;
+	uint8					u8SockID;
+	uint8					u8Count;
+	volatile tstrSocket		*pstrSock;
+	static volatile uint8	u8NextTcpSock	= 0;
+	static volatile uint8	u8NextUdpSock	= 0;
+
 	/* The only supported family is the AF_INET for UDP and TCP transport layer protocols. */
 	if(u16Domain == AF_INET)
 	{
 		if(u8Type == SOCK_STREAM)
 		{
-			u8SocketCount = TCP_SOCK_MAX;
-			u8Count = 0;
+			for(u8Count = 0; u8Count < TCP_SOCK_MAX; u8Count ++)
+			{
+				u8SockID	= u8NextTcpSock;
+				pstrSock	= &gastrSockets[u8NextTcpSock];
+				u8NextTcpSock = (u8NextTcpSock + 1) % TCP_SOCK_MAX;
+				if(!pstrSock->bIsUsed)
+				{
+					sock = (SOCKET)u8SockID;
+					break;
+				}
+			}
 		}
 		else if(u8Type == SOCK_DGRAM)
 		{
-			/*--- UDP SOCKET ---*/
-			u8SocketCount = MAX_SOCKET;
-			u8Count = TCP_SOCK_MAX;
-		}
-		else
-			return sock;
-
-		for(;u8Count < u8SocketCount; u8Count ++)
-		{
-			pstrSock = &gastrSockets[u8Count];
-			if(pstrSock->bIsUsed == 0)
+			volatile tstrSocket	*pastrUDPSockets = &gastrSockets[TCP_SOCK_MAX];
+			for(u8Count = 0; u8Count < UDP_SOCK_MAX; u8Count ++)
 			{
-				m2m_memset((uint8*)pstrSock, 0, sizeof(tstrSocket));
-
-				pstrSock->bIsUsed = 1;
-
-				/* The session ID is used to distinguish different socket connections
-					by comparing the assigned session ID to the one reported by the firmware*/
-				++gu16SessionID;
-				if(gu16SessionID == 0)
-					++gu16SessionID;
-				
-				pstrSock->u16SessionID = gu16SessionID;
-				M2M_DBG("1 Socket %d session ID = %d\r\n",u8Count, gu16SessionID );
-				sock = (SOCKET)u8Count;
-
-				if(u8Flags & SOCKET_FLAGS_SSL)
+				u8SockID		= u8NextUdpSock;
+				pstrSock		= &pastrUDPSockets[u8NextUdpSock];
+				u8NextUdpSock	= (u8NextUdpSock + 1) % UDP_SOCK_MAX;
+				if(!pstrSock->bIsUsed)
 				{
-					tstrSSLSocketCreateCmd	strSSLCreate;
-					strSSLCreate.sslSock = sock;
-#ifdef ARDUINO
-					pstrSock->u8SSLFlags = SSL_FLAGS_ACTIVE;
-#else
-					pstrSock->u8SSLFlags = SSL_FLAGS_ACTIVE | SSL_FLAGS_NO_TX_COPY;
-#endif
-					SOCKET_REQUEST(SOCKET_CMD_SSL_CREATE, (uint8*)&strSSLCreate, sizeof(tstrSSLSocketCreateCmd), 0, 0, 0);
+					sock = (SOCKET)(u8SockID + TCP_SOCK_MAX);
+					break;
 				}
-				break;
+			}
+		}
+
+		if(sock >= 0)
+		{
+			m2m_memset((uint8*)pstrSock, 0, sizeof(tstrSocket));
+			pstrSock->bIsUsed = 1;
+
+			/* The session ID is used to distinguish different socket connections
+				by comparing the assigned session ID to the one reported by the firmware*/
+			++gu16SessionID;
+			if(gu16SessionID == 0)
+				++gu16SessionID;
+				
+			pstrSock->u16SessionID = gu16SessionID;
+            M2M_INFO("Socket %d session ID = %d\r\n",sock, gu16SessionID );
+
+			if(u8Flags & SOCKET_FLAGS_SSL)
+			{
+				tstrSSLSocketCreateCmd	strSSLCreate;
+				strSSLCreate.sslSock = sock;
+				pstrSock->u8SSLFlags = SSL_FLAGS_ACTIVE | SSL_FLAGS_NO_TX_COPY;
+				SOCKET_REQUEST(SOCKET_CMD_SSL_CREATE, (uint8*)&strSSLCreate, sizeof(tstrSSLSocketCreateCmd), 0, 0, 0);
 			}
 		}
 	}
@@ -631,18 +694,19 @@ sint8 bind(SOCKET sock, struct sockaddr *pstrAddr, uint8 u8AddrLen)
 	if((pstrAddr != NULL) && (sock >= 0) && (gastrSockets[sock].bIsUsed == 1) && (u8AddrLen != 0))
 	{
 		tstrBindCmd			strBind;
+		uint8				u8CMD = SOCKET_CMD_BIND;
+		if(gastrSockets[sock].u8SSLFlags & SSL_FLAGS_ACTIVE)
+		{
+			u8CMD = SOCKET_CMD_SSL_BIND;
+		}
 
 		/* Build the bind request. */
 		strBind.sock = sock;
 		m2m_memcpy((uint8 *)&strBind.strAddr, (uint8 *)pstrAddr, sizeof(tstrSockAddr));
-
-		strBind.strAddr.u16Family	= strBind.strAddr.u16Family;
-		strBind.strAddr.u16Port		= strBind.strAddr.u16Port;
-		strBind.strAddr.u32IPAddr	= strBind.strAddr.u32IPAddr;
 		strBind.u16SessionID		= gastrSockets[sock].u16SessionID;
 		
 		/* Send the request. */
-		s8Ret = SOCKET_REQUEST(SOCKET_CMD_BIND, (uint8*)&strBind,sizeof(tstrBindCmd) , NULL , 0, 0);
+		s8Ret = SOCKET_REQUEST(u8CMD, (uint8*)&strBind,sizeof(tstrBindCmd) , NULL , 0, 0);
 		if(s8Ret != SOCK_ERR_NO_ERROR)
 		{
 			s8Ret = SOCK_ERR_INVALID;
@@ -709,10 +773,11 @@ Date
 *********************************************************************/
 sint8 accept(SOCKET sock, struct sockaddr *addr, uint8 *addrlen)
 {
-	/* Silence "unused parameters" warnings */
+#ifdef ARDUINO
+	// Silence "unused" warning
 	(void)addr;
 	(void)addrlen;
-
+#endif
 	sint8	s8Ret = SOCK_ERR_INVALID_ARG;
 	
 	if(sock >= 0 && (gastrSockets[sock].bIsUsed == 1) )
@@ -740,7 +805,11 @@ Version
 Date
 		5 June 2012
 *********************************************************************/
+#ifdef ARDUINO
 sint8 connectSocket(SOCKET sock, struct sockaddr *pstrAddr, uint8 u8AddrLen)
+#else
+sint8 connect(SOCKET sock, struct sockaddr *pstrAddr, uint8 u8AddrLen)
+#endif
 {
 	sint8	s8Ret = SOCK_ERR_INVALID_ARG;
 	if((sock >= 0) && (pstrAddr != NULL) && (gastrSockets[sock].bIsUsed == 1) && (u8AddrLen != 0))
@@ -783,9 +852,9 @@ Date
 *********************************************************************/
 sint16 send(SOCKET sock, void *pvSendBuffer, uint16 u16SendLength, uint16 flags)
 {
-	/* Silence "unused parameters" warnings */
-	(void)flags;
-
+#ifdef ARDUINO
+	(void)flags; // Silence "unused" warning
+#endif
 	sint16	s16Ret = SOCK_ERR_INVALID_ARG;
 	
 	if((sock >= 0) && (pvSendBuffer != NULL) && (u16SendLength <= SOCKET_BUFFER_MAX_LENGTH) && (gastrSockets[sock].bIsUsed == 1))
@@ -808,10 +877,14 @@ sint16 send(SOCKET sock, void *pvSendBuffer, uint16 u16SendLength, uint16 flags)
 		if(gastrSockets[sock].u8SSLFlags & SSL_FLAGS_ACTIVE)
 		{
 			u8Cmd			= SOCKET_CMD_SSL_SEND;
-#ifdef ARDUINO
-			u16DataOffset	= SSL_TX_PACKET_OFFSET;
-#else
 			u16DataOffset	= gastrSockets[sock].u16DataOffset;
+#ifdef ARDUINO
+			extern uint32 nmdrv_firm_ver;
+
+			if (nmdrv_firm_ver < M2M_MAKE_VERSION(19, 4, 0)) {
+				// firmware 19.3.0 and older only works with this specific offset
+				u16DataOffset	= SSL_TX_PACKET_OFFSET;
+			}
 #endif
 		}
 
@@ -842,10 +915,11 @@ Date
 *********************************************************************/
 sint16 sendto(SOCKET sock, void *pvSendBuffer, uint16 u16SendLength, uint16 flags, struct sockaddr *pstrDestAddr, uint8 u8AddrLen)
 {
-	/* Silence "unused parameters" warnings */
+#ifdef ARDUINO
+	// Silence "unused" warning
 	(void)flags;
 	(void)u8AddrLen;
-
+#endif
 	sint16	s16Ret = SOCK_ERR_INVALID_ARG;
 	
 	if((sock >= 0) && (pvSendBuffer != NULL) && (u16SendLength <= SOCKET_BUFFER_MAX_LENGTH) && (gastrSockets[sock].bIsUsed == 1))
@@ -958,6 +1032,7 @@ Date
 sint8 close(SOCKET sock)
 {
 	sint8	s8Ret = SOCK_ERR_INVALID_ARG;
+    M2M_INFO("Sock to delete <%d>\n", sock);
 	if(sock >= 0 && (gastrSockets[sock].bIsUsed == 1))
 	{
 		uint8	u8Cmd = SOCKET_CMD_CLOSE;
@@ -1122,11 +1197,7 @@ sint8 gethostbyname(uint8 * pcHostName)
 	uint8	u8HostNameSize = (uint8)m2m_strlen(pcHostName);
 	if(u8HostNameSize <= HOSTNAME_MAX_SIZE)
 	{
-		s8Err = SOCKET_REQUEST(SOCKET_CMD_DNS_RESOLVE|M2M_REQ_DATA_PKT, (uint8*)pcHostName, u8HostNameSize + 1, NULL,0, 0);
-		if(s8Err != SOCK_ERR_NO_ERROR)
-		{
-			s8Err = SOCK_ERR_INVALID;
-		}
+		s8Err = SOCKET_REQUEST(SOCKET_CMD_DNS_RESOLVE, (uint8*)pcHostName, u8HostNameSize + 1, NULL,0, 0);
 	}
 	return s8Err;
 }
@@ -1178,6 +1249,19 @@ static sint8 sslSetSockOpt(SOCKET sock, uint8  u8Opt, const void *pvOptVal, uint
 				else
 				{
 					gastrSockets[sock].u8SSLFlags &= ~SSL_FLAGS_CACHE_SESSION;
+				}
+				s8Ret = SOCK_ERR_NO_ERROR;
+			}
+			else if(u8Opt == SO_SSL_ENABLE_SNI_VALIDATION)
+			{
+				int	optVal = *((int*)pvOptVal);
+				if(optVal)
+				{
+					gastrSockets[sock].u8SSLFlags |= SSL_FLAGS_CHECK_SNI;
+				}
+				else
+				{
+					gastrSockets[sock].u8SSLFlags &= ~SSL_FLAGS_CHECK_SNI;
 				}
 				s8Ret = SOCK_ERR_NO_ERROR;
 			}
@@ -1285,14 +1369,15 @@ Date
 *********************************************************************/
 sint8 getsockopt(SOCKET sock, uint8 u8Level, uint8 u8OptName, const void *pvOptValue, uint8* pu8OptLen)
 {
-	/* Silence "unused parameters" warnings */
+#ifdef ARDUINO
+	// Silence "unused" warning
 	(void)sock;
 	(void)u8Level;
 	(void)u8OptName;
 	(void)pvOptValue;
 	(void)pu8OptLen;
-
-	/* XXX: TBD */
+#endif
+	/* TBD */
 	return M2M_SUCCESS;
 }
 /*********************************************************************
@@ -1323,7 +1408,11 @@ sint8 m2m_ping_req(uint32 u32DstIP, uint8 u8TTL, tpfPingCb fpPingCb)
 
 		strPingCmd.u16PingCount		= 1;
 		strPingCmd.u32DestIPAddr	= u32DstIP;
-		strPingCmd.u32CmdPrivate	= (uintptr_t)fpPingCb;
+#ifdef ARDUINO
+		strPingCmd.u32CmdPrivate	= (uint32)(uintptr_t)(fpPingCb);
+#else
+		strPingCmd.u32CmdPrivate	= (uint32)(fpPingCb);
+#endif
 		strPingCmd.u8TTL			= u8TTL;
 
 		s8Ret = SOCKET_REQUEST(SOCKET_CMD_PING, (uint8*)&strPingCmd, sizeof(tstrPingCmd), NULL, 0, 0);
@@ -1332,10 +1421,10 @@ sint8 m2m_ping_req(uint32 u32DstIP, uint8 u8TTL, tpfPingCb fpPingCb)
 }
 /*********************************************************************
 Function
-	sslSetActiveCipherSuites
+	sslEnableCertExpirationCheck
 
 Description
-	Send Ping request.
+	Enable/Disable TLS Certificate Expiration Check.
 
 Return
 	
@@ -1346,17 +1435,11 @@ Version
 	1.0
 
 Date
-	4 June 2015
-*********************************************************************/
-sint8 sslSetActiveCipherSuites(uint32 u32SslCsBMP)
-{
-	sint8	s8Ret = SOCK_ERR_INVALID_ARG;
-	if(u32SslCsBMP != 0)
-	{
-		tstrSslSetActiveCsList	strCsList;
 	
-		strCsList.u32CsBMP = u32SslCsBMP;
-		s8Ret = SOCKET_REQUEST(SOCKET_CMD_SSL_SET_CS_LIST, (uint8*)&strCsList, sizeof(tstrSslSetActiveCsList), NULL, 0, 0);
-	}
-	return s8Ret;
+*********************************************************************/
+sint8 sslEnableCertExpirationCheck(tenuSslCertExpSettings enuValidationSetting)
+{
+	tstrSslCertExpSettings	strSettings;
+	strSettings.u32CertExpValidationOpt = (uint32)enuValidationSetting;
+	return SOCKET_REQUEST(SOCKET_CMD_SSL_EXP_CHECK, (uint8*)&strSettings, sizeof(tstrSslCertExpSettings), NULL, 0, 0);
 }
