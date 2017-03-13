@@ -5,6 +5,8 @@
   using a WiFi shield.
 
   This example is written to configure the WiFi settings using provisioning mode.
+  It also sets up an mDNS server so the IP address of the board doesn't have to
+  be obtained via the serial monitor.
 
   Circuit:
    WiFi shield attached
@@ -19,10 +21,20 @@
 
 #include <SPI.h>
 #include <WiFi101.h>
+#include <WiFiMDNSResponder.h>
 
 const int ledPin = 6; // LED pin for connectivity status indicator
 
+char mdnsName[] = "wifi101"; // the MDNS name that the board will respond to
+                             // after WiFi settings have been provisioned
+// Note that the actual MDNS name will have '.local' after
+// the name above, so "wifi101" will be accessible on
+// the MDNS name "wifi101.local".
+
 WiFiServer server(80);
+
+// Create a MDNS responder to listen and respond to MDNS name requests.
+WiFiMDNSResponder mdnsResponder;
 
 void setup() {
   //Initialize serial:
@@ -59,12 +71,29 @@ void setup() {
   digitalWrite(ledPin, HIGH);
 
   server.begin();
+
+  // Setup the MDNS responder to listen to the configured name.
+  // NOTE: You _must_ call this _after_ connecting to the WiFi network and
+  // being assigned an IP address.
+  if (!mdnsResponder.begin(mdnsName)) {
+    Serial.println("Failed to start MDNS responder!");
+    while(1);
+  }
+
+  Serial.print("Server listening at http://");
+  Serial.print(mdnsName);
+  Serial.println(".local/");
+
   // you're connected now, so print out the status:
   printWiFiStatus();
 }
 
 
 void loop() {
+  // Call the update() function on the MDNS responder every loop iteration to
+  // make sure it can detect and respond to name requests.
+  mdnsResponder.poll();
+
   // listen for incoming clients
   WiFiClient client = server.available();
   if (client) {
