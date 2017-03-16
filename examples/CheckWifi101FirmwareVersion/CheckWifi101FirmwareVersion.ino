@@ -10,6 +10,7 @@
  */
 #include <SPI.h>
 #include <WiFi101.h>
+#include <driver/source/nmasic.h>
 
 void setup() {
   // Initialize serial
@@ -32,16 +33,25 @@ void setup() {
 
   // Print firmware version on the shield
   String fv = WiFi.firmwareVersion();
+  String latestFv;
   Serial.print("Firmware version installed: ");
   Serial.println(fv);
 
-  // Print required firmware version
-  Serial.print("Firmware version required : ");
-  Serial.println(WIFI_FIRMWARE_REQUIRED);
+  if (REV(GET_CHIPID()) >= REV_3A0) {
+    // model B
+    latestFv = WIFI_FIRMWARE_LATEST_MODEL_B;
+  } else {
+    // model A
+    latestFv = WIFI_FIRMWARE_LATEST_MODEL_A;
+  }
 
-  // Check if the required version is installed
+  // Print required firmware version
+  Serial.print("Latest firmware version available : ");
+  Serial.println(latestFv);
+
+  // Check if the latest version is installed
   Serial.println();
-  if (fv == WIFI_FIRMWARE_REQUIRED) {
+  if (fv == latestFv) {
     Serial.println("Check result: PASSED");
   } else {
     Serial.println("Check result: NOT PASSED");
