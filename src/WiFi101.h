@@ -15,6 +15,16 @@
   You should have received a copy of the GNU Lesser General Public
   License along with this library; if not, write to the Free Software
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
+  Portions of this file are Copyright (C) 2016 Asad Zia.
+
+  These portions may be used under the terms of the GNU Lesser
+  General Public License version 2.1 as published by the Free Software
+  Foundation and appearing in the file LICENSE.LGPL included in the
+  packaging of this file.  Please review the following information to
+  ensure the GNU Lesser General Public License version 2.1 requirements
+  will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+  USE OF THESE PORTIONS UNDER ANY OTHER LICENSE IS NOT PERMITTED.
 */
 
 #ifndef WIFI_H
@@ -68,6 +78,8 @@ typedef enum {
 	WL_STA_MODE,
 	WL_PROV_MODE,
 	WL_AP_MODE
+	WL_AP_MODE,
+	WL_P2P_MODE
 } wl_mode_t;
 
 typedef enum {
@@ -92,6 +104,7 @@ public:
 	uint8_t _scan_auth;
 	uint8_t _scan_channel;
 	char _ssid[M2M_MAX_SSID_LEN];
+	char _p2pname[M2M_MAX_SSID_LEN];
 	WiFiClient *_client[TCP_SOCK_MAX];
 
 	WiFiClass();
@@ -114,6 +127,15 @@ public:
 	uint8_t begin(const String &ssid) { return begin(ssid.c_str()); }
 	uint8_t begin(const String &ssid, uint8_t key_idx, const String &key) { return begin(ssid.c_str(), key_idx, key.c_str()); }
 	uint8_t begin(const String &ssid, const String &key) { return begin(ssid.c_str(), key.c_str()); }
+
+	/*
+	 * Start Wifi as P2P device. P2P is also known as Wi-Fi Direct.
+     *
+	 * param name: Set your device name which will be shown in the peer device.
+	 * param channel: Wifi channel to use. Valid values are 0, 5 and 10.	 *
+	 */
+	uint8_t beginP2P(const char *name);
+	uint8_t beginP2P(const char *name, uint8_t channel);
 
 	/* Start Wifi in Access Point, with open security.
 	 * Only one client can connect to the AP at a time.
