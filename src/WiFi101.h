@@ -77,7 +77,6 @@ typedef enum {
 	WL_RESET_MODE = 0,
 	WL_STA_MODE,
 	WL_PROV_MODE,
-	WL_AP_MODE
 	WL_AP_MODE,
 	WL_P2P_MODE
 } wl_mode_t;
