@@ -42,7 +42,7 @@ private:
   String name;
   uint32_t ttlSeconds;
 
-  int expectedRequestLength;
+  int minimumExpectedRequestLength;
 
   // UDP socket for receiving/sending MDNS data.
   WiFiUDP udpSocket;
