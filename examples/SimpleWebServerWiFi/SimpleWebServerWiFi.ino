@@ -32,7 +32,7 @@ WiFiServer server(80);
 
 void setup() {
   Serial.begin(9600);      // initialize serial communication
-  pinMode(9, OUTPUT);      // set the LED pin mode
+  pinMode(LED_BUILTIN, OUTPUT);      // set the LED pin mode
 
   // check for the presence of the shield:
   if (WiFi.status() == WL_NO_SHIELD) {
@@ -95,10 +95,10 @@ void loop() {
 
         // Check to see if the client request was "GET /H" or "GET /L":
         if (currentLine.endsWith("GET /H")) {
-          digitalWrite(9, HIGH);               // GET /H turns the LED on
+          digitalWrite(LED_BUILTIN, HIGH);               // GET /H turns the LED on
         }
         if (currentLine.endsWith("GET /L")) {
-          digitalWrite(9, LOW);                // GET /L turns the LED off
+          digitalWrite(LED_BUILTIN, LOW);                // GET /L turns the LED off
         }
       }
     }
