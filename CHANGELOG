@@ -1,5 +1,10 @@
 WiFi101 ?.?.? - ????.??.??
 
+WiFi101 0.14.1 - 2017.04.20
+
+* Fixed issues with WiFiMDNSResponder and Windows using Bonjour
+* Correct cast of buffer size when processing received data 
+
 WiFi101 0.14.0 - 2017.03.22
 
 * Added support for firmware 19.5.2
