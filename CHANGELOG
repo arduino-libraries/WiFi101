@@ -1,5 +1,9 @@
 WiFi101 ?.?.? - ????.??.??
 
+WiFi101 0.14.2 - 2017.05.08
+
+* Fixed issues with WiFiServer::write not working
+
 WiFi101 0.14.1 - 2017.04.20
 
 * Fixed issues with WiFiMDNSResponder and Windows using Bonjour
