@@ -235,7 +235,7 @@ static void ping_cb(uint32 u32IPAddr, uint32 u32RTT, uint8 u8ErrorCode)
 	}
 }
 
-WiFiClass::WiFiClass()
+WiFiClass::WiFiClass() : _connectTimeout{60000ul} 
 {
 	_mode = WL_RESET_MODE;
 	_status = WL_NO_SHIELD;
@@ -351,7 +351,7 @@ uint8_t WiFiClass::begin()
 	unsigned long start = millis();
 	while (!(_status & WL_CONNECTED) &&
 			!(_status & WL_DISCONNECTED) &&
-			millis() - start < 60000) {
+			millis() - start < _connectTimeout) {
 		m2m_wifi_handle_events(NULL);
 	}
 
@@ -370,7 +370,12 @@ uint8_t WiFiClass::begin()
 
 uint8_t WiFiClass::begin(const char *ssid)
 {
-	return startConnect(ssid, M2M_WIFI_SEC_OPEN, (void *)0);
+	return begin(ssid, _connectTimeout);
+}
+
+uint8_t WiFiClass::begin(const char *ssid, uint32_t u32TimeoutMS)
+{
+	return startConnect(ssid, M2M_WIFI_SEC_OPEN, (void *)0, u32TimeoutMS);
 }
 
 uint8_t WiFiClass::begin(const char *ssid, uint8_t key_idx, const char* key)
@@ -381,15 +386,15 @@ uint8_t WiFiClass::begin(const char *ssid, uint8_t key_idx, const char* key)
 	wep_params.u8KeyIndx = key_idx;
 	wep_params.u8KeySz = strlen(key);
 	strcpy((char *)&wep_params.au8WepKey[0], key);
-	return startConnect(ssid, M2M_WIFI_SEC_WEP, &wep_params);
+	return startConnect(ssid, M2M_WIFI_SEC_WEP, &wep_params, _connectTimeout);
 }
 
 uint8_t WiFiClass::begin(const char *ssid, const char *key)
 {
-	return startConnect(ssid, M2M_WIFI_SEC_WPA_PSK, key);
+	return startConnect(ssid, M2M_WIFI_SEC_WPA_PSK, key, _connectTimeout);
 }
 
-uint8_t WiFiClass::startConnect(const char *ssid, uint8_t u8SecType, const void *pvAuthInfo)
+uint8_t WiFiClass::startConnect(const char *ssid, uint8_t u8SecType, const void *pvAuthInfo, uint32_t u32TimeoutMS)
 {
 	if (!_init) {
 		init();
@@ -412,7 +417,7 @@ uint8_t WiFiClass::startConnect(const char *ssid, uint8_t u8SecType, const void 
 	unsigned long start = millis();
 	while (!(_status & WL_CONNECTED) &&
 			!(_status & WL_DISCONNECTED) &&
-			millis() - start < 60000) {
+			millis() - start < u32TimeoutMS) {
 		m2m_wifi_handle_events(NULL);
 	}
 	if (!(_status & WL_CONNECTED)) {

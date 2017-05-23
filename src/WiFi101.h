@@ -109,9 +109,11 @@ public:
 	 */
 	uint8_t begin();
 	uint8_t begin(const char *ssid);
+	uint8_t begin(const char *ssid, uint32_t u32TimeoutMS);
 	uint8_t begin(const char *ssid, uint8_t key_idx, const char* key);
 	uint8_t begin(const char *ssid, const char *key);
 	uint8_t begin(const String &ssid) { return begin(ssid.c_str()); }
+	uint8_t begin(const String &ssid, uint32_t u32TimeoutMS) { return begin(ssid.c_str(), u32TimeoutMS); }
 	uint8_t begin(const String &ssid, uint8_t key_idx, const String &key) { return begin(ssid.c_str(), key_idx, key.c_str()); }
 	uint8_t begin(const String &ssid, const String &key) { return begin(ssid.c_str(), key.c_str()); }
 
@@ -180,8 +182,10 @@ public:
 private:
 	int _init;
 	char _version[9];
+	const uint32_t _connectTimeout;
 
 	uint8_t startConnect(const char *ssid, uint8_t u8SecType, const void *pvAuthInfo);
+	uint8_t startConnect(const char *ssid, uint8_t u8SecType, const void *pvAuthInfo, uint32_t u32TimeoutMS);
 	uint8_t startAP(const char *ssid, uint8_t u8SecType, const void *pvAuthInfo, uint8_t channel);
 	uint8_t* remoteMacAddress(uint8_t* remoteMacAddress);
 
