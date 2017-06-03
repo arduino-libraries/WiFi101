@@ -52,7 +52,8 @@ static void wifi_cb(uint8_t u8MsgType, void *pvMsg)
 		{
 			tstrM2MDefaultConnResp *pstrDefaultConnResp = (tstrM2MDefaultConnResp *)pvMsg;
 			if (pstrDefaultConnResp->s8ErrorCode) {
-				WiFi._status = WL_DISCONNECTED;
+          SERIAL_PORT_MONITOR.println("wifi_cb: M2M_WIFI_RESP_DEFAULT_CONNECT: DISCONNECTED");
+          WiFi._status = WL_DISCONNECTED;
 			}
 		}
 		break;
@@ -61,7 +62,7 @@ static void wifi_cb(uint8_t u8MsgType, void *pvMsg)
 		{
 			tstrM2mWifiStateChanged *pstrWifiState = (tstrM2mWifiStateChanged *)pvMsg;
 			if (pstrWifiState->u8CurrState == M2M_WIFI_CONNECTED) {
-				//SERIAL_PORT_MONITOR.println("wifi_cb: M2M_WIFI_RESP_CON_STATE_CHANGED: CONNECTED");
+				SERIAL_PORT_MONITOR.println("wifi_cb: M2M_WIFI_RESP_CON_STATE_CHANGED: CONNECTED");
 				if (WiFi._mode == WL_STA_MODE && !WiFi._dhcp) {
 					WiFi._status = WL_CONNECTED;
 
@@ -71,7 +72,7 @@ static void wifi_cb(uint8_t u8MsgType, void *pvMsg)
 					WiFi._status = WL_AP_CONNECTED;
 				}
 			} else if (pstrWifiState->u8CurrState == M2M_WIFI_DISCONNECTED) {
-				//SERIAL_PORT_MONITOR.println("wifi_cb: M2M_WIFI_RESP_CON_STATE_CHANGED: DISCONNECTED");
+				SERIAL_PORT_MONITOR.println("wifi_cb: M2M_WIFI_RESP_CON_STATE_CHANGED: DISCONNECTED");
 				if (WiFi._mode == WL_STA_MODE) {
 					WiFi._status = WL_DISCONNECTED;
 					if (WiFi._dhcp) {
@@ -255,7 +256,9 @@ int WiFiClass::init()
 	tstrWifiInitParam param;
 	int8_t ret;
 
-	// Initialize the WiFi BSP:
+    Serial.println("WiFiClass::init: Initializing Wifi.");
+  
+  // Initialize the WiFi BSP:
 	nm_bsp_init();
 
 	// Initialize WiFi module and register status callback:

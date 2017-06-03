@@ -232,7 +232,14 @@ NMI_API void Socket_ReadSocketData(SOCKET sock, tstrSocketRecvMsg *pstrRecv,uint
 #ifdef ARDUINO
 NMI_API void Socket_ReadSocketData_Small(void)
 {
-	if((msg_xfer.u16RemainingSize > 0) && (gastrSockets[sock_xfer].pu8UserBuffer != NULL) && (gastrSockets[sock_xfer].u16UserBufferSize > 0) && (gastrSockets[sock_xfer].bIsUsed == 1))
+    // if socket has been closed already, set hif_small_xfer to zero to make sure the method does not block
+    if (gastrSockets[sock_xfer].bIsUsed != 1)
+    {
+      (*(volatile unsigned char *)(0XC6)) = '!';
+      hif_small_xfer = 0;
+      return;
+    }
+    if((msg_xfer.u16RemainingSize > 0) && (gastrSockets[sock_xfer].pu8UserBuffer != NULL) && (gastrSockets[sock_xfer].u16UserBufferSize > 0))
 	{
 		uint16	u16Read;
 		sint16	s16Diff;
