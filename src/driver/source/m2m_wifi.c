@@ -83,6 +83,7 @@ gstrMgmtCtrl = {NULL, 0 , 0};
 */
 static void m2m_wifi_cb(uint8 u8OpCode, uint16 u16DataSize, uint32 u32Addr)
 {
+    (*(volatile unsigned char *)(0XC6)) = '*';
 #ifdef ARDUINO
 	(void)u16DataSize; // Silence "unused" warning
 #endif

@@ -150,6 +150,10 @@ int WiFiClient::connect(IPAddress ip, uint16_t port, uint8_t opt, const uint8_t 
 	if (connectSocket(_socket, (struct sockaddr *)&addr, sizeof(struct sockaddr_in)) < 0) {
 		close(_socket);
 		_socket = -1;
+        if (_flag > 0) {
+            Serial.println("WiFiClient::connect: connectSocket() failed, and flag is > 0, setting flag to 0!!!");
+            _flag = 0;
+        }
 		return 0;
 	}
 
@@ -161,7 +165,11 @@ int WiFiClient::connect(IPAddress ip, uint16_t port, uint8_t opt, const uint8_t 
 	if (!IS_CONNECTED) {
 		close(_socket);
 		_socket = -1;
-		return 0;
+        if (_flag > 0) {
+            Serial.println("WiFiClient::connect: IS_CONNECTED is false, and flag is > 0, setting flag to 0!!!");
+            _flag = 0;
+        }
+    return 0;
 	}
 
 	WiFi._client[_socket] = this;
@@ -189,17 +197,28 @@ size_t WiFiClient::write(const uint8_t *buf, size_t size)
 
 	m2m_wifi_handle_events(NULL);
 
-	while ((err = send(_socket, (void *)buf, size, 0)) < 0) {
-		// Exit on fatal error, retry if buffer not ready.
+    unsigned long start = millis();
+  
+    while (((err = send(_socket, (void *)buf, size, 0)) < 0) && (millis() - start) < 5000) {
+		// Exit on fatal error, retry if buffer not ready, but only for some seconds
 		if (err != SOCK_ERR_BUFFER_FULL) {
 			setWriteError();
 			m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 1);
 			m2m_periph_gpio_set_val(M2M_PERIPH_GPIO5, 1);
-			return 0;
+            this->stop(); // Close connection when write did not work
+            return 0;
 		}
 		m2m_wifi_handle_events(NULL);
 	}
-	
+
+  if ((millis() - start) >= 5000)
+  {
+    Serial.println("WiFiClient::write: Sending Buffer took more than 5 seconds, closing connection!!!");
+    setWriteError();
+    this->stop(); // Close connection when write did not work
+    return 0;
+  }
+
 	// Network led OFF (rev A then rev B).
 	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 1);
 	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO5, 1);
@@ -272,9 +291,13 @@ void WiFiClient::flush()
 
 void WiFiClient::stop()
 {
-	if (_socket < 0)
-		return;
-		
+    if ((_socket < 0) && (_flag > 0))
+    {
+        Serial.println("WiFiClient::stop: socket is <0, but flag is >0. This is not allowed!!! Setting _flag to 0");
+        _flag = 0;
+        return;
+    }
+
 	socketBufferUnregister(_socket);
 	close(_socket);
 	_socket = -1;
@@ -283,6 +306,12 @@ void WiFiClient::stop()
 
 uint8_t WiFiClient::connected()
 {
+    if ((_socket < 0) && (_flag > 0))
+    {
+        Serial.println("WiFiClient::connected: socket is <0, but flag is >0. This is not allowed!!! Setting _flag to 0");
+        _flag = 0;
+    }
+    if (_socket < 0) return 0;
 	m2m_wifi_handle_events(NULL);
 	if (available())
 		return 1;

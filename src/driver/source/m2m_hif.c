@@ -87,6 +87,8 @@ volatile tstrHifContext gstrHifCxt;
 static void isr(void)
 {
 	gstrHifCxt.u8Interrupt++;
+    (*(volatile unsigned char *)(0XC6)) = '+';
+
 #ifdef NM_LEVEL_INTERRUPT
 	nm_bsp_interrupt_ctrl(0);
 #endif
@@ -444,6 +446,7 @@ static sint8 hif_isr(void)
 	sint8 ret = M2M_SUCCESS;
 	volatile uint32 reg;
 	volatile tstrHifHdr strHif;
+    (*(volatile unsigned char *)(0XC6)) = '?';
 
 #ifdef ARDUINO
 	ret = nm_read_reg_with_ret(WIFI_HOST_RCV_CTRL_0, (uint32*)&reg);
@@ -641,6 +644,7 @@ sint8 hif_handle_isr(void)
 		/*must be at that place because of the race of interrupt increment and that decrement*/
 		/*when the interrupt enabled*/
 		gstrHifCxt.u8Interrupt--;
+       (*(volatile unsigned char *)(0XC6)) = '-';
 		while(1)
 		{
 			ret = hif_isr();
@@ -658,8 +662,14 @@ sint8 hif_handle_isr(void)
 			}
 		}
 	}
-
-	return ret;
+    if (ret == M2M_SUCCESS) {
+        (*(volatile unsigned char *)(0XC6)) = '&';
+    }
+    else
+    {
+        (*(volatile unsigned char *)(0XC6)) = 'A' + ret;
+    }
+    return ret;
 }
 /*
 *	@fn		hif_receive
