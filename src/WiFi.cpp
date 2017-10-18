@@ -545,7 +545,7 @@ uint8_t WiFiClass::beginProvision(uint8_t channel)
 
 		// get MAC address for provisioning SSID
 		macAddress(mac);
-		sprintf(provSsid, "wifi101-%.2X%2X", mac[1], mac[0]);
+		sprintf(provSsid, "wifi101-%.2X%.2X", mac[1], mac[0]);
 
 		// start provisioning mode
 		startProvision(provSsid, "wifi101", channel);
