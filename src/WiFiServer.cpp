@@ -68,7 +68,7 @@ uint8_t WiFiServer::begin(uint8_t opt)
 		_socket = -1;
 		return 0;
 	}
-	
+
 	// Wait for connection or timeout:
 	unsigned long start = millis();
 	while (!READY && millis() - start < 2000) {
@@ -87,7 +87,7 @@ uint8_t WiFiServer::begin(uint8_t opt)
 WiFiClient WiFiServer::available(uint8_t* status)
 {
 	uint32_t flag;
-	
+
 	m2m_wifi_handle_events(NULL);
 	if (_flag & SOCKET_BUFFER_FLAG_SPAWN) {
 		flag = _flag;
@@ -98,18 +98,17 @@ WiFiClient WiFiServer::available(uint8_t* status)
 		}
 		return WiFiClient(((flag & SOCKET_BUFFER_FLAG_SPAWN_SOCKET_MSK) >> SOCKET_BUFFER_FLAG_SPAWN_SOCKET_POS), _socket + 1);
 	} else {
-		WiFiClient *client;
+		WiFiClient client;
 
 		for (int sock = 0; sock < TCP_SOCK_MAX; sock++) {
 			client = WiFi._client[sock];
-			if (client && client->_flag & SOCKET_BUFFER_FLAG_CONNECTED) {
-				if (((client->_flag >> SOCKET_BUFFER_FLAG_PARENT_SOCKET_POS) & 0xff) == (uint8)(_socket + 1)) {
-					return *client;
+			if (client.connected()) {
+				if (((client.flag() >> SOCKET_BUFFER_FLAG_PARENT_SOCKET_POS) & 0xff) == (uint8)(_socket + 1)) {
+					return client;
 				}
 			}
 		}
 	}
-
 	return WiFiClient();
 }
 
@@ -126,13 +125,13 @@ size_t WiFiServer::write(uint8_t b)
 size_t WiFiServer::write(const uint8_t *buffer, size_t size)
 {
 	size_t n = 0;
-	WiFiClient *client;
+	WiFiClient client;
 
 	for (int sock = 0; sock < TCP_SOCK_MAX; sock++) {
 		client = WiFi._client[sock];
-		if (client && client->_flag & SOCKET_BUFFER_FLAG_CONNECTED) {
-			if (((client->_flag >> SOCKET_BUFFER_FLAG_PARENT_SOCKET_POS) & 0xff) == (uint8)(_socket + 1)) {
-				n += client->write(buffer, size);
+		if (client.connected()) {
+			if (((client.flag() >> SOCKET_BUFFER_FLAG_PARENT_SOCKET_POS) & 0xff) == (uint8)(_socket + 1)) {
+				n += client.write(buffer, size);
 			}
 		}
 	}

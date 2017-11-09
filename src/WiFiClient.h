@@ -23,6 +23,7 @@
 #include <Arduino.h>
 #include <Client.h>
 #include <IPAddress.h>
+#include "shared_ptr.hpp"
 #include "socket/include/socket_buffer.h"
 
 class WiFiClient : public Client {
@@ -33,7 +34,7 @@ public:
 	WiFiClient(const WiFiClient& other);
 
 	uint8_t status();
-	
+
 	int connectSSL(IPAddress ip, uint16_t port);
 	int connectSSL(const char* host, uint16_t port);
 	virtual int connect(IPAddress ip, uint16_t port);
@@ -47,22 +48,18 @@ public:
 	virtual void flush();
 	virtual void stop();
 	virtual uint8_t connected();
+    uint32_t flag() const;
 	virtual operator bool();
-	virtual WiFiClient& operator =(const WiFiClient& other);
+	virtual WiFiClient& operator=(const WiFiClient &other);
+    virtual bool operator==(const WiFiClient &other) const;
+    virtual bool operator!=(const WiFiClient &other) const;
 
 	using Print::write;
 
-	uint32_t _flag;
-
 private:
-	SOCKET _socket;
-	uint32_t _head;
-	uint32_t _tail;
-	uint8_t	_buffer[SOCKET_BUFFER_TCP_SIZE];
+    wifi101_internal::shared_ptr<struct Impl> m_impl;
 	int connect(const char* host, uint16_t port, uint8_t opt);
 	int connect(IPAddress ip, uint16_t port, uint8_t opt, const uint8_t *hostname);
-	void copyFrom(const WiFiClient& other);
-
 };
 
 #endif /* WIFICLIENT_H */

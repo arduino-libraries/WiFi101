@@ -83,9 +83,9 @@ typedef struct{
 }tstrSocketBuffer;
 
 void socketBufferInit(void);
-void socketBufferRegister(SOCKET socket, uint32 *flag, uint32 *head, uint32 *tail, uint8 *buffer);
-void socketBufferUnregister(SOCKET socket);
-void socketBufferCb(SOCKET sock, uint8 u8Msg, void *pvMsg);
+void socketBufferRegister(int8_t socket, uint32 *flag, uint32 *head, uint32 *tail, uint8 *buffer);
+void socketBufferUnregister(int8_t socket);
+void socketBufferCb(int8_t sock, uint8 u8Msg, void *pvMsg);
 
 #ifdef  __cplusplus
 }
