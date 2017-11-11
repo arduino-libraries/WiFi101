@@ -27,16 +27,16 @@ extern "C" {
 
 #define IS_CONNECTED	(m_impl && (m_impl->_flag & SOCKET_BUFFER_FLAG_CONNECTED))
 
-struct Impl
+struct WiFiClientImpl
 {
     uint32_t _flag;
     int8_t _socket;
     uint32_t _head;
     uint32_t _tail;
     uint8_t _buffer[SOCKET_BUFFER_TCP_SIZE];
-    Impl():_socket(-1), _flag(0), _head(0), _tail(0){}
+    WiFiClientImpl():_socket(-1), _flag(0), _head(0), _tail(0){}
 
-    Impl(uint8_t sock, uint8_t parentsock = 0):
+    WiFiClientImpl(uint8_t sock, uint8_t parentsock = 0):
     _socket(sock),
     _flag(SOCKET_BUFFER_FLAG_CONNECTED), _head(0), _tail(0)
     {
@@ -52,7 +52,7 @@ struct Impl
     	m2m_wifi_handle_events(NULL);
     }
 
-    ~Impl()
+    ~WiFiClientImpl()
     {
         stop();
     }
@@ -73,7 +73,7 @@ WiFiClient::WiFiClient(){}
 
 WiFiClient::WiFiClient(uint8_t sock, uint8_t parentsock)
 {
-    m_impl.reset(new Impl(sock, parentsock));
+    m_impl.reset(new WiFiClientImpl(sock, parentsock));
 	WiFi._client[sock].m_impl = m_impl;
 }
 
@@ -133,12 +133,10 @@ int WiFiClient::connect(IPAddress ip, uint16_t port, uint8_t opt, const uint8_t 
 	}
 
     // create new impl object
-	m_impl.reset(new Impl(sock));
+	m_impl.reset(new WiFiClientImpl(sock));
 
 	// Connect to remote host:
 	if (connectSocket(m_impl->_socket, (struct sockaddr *)&addr, sizeof(struct sockaddr_in)) < 0) {
-		// close(m_impl->_socket);
-		// m_impl->_socket = -1;
         m_impl.reset();
 		return 0;
 	}
@@ -148,9 +146,7 @@ int WiFiClient::connect(IPAddress ip, uint16_t port, uint8_t opt, const uint8_t 
 	while (!IS_CONNECTED && millis() - start < 20000) {
 		m2m_wifi_handle_events(NULL);
 	}
-	if (!IS_CONNECTED) {
-		// close(m_impl->_socket);
-		// m_impl->_socket = -1;
+	if (!IS_CONNECTED){
         m_impl.reset();
 		return 0;
 	}
@@ -261,9 +257,7 @@ void WiFiClient::stop()
 uint8_t WiFiClient::connected()
 {
 	m2m_wifi_handle_events(NULL);
-	if (available())
-		return 1;
-	return IS_CONNECTED;
+	return available() || IS_CONNECTED;
 }
 
 uint32_t WiFiClient::flag() const

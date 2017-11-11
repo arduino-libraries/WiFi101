@@ -97,12 +97,13 @@ WiFiClient WiFiServer::available(uint8_t* status)
 			*status = 0;
 		}
 		return WiFiClient(((flag & SOCKET_BUFFER_FLAG_SPAWN_SOCKET_MSK) >> SOCKET_BUFFER_FLAG_SPAWN_SOCKET_POS), _socket + 1);
-	} else {
+	}
+    else {
 		WiFiClient client;
 
 		for (int sock = 0; sock < TCP_SOCK_MAX; sock++) {
 			client = WiFi._client[sock];
-			if (client.connected()) {
+			if (client && client.connected()) {
 				if (((client.flag() >> SOCKET_BUFFER_FLAG_PARENT_SOCKET_POS) & 0xff) == (uint8)(_socket + 1)) {
 					return client;
 				}
