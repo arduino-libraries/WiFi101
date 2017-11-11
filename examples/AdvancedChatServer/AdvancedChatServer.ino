@@ -81,44 +81,45 @@ void loop(){
         boolean newClient = true;
         for(byte i = 0; i < 4; i++){
 
-        //check whether this client refers to the same socket as one of the existing instances:
-        if(clients[i] == client){
-            newClient = false;
-            break;
-        }
-    }
-
-    if(newClient){
-
-        //check which of the existing clients can be overridden:
-        for(byte i = 0; i < 4; i++){
-            if (!clients[i] && clients[i]!=client){
-              clients[i] = client;
-              // clead out the input buffer:
-              client.flush();
-              Serial.println("We have a new client");
-              client.print("Hello, client number: ");
-              client.print(i);
-              client.println();
-              break;
+            //check whether this client refers to the same socket as one of the existing instances:
+            if(clients[i] == client){
+                newClient = false;
+                break;
             }
         }
-    }
 
-    if(client.available() > 0){
+        if(newClient){
 
-        // read the bytes incoming from the client:
-        char thisChar = client.read();
-
-        // echo the bytes back to all other connected clients:
-        for(byte i = 0; i < 4; i++){
-
-            if(clients[i] && (clients[i] != client)){
-                clients[i].write(thisChar);
+            //check which of the existing clients can be overridden:
+            for(byte i = 0; i < 4; i++){
+                if (!clients[i] && clients[i]!=client){
+                  clients[i] = client;
+                  // clead out the input buffer:
+                  client.flush();
+                  Serial.println("We have a new client");
+                  client.print("Hello, client number: ");
+                  client.print(i);
+                  client.println();
+                  break;
+                }
             }
         }
-        // echo the bytes to the server as well:
-        Serial.write(thisChar);
+
+        if(client.available() > 0){
+
+            // read the bytes incoming from the client:
+            char thisChar = client.read();
+
+            // echo the bytes back to all other connected clients:
+            for(byte i = 0; i < 4; i++){
+
+                if(clients[i] && (clients[i] != client)){
+                    clients[i].write(thisChar);
+                }
+            }
+            // echo the bytes to the server as well:
+            Serial.write(thisChar);
+        }
     }
 
     for(byte i = 0; i < 4; i++){
