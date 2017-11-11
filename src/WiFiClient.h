@@ -57,7 +57,7 @@ public:
 	using Print::write;
 
 private:
-    wifi101_internal::shared_ptr<struct WiFiClientImpl> m_impl;
+    shared_ptr<struct WiFiClientImpl> m_impl;
 	int connect(const char* host, uint16_t port, uint8_t opt);
 	int connect(IPAddress ip, uint16_t port, uint8_t opt, const uint8_t *hostname);
 };

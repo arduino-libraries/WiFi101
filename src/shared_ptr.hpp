@@ -6,21 +6,24 @@
  *
  * Distributed under the MIT License (MIT) (See accompanying file LICENSE.txt
  * or copy at http://opensource.org/licenses/MIT)
+ *
+ * Copyright (c) 2017 Fabian Schmidt (crocdialer@gmail.com)
+ * - removed dependency on stl functions
  */
 #pragma once
 
 #include <cstddef>      // NULL
 
-// #include <algorithm>    // std::swap
-
 // can be replaced by other error mechanism
 #include <cassert>
 
-namespace wifi101_internal
+// namespace for internal helpers
+namespace shared_ptr_internal
 {
 
 #define SHARED_ASSERT(x)    assert(x)
 
+// substitute std::swap
 template <typename T>
 inline void swap(T& lhs, T& rhs)
 {
@@ -28,6 +31,7 @@ inline void swap(T& lhs, T& rhs)
     lhs = rhs;
     rhs = tmp;
 }
+};
 
 /**
  * @brief implementation of reference counter for the following minimal smart pointer.
@@ -48,7 +52,7 @@ public:
     /// @brief Swap method for the copy-and-swap idiom (copy constructor and swap method)
     void swap(shared_ptr_count& lhs) throw() // never throws
     {
-        wifi101_internal::swap(pn, lhs.pn);
+        shared_ptr_internal::swap(pn, lhs.pn);
     }
     /// @brief getter of the underlying reference counter
     long use_count(void) const throw() // never throws
@@ -184,7 +188,7 @@ public:
     /// @brief Swap method for the copy-and-swap idiom (copy constructor and swap method)
     void swap(shared_ptr& lhs) throw() // never throws
     {
-        wifi101_internal::swap(px, lhs.px);
+        shared_ptr_internal::swap(px, lhs.px);
         pn.swap(lhs.pn);
     }
 
@@ -294,5 +298,3 @@ shared_ptr<T> dynamic_pointer_cast(const shared_ptr<U>& ptr) // never throws
         return shared_ptr<T>();
     }
 }
-
-};

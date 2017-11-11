@@ -105,7 +105,7 @@ int WiFiClient::connect(IPAddress ip, uint16_t port)
 int WiFiClient::connect(const char* host, uint16_t port, uint8_t opt)
 {
 	IPAddress remote_addr;
-	if (WiFi.hostByName(host, remote_addr)) {
+	if(WiFi.hostByName(host, remote_addr)){
 		return connect(remote_addr, port, opt, (const uint8_t *)host);
 	}
 	return 0;
@@ -237,16 +237,13 @@ int WiFiClient::read(uint8_t* buf, size_t size)
 
 int WiFiClient::peek()
 {
-	if(!available())
-		return -1;
-
-	return m_impl->_buffer[m_impl->_tail];
+	if(available()){ return m_impl->_buffer[m_impl->_tail]; }
+    return -1;
 }
 
 void WiFiClient::flush()
 {
-	while (available())
-		read();
+	while(available()){ read(); }
 }
 
 void WiFiClient::stop()
