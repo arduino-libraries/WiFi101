@@ -137,8 +137,9 @@ int WiFiClient::connect(IPAddress ip, uint16_t port, uint8_t opt, const uint8_t 
 
 	// Connect to remote host:
 	if (connectSocket(m_impl->_socket, (struct sockaddr *)&addr, sizeof(struct sockaddr_in)) < 0) {
-		close(m_impl->_socket);
-		m_impl->_socket = -1;
+		// close(m_impl->_socket);
+		// m_impl->_socket = -1;
+        m_impl.reset();
 		return 0;
 	}
 
@@ -148,8 +149,9 @@ int WiFiClient::connect(IPAddress ip, uint16_t port, uint8_t opt, const uint8_t 
 		m2m_wifi_handle_events(NULL);
 	}
 	if (!IS_CONNECTED) {
-		close(m_impl->_socket);
-		m_impl->_socket = -1;
+		// close(m_impl->_socket);
+		// m_impl->_socket = -1;
+        m_impl.reset();
 		return 0;
 	}
 
@@ -197,22 +199,18 @@ size_t WiFiClient::write(const uint8_t *buf, size_t size)
 
 int WiFiClient::available()
 {
-	m2m_wifi_handle_events(NULL);
-
-	if(m_impl){
-		return m_impl->_head - m_impl->_tail;
-	}
+    if(m_impl)
+    {
+        m2m_wifi_handle_events(NULL);
+        return m_impl->_head - m_impl->_tail;
+    }
 	return 0;
 }
 
 int WiFiClient::read()
 {
 	uint8_t b;
-
-	if (read(&b, sizeof(b)) == -1) {
-		return -1;
-	}
-
+	if(read(&b, sizeof(b)) == -1){ return -1; }
 	return b;
 }
 
@@ -222,13 +220,8 @@ int WiFiClient::read(uint8_t* buf, size_t size)
 	// but we need a 16 bit data type here
 	uint16_t size_tmp = available();
 
-	if (size_tmp == 0) {
-		return -1;
-	}
-
-	if (size < size_tmp) {
-		size_tmp = size;
-	}
+	if(!m_impl || size_tmp == 0){ return -1; }
+	if (size < size_tmp){ size_tmp = size; }
 
     uint8_t* src_buf = m_impl->_buffer;
     uint32_t& tail = m_impl->_tail;
@@ -248,7 +241,7 @@ int WiFiClient::read(uint8_t* buf, size_t size)
 
 int WiFiClient::peek()
 {
-	if (!available())
+	if(!available())
 		return -1;
 
 	return m_impl->_buffer[m_impl->_tail];
