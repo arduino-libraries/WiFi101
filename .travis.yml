@@ -45,4 +45,4 @@ script:
   - buildExampleSketch WiFiWebClient
   - buildExampleSketch WiFiWebClientRepeating
   - buildExampleSketch WiFiWebServer
-
+  - buildExampleSketch WiFiAdvancedChatServer
