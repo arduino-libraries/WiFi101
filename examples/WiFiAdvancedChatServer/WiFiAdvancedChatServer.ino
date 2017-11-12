@@ -133,13 +133,13 @@ void loop(){
         if(clients[i] && !clients[i].connected()){
 
             if(clients[i] && !(clients[i].connected())){
-                // client.stop() invalidates the internal socket-descriptor, so next use of == will allways return false;
                 Serial.print("\nclient number: ");
                 Serial.print(i);
                 Serial.println(" disconnected.");
                 clients[i].stop();
             }
-            // client.stop() invalidates the internal socket-descriptor, so next use of == will allways return false;
+            // client.stop() invalidates the internal socket-descriptor,
+            // so next use of == will return false;
             clients[i].stop();
         }
     }
