@@ -12,10 +12,10 @@
  */
 #pragma once
 
-#include <cstddef>      // NULL
+#include <stdint.h>
 
 // can be replaced by other error mechanism
-#include <cassert>
+#include <assert.h>
 
 // namespace for internal helpers
 namespace shared_ptr_internal
