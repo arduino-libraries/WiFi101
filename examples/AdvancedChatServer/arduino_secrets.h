@@ -1,3 +1,2 @@
-#define SECRET_SSID ""
-#define SECRET_PASS ""
-
+#define SECRET_SSID "egligeil2.4"
+#define SECRET_PASS "#LoftFlower!"

@@ -242,7 +242,14 @@ void WiFiClient::flush()
 
 void WiFiClient::stop()
 {
-	m_impl.reset();
+    for(uint8_t i = 0; i < TCP_SOCK_MAX; ++i)
+    {
+        if(WiFi._client[i] == *this)
+        {
+             WiFi._client[i].m_impl.reset();
+        }
+    }
+    m_impl.reset();
 }
 
 uint8_t WiFiClient::connected()
@@ -264,7 +271,7 @@ uint8_t WiFiClient::status()
 
 WiFiClient::operator bool()
 {
-	return m_impl;
+	return m_impl && m_impl->_socket > 0;
 }
 
 WiFiClient& WiFiClient::operator=(const WiFiClient &other)

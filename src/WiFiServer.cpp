@@ -89,31 +89,35 @@ WiFiClient WiFiServer::available(uint8_t* status)
 	uint32_t flag;
 	m2m_wifi_handle_events(NULL);
 
-	if(_flag & SOCKET_BUFFER_FLAG_SPAWN)
-    {
+	if(_flag & SOCKET_BUFFER_FLAG_SPAWN){
 		flag = _flag;
 		_flag &= ~SOCKET_BUFFER_FLAG_SPAWN_SOCKET_MSK;
 		_flag &= ~SOCKET_BUFFER_FLAG_SPAWN;
 		if(status){ *status = 0; }
 		return WiFiClient(((flag & SOCKET_BUFFER_FLAG_SPAWN_SOCKET_MSK) >> SOCKET_BUFFER_FLAG_SPAWN_SOCKET_POS), _socket + 1);
 	}
-    else
-    {
-		WiFiClient client;
+    else{
+		WiFiClient* available_clients[TCP_SOCK_MAX];
+        size_t num_clients = 0;
 
-		for(int sock = 0; sock < TCP_SOCK_MAX; sock++)
-        {
-			client = WiFi._client[sock];
+		for(int sock = 0; sock < TCP_SOCK_MAX; sock++){
+			WiFiClient *client_ptr = WiFi._client + sock;
 
-			if(client && client.connected())
-            {
+			if(*client_ptr && client_ptr->connected()){
                 bool spawned_by_server =
-                    ((client.flag() >> SOCKET_BUFFER_FLAG_PARENT_SOCKET_POS) & 0xff) ==
+                    ((client_ptr->flag() >> SOCKET_BUFFER_FLAG_PARENT_SOCKET_POS) & 0xff) ==
                     (uint8)(_socket + 1);
 
-				if(spawned_by_server){ return client; }
+                // if the client was spawned by the server socket, add it to available clients
+                if(spawned_by_server){ available_clients[num_clients++] = client_ptr; }
 			}
 		}
+
+        // of our available clients, if any, return a random one
+        if(num_clients){
+            uint8_t random_index = rand() % num_clients;
+            return *available_clients[random_index];
+        }
 	}
 	return WiFiClient();
 }
