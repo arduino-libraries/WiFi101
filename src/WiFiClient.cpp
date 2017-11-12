@@ -271,7 +271,7 @@ uint8_t WiFiClient::status()
 
 WiFiClient::operator bool()
 {
-	return m_impl && m_impl->_socket > 0;
+	return m_impl;
 }
 
 WiFiClient& WiFiClient::operator=(const WiFiClient &other)
