@@ -5,11 +5,8 @@
  to all connected clients but the client the message comes from.
  To use telnet to  your device's IP address and type.
  You can see the client's input in the serial monitor as well.
- Using an Arduino Wiznet Ethernet shield.
+ Using an Arduino ATWINC1500 WiFi shield.
 
- Circuit:
- * Ethernet shield attached to pins 10, 11, 12, 13
- * Analog inputs attached to pins A0 through A5 (optional)
 
  created 18 Dec 2009
  by David A. Mellis
@@ -18,6 +15,9 @@
  redesigned to make use of operator== 25 Nov 2013
  by Norbert Truchsess
 
+ modified 12 Nov 2017
+ by Croc Dialer (crocdialer@gmail.com)
+ ported this sample from Ethernet2- to WiFi101-library
  */
 
 #include <SPI.h>
@@ -39,7 +39,7 @@ WiFiClient clients[4];
 void setup(){
 
     //Configure pins for Adafruit ATWINC1500 Feather
-    WiFi.setPins(8, 7, 4, 2);
+    // WiFi.setPins(8, 7, 4, 2);
 
     //Initialize serial and wait for port to open:
     Serial.begin(9600);
