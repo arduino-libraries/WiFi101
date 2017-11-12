@@ -87,26 +87,31 @@ uint8_t WiFiServer::begin(uint8_t opt)
 WiFiClient WiFiServer::available(uint8_t* status)
 {
 	uint32_t flag;
-
 	m2m_wifi_handle_events(NULL);
-	if (_flag & SOCKET_BUFFER_FLAG_SPAWN) {
+
+	if(_flag & SOCKET_BUFFER_FLAG_SPAWN)
+    {
 		flag = _flag;
 		_flag &= ~SOCKET_BUFFER_FLAG_SPAWN_SOCKET_MSK;
 		_flag &= ~SOCKET_BUFFER_FLAG_SPAWN;
-		if (status != NULL) {
-			*status = 0;
-		}
+		if(status){ *status = 0; }
 		return WiFiClient(((flag & SOCKET_BUFFER_FLAG_SPAWN_SOCKET_MSK) >> SOCKET_BUFFER_FLAG_SPAWN_SOCKET_POS), _socket + 1);
 	}
-    else {
+    else
+    {
 		WiFiClient client;
 
-		for (int sock = 0; sock < TCP_SOCK_MAX; sock++) {
+		for(int sock = 0; sock < TCP_SOCK_MAX; sock++)
+        {
 			client = WiFi._client[sock];
-			if (client && client.connected()) {
-				if (((client.flag() >> SOCKET_BUFFER_FLAG_PARENT_SOCKET_POS) & 0xff) == (uint8)(_socket + 1)) {
-					return client;
-				}
+
+			if(client && client.connected())
+            {
+                bool spawned_by_server =
+                    ((client.flag() >> SOCKET_BUFFER_FLAG_PARENT_SOCKET_POS) & 0xff) ==
+                    (uint8)(_socket + 1);
+
+				if(spawned_by_server){ return client; }
 			}
 		}
 	}

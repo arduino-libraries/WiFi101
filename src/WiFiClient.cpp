@@ -54,11 +54,6 @@ struct WiFiClientImpl
 
     ~WiFiClientImpl()
     {
-        stop();
-    }
-
-    void stop()
-    {
         if(_socket > 0)
         {
             socketBufferUnregister(_socket);
@@ -150,7 +145,6 @@ int WiFiClient::connect(IPAddress ip, uint16_t port, uint8_t opt, const uint8_t 
         m_impl.reset();
 		return 0;
 	}
-
 	WiFi._client[sock].m_impl = m_impl;
 	return 1;
 }
@@ -216,7 +210,7 @@ int WiFiClient::read(uint8_t* buf, size_t size)
 	// but we need a 16 bit data type here
 	uint16_t size_tmp = available();
 
-	if(!m_impl || size_tmp == 0){ return -1; }
+	if(size_tmp == 0){ return -1; }
 	if (size < size_tmp){ size_tmp = size; }
 
     uint8_t* src_buf = m_impl->_buffer;
@@ -248,7 +242,7 @@ void WiFiClient::flush()
 
 void WiFiClient::stop()
 {
-	if(m_impl){ m_impl->stop(); }
+	m_impl.reset();
 }
 
 uint8_t WiFiClient::connected()
@@ -281,7 +275,7 @@ WiFiClient& WiFiClient::operator=(const WiFiClient &other)
 
 bool WiFiClient::operator==(const WiFiClient &other) const
 {
-    m_impl && m_impl == other.m_impl;
+    return m_impl && (m_impl == other.m_impl);
 }
 
 bool WiFiClient::operator!=(const WiFiClient &other) const

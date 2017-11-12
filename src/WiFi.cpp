@@ -280,8 +280,6 @@ int WiFiClass::init()
 	_resolve = 0;
 	_remoteMacAddress = 0;
 
-    // memset(_client, 0, sizeof(WiFiClient *) * TCP_SOCK_MAX);
-
 	extern uint32 nmdrv_firm_ver;
 
 	if (nmdrv_firm_ver >= M2M_MAKE_VERSION(19, 5, 0)) {

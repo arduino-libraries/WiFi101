@@ -37,22 +37,22 @@ public:
 
 	int connectSSL(IPAddress ip, uint16_t port);
 	int connectSSL(const char* host, uint16_t port);
-	virtual int connect(IPAddress ip, uint16_t port);
-	virtual int connect(const char* host, uint16_t port);
-	virtual size_t write(uint8_t);
-	virtual size_t write(const uint8_t *buf, size_t size);
-	virtual int available();
-	virtual int read();
-	virtual int read(uint8_t *buf, size_t size);
-	virtual int peek();
-	virtual void flush();
-	virtual void stop();
-	virtual uint8_t connected();
+	virtual int connect(IPAddress ip, uint16_t port) override;
+	virtual int connect(const char* host, uint16_t port) override;
+	virtual size_t write(uint8_t) override;
+	virtual size_t write(const uint8_t *buf, size_t size) override;
+	virtual int available() override;
+	virtual int read() override;
+	virtual int read(uint8_t *buf, size_t size) override;
+	virtual int peek() override;
+	virtual void flush() override;
+	virtual void stop() override;
+	virtual uint8_t connected() override;
     uint32_t flag() const;
-	virtual operator bool();
+	virtual operator bool() override;
 	virtual WiFiClient& operator=(const WiFiClient &other);
-    virtual bool operator==(const WiFiClient &other) const;
-    virtual bool operator!=(const WiFiClient &other) const;
+    bool operator==(const WiFiClient &other) const;
+    bool operator!=(const WiFiClient &other) const;
 
 	using Print::write;
 
