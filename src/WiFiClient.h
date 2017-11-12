@@ -49,7 +49,7 @@ public:
 	virtual void stop() override;
 	virtual uint8_t connected() override;
     uint32_t flag() const;
-	virtual operator bool() override;
+	explicit operator bool() override;
 	virtual WiFiClient& operator=(const WiFiClient &other);
     bool operator==(const WiFiClient &other) const;
     bool operator!=(const WiFiClient &other) const;
