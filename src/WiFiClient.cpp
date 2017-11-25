@@ -189,7 +189,9 @@ size_t WiFiClient::write(const uint8_t *buf, size_t size)
 
 	m2m_wifi_handle_events(NULL);
 
-	while ((err = send(_socket, (void *)buf, size, 0)) < 0) {
+	unsigned long start = millis();
+  
+	while (((err = send(_socket, (void *)buf, size, 0)) < 0) && (millis() - start) < 60000) {
 		// Exit on fatal error, retry if buffer not ready.
 		if (err != SOCK_ERR_BUFFER_FULL) {
 			setWriteError();
@@ -199,6 +201,11 @@ size_t WiFiClient::write(const uint8_t *buf, size_t size)
 		}
 		m2m_wifi_handle_events(NULL);
 	}
+
+    if ((millis() - start) >= 60000) // Timeout occured, Fix #182
+    {
+        return 0;
+    }
 	
 	// Network led OFF (rev A then rev B).
 	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 1);
