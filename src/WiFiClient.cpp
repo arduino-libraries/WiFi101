@@ -202,10 +202,10 @@ size_t WiFiClient::write(const uint8_t *buf, size_t size)
 		m2m_wifi_handle_events(NULL);
 	}
 
-    if ((millis() - start) >= 60000) // Timeout occured, Fix #182
-    {
+	if ((millis() - start) >= 60000) // Timeout occured, Fix #182
+	{
         return 0;
-    }
+	}
 	
 	// Network led OFF (rev A then rev B).
 	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 1);
