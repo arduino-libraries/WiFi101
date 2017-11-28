@@ -28,11 +28,6 @@
 
 #include <Arduino.h>
 
-extern "C" {
-	#include "driver/include/m2m_wifi.h"
-	#include "socket/include/socket.h"
-}
-
 #include "WiFiClient.h"
 #include "WiFiSSLClient.h"
 #include "WiFiServer.h"
@@ -92,7 +87,6 @@ public:
 	uint8_t _scan_auth;
 	uint8_t _scan_channel;
 	char _ssid[M2M_MAX_SSID_LEN];
-	WiFiClient *_client[TCP_SOCK_MAX];
 
 	WiFiClass();
 

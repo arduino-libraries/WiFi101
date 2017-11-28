@@ -17,30 +17,21 @@
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#include <string.h>
+
 extern "C" {
-	#include "socket/include/socket.h"
 	#include "driver/include/m2m_periph.h"
-	extern uint8 hif_small_xfer;
 }
 
-#include <string.h>
+#include "utility/WiFiSocket.h"
+
 #include "WiFi101.h"
 #include "WiFiUdp.h"
-#include "WiFiClient.h"
-#include "WiFiServer.h"
-
-#define READY	(_flag & SOCKET_BUFFER_FLAG_BIND)
 
 /* Constructor. */
 WiFiUDP::WiFiUDP()
 {
 	_socket = -1;
-	_flag = 0;
-	_head = 0;
-	_tail = 0;
-	_rcvSize = 0;
-	_rcvPort = 0;
-	_rcvIP = 0;
 	_sndSize = 0;
 }
 
@@ -50,12 +41,6 @@ uint8_t WiFiUDP::begin(uint16_t port)
 	struct sockaddr_in addr;
 	uint32 u32EnableCallbacks = 0;
 
-	_flag = 0;
-	_head = 0;
-	_tail = 0;
-	_rcvSize = 0;
-	_rcvPort = 0;
-	_rcvIP = 0;
 	_sndSize = 0;
 
 	// Initialize socket address structure.
@@ -63,33 +48,19 @@ uint8_t WiFiUDP::begin(uint16_t port)
 	addr.sin_port = _htons(port);
 	addr.sin_addr.s_addr = 0;
 
-	// Open TCP server socket.
-	if ((_socket = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
+	// Open UDP server socket.
+	if ((_socket = WiFiSocket.create(AF_INET, SOCK_DGRAM, 0)) < 0) {
 		return 0;
 	}
 
-	// Add socket buffer handler:
-	socketBufferRegister(_socket, &_flag, &_head, &_tail, (uint8 *)_recvBuffer);
-	setsockopt(_socket, SOL_SOCKET, SO_SET_UDP_SEND_CALLBACK, &u32EnableCallbacks, 0);
+	WiFiSocket.setopt(_socket, SOL_SOCKET, SO_SET_UDP_SEND_CALLBACK, &u32EnableCallbacks, 0);
 
 	// Bind socket:
-	if (bind(_socket, (struct sockaddr *)&addr, sizeof(struct sockaddr_in)) < 0) {
-		close(_socket);
+	if (WiFiSocket.bind(_socket, (struct sockaddr *)&addr, sizeof(struct sockaddr_in)) < 0) {
+		WiFiSocket.close(_socket);
 		_socket = -1;
 		return 0;
 	}
-	
-	// Wait for connection or timeout:
-	unsigned long start = millis();
-	while (!READY && millis() - start < 2000) {
-		m2m_wifi_handle_events(NULL);
-	}
-	if (!READY) {
-		close(_socket);
-		_socket = -1;
-		return 0;
-	}
-	_flag &= ~SOCKET_BUFFER_FLAG_BIND;
 
 	return 1;
 }
@@ -111,28 +82,28 @@ uint8_t WiFiUDP::beginMulticast(IPAddress ip, uint16_t port)
    will return zero if parsePacket hasn't been called yet */
 int WiFiUDP::available()
 {
-	m2m_wifi_handle_events(NULL);
-
-	if (_socket != -1) {
-		return _rcvSize;
+	if (_socket == -1) {
+		return 0;
 	}
-	return 0;
+
+	return WiFiSocket.available(_socket);
  }
 
 /* Release any resources being used by this WiFiUDP instance */
 void WiFiUDP::stop()
 {
-	if (_socket < 0)
+	if (_socket == -1) {
 		return;
+	}
 
-	socketBufferUnregister(_socket);
-	close(_socket);
+	WiFiSocket.close(_socket);
 	_socket = -1;
 }
 
 int WiFiUDP::beginPacket(const char *host, uint16_t port)
 {
 	IPAddress ip;
+
 	if (WiFi.hostByName(host, ip)) {
 		return beginPacket(ip, port);
 	}
@@ -161,19 +132,13 @@ int WiFiUDP::endPacket()
 	addr.sin_port = _htons(_sndPort);
 	addr.sin_addr.s_addr = _sndIP;
 
-	if (sendto(_socket, (void *)_sndBuffer, _sndSize, 0,
-			(struct sockaddr *)&addr, sizeof(addr)) < 0) {
-		// Network led OFF (rev A then rev B).
-		m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 1);
-		m2m_periph_gpio_set_val(M2M_PERIPH_GPIO5, 1);
-		return 0;
-	}
+	int result = WiFiSocket.sendto(_socket, (void *)_sndBuffer, _sndSize, 0, (struct sockaddr *)&addr, sizeof(addr));
 
 	// Network led OFF (rev A then rev B).
 	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 1);
 	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO5, 1);
 
-	return 1;
+	return (result < 0) ? 0 : 1;
 }
 
 size_t WiFiUDP::write(uint8_t byte)
@@ -196,22 +161,13 @@ size_t WiFiUDP::write(const uint8_t *buffer, size_t size)
 
 int WiFiUDP::parsePacket()
 {
-	m2m_wifi_handle_events(NULL);
-
-	if (_socket != -1) {
-		if (_rcvSize != 0) {
-			return _rcvSize;
-		}
-		if (_head != _tail) {
-			_rcvSize = ((uint16_t)_recvBuffer[_tail] << 8) + (uint16_t)_recvBuffer[_tail + 1];
-			_rcvPort = ((uint16_t)_recvBuffer[_tail + 2] << 8) + (uint16_t)_recvBuffer[_tail + 3];
-			_rcvIP =   ((uint32_t)_recvBuffer[_tail + 4] << 24) + ((uint32_t)_recvBuffer[_tail + 5] << 16) +
-					((uint32_t)_recvBuffer[_tail + 6] << 8) + (uint32_t)_recvBuffer[_tail + 7];
-			_tail += SOCKET_BUFFER_UDP_HEADER_SIZE;
-			return _rcvSize;
-		}
+	if (_socket == -1) {
+		return 0;
 	}
-	return 0;
+
+	// TODO: if packet has been previously parsed, but not read, discard data
+
+	return WiFiSocket.available(_socket);
 }
 
 int WiFiUDP::read()
@@ -239,51 +195,49 @@ int WiFiUDP::read(unsigned char* buf, size_t size)
 		size_tmp = size;
 	}
 
-	for (uint32_t i = 0; i < size_tmp; ++i) {
-		buf[i] = _recvBuffer[_tail++];
-		_rcvSize--;
+	// Network led ON (rev A then rev B).
+	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 0);
+	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO5, 0);
 
-		if (_tail == _head) {
-			// the full buffered data has been read, reset head and tail for next transfer
-			_tail = _head = 0;
+	int result = WiFiSocket.read(_socket, buf, size);
 
-			// clear the buffer full flag
-			_flag &= ~SOCKET_BUFFER_FLAG_FULL;
+	// Network led OFF (rev A then rev B).
+	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 1);
+	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO5, 1);
 
-			// setup buffer and buffer size to transfer the remainder of the current packet
-			// or next received packet
-			if (hif_small_xfer) {
-				recvfrom(_socket, _recvBuffer, SOCKET_BUFFER_MTU, 0);
-			} else {
-				recvfrom(_socket, _recvBuffer + SOCKET_BUFFER_UDP_HEADER_SIZE, SOCKET_BUFFER_MTU, 0);
-			}
-			m2m_wifi_handle_events(NULL);
-		}
-	}
-
-	return size_tmp;
+	return result;
 }
 
 int WiFiUDP::peek()
 {
-	if (!available())
+	if (!available()) {
 		return -1;
+	}
 
-	return _recvBuffer[_tail];
+	return WiFiSocket.peek(_socket);
 }
 
 void WiFiUDP::flush()
 {
-	while (available())
+	while (available()) {
 		read();
+	}
 }
 
-IPAddress  WiFiUDP::remoteIP()
+IPAddress WiFiUDP::remoteIP()
 {
-	return _rcvIP;
+	if (_socket == -1) {
+		return IPAddress(0, 0, 0, 0);
+	}
+
+	return WiFiSocket.remoteIP(_socket);
 }
 
 uint16_t  WiFiUDP::remotePort()
 {
-	return _rcvPort;
+	if (_socket == -1) {
+		return 0;
+	}
+
+	return _htons(WiFiSocket.remotePort(_socket));
 }

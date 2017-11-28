@@ -33,16 +33,16 @@
 #define WIFI_101_NO_TIME_H
 #endif
 
+#include "utility/WiFiSocket.h"
+
 #include "WiFi101.h"
 
 extern "C" {
   #include "bsp/include/nm_bsp.h"
   #include "bsp/include/nm_bsp_arduino.h"
-  #include "socket/include/socket_buffer.h"
-  #include "socket/include/m2m_socket_host_if.h"
-  #include "driver/source/nmasic.h"
   #include "driver/include/m2m_periph.h"
   #include "driver/include/m2m_ssl.h"
+  #include "driver/include/m2m_wifi.h"
 }
 
 static void wifi_cb(uint8_t u8MsgType, void *pvMsg)
@@ -81,9 +81,8 @@ static void wifi_cb(uint8_t u8MsgType, void *pvMsg)
 					}
 					// Close sockets to clean state
 					// Clients will need to reconnect once the physical link will be re-established
-					for (int i=0; i < TCP_SOCK_MAX; i++) {
-						if (WiFi._client[i])
-							WiFi._client[i]->stop();
+					for (int i = 0; i < TCP_SOCK_MAX; i++) {
+						WiFiSocket.close(i);
 					}
 				} else if (WiFi._mode == WL_AP_MODE) {
 					WiFi._status = WL_AP_LISTENING;
@@ -216,6 +215,11 @@ static void resolve_cb(uint8_t * /* hostName */, uint32_t hostIp)
 	WiFi._resolve = hostIp;
 }
 
+static void socket_cb(SOCKET sock, uint8 u8Msg, void *pvMsg)
+{
+	WiFiSocket.eventCallback(sock, u8Msg, pvMsg);
+}
+
 static void ping_cb(uint32 u32IPAddr, uint32 u32RTT, uint8 u8ErrorCode)
 {
 	if (PING_ERR_SUCCESS == u8ErrorCode) {
@@ -270,8 +274,7 @@ int WiFiClass::init()
 
 	// Initialize socket API and register socket callback:
 	socketInit();
-	socketBufferInit();
-	registerSocketCallback(socketBufferCb, resolve_cb);
+	registerSocketCallback(socket_cb, resolve_cb);
 	_init = 1;
 	_status = WL_IDLE_STATUS;
 	_localip = 0;
@@ -280,7 +283,6 @@ int WiFiClass::init()
 	_dhcp = 1;
 	_resolve = 0;
 	_remoteMacAddress = 0;
-	memset(_client, 0, sizeof(WiFiClient *) * TCP_SOCK_MAX);
 
 	extern uint32 nmdrv_firm_ver;
 
