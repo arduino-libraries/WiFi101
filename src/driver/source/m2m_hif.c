@@ -427,10 +427,6 @@ ERR2:
 	return ret;
 }
 
-#ifdef ARDUINO
-volatile uint8 hif_small_xfer = 0;
-#endif
-
 /**
 *	@fn		hif_isr
 *	@brief	Host interface interrupt service routine
@@ -574,13 +570,7 @@ static sint8 hif_isr(void)
 					ret = M2M_ERR_BUS_FAIL;
 					goto ERR1;
 				}
-#ifdef ARDUINO
-				if(hif_small_xfer)
-				{
-					/*Pause SPI transfer*/
-					return ret;
-				}
-#endif
+
 				if(gstrHifCxt.u8HifRXDone)
 				{
 					M2M_ERR("(hif) host app didn't set RX Done <%u><%X>\n", strHif.u8Gid, strHif.u8Opcode);
@@ -615,10 +605,6 @@ ERR1:
 	return ret;
 }
 
-#ifdef ARDUINO
-void Socket_ReadSocketData_Small(void);
-#endif
-
 /**
 *	@fn		hif_handle_isr(void)
 *	@brief	Handle interrupt received from NMC1500 firmware.
@@ -629,14 +615,6 @@ sint8 hif_handle_isr(void)
 {
 	sint8 ret = M2M_SUCCESS;	
 
-#ifdef ARDUINO
-	if(hif_small_xfer) {
-		/*SPI protocol paused to allow small transfer*/
-		Socket_ReadSocketData_Small();
-		return ret;
-	}
-#endif
-
 	while (gstrHifCxt.u8Interrupt) {
 		/*must be at that place because of the race of interrupt increment and that decrement*/
 		/*when the interrupt enabled*/
@@ -644,11 +622,6 @@ sint8 hif_handle_isr(void)
 		while(1)
 		{
 			ret = hif_isr();
-#ifdef ARDUINO
-			if(hif_small_xfer) {
-				return ret;
-			}
-#endif
 			if(ret == M2M_SUCCESS) {
 				/*we will try forever untill we get that interrupt*/
 				/*Fail return errors here due to bus errors (reading expected values)*/
