@@ -304,7 +304,9 @@ static void m2m_ip_cb(uint8 u8OpCode, uint16 u16BufferSize,uint32 u32Address)
 		sint16				s16RecvStatus;
 		tstrRecvReply		strRecvReply;
 		uint16				u16ReadSize;
+#ifndef ARDUINO
 		tstrSocketRecvMsg	strRecvMsg;
+#endif
 		uint8				u8CallbackMsgID = SOCKET_MSG_RECV;
 		uint16				u16DataOffset;
 
@@ -328,16 +330,30 @@ static void m2m_ip_cb(uint8 u8OpCode, uint16 u16BufferSize,uint32 u32Address)
 
 			s16RecvStatus	= NM_BSP_B_L_16(strRecvReply.s16RecvStatus);
 			u16DataOffset	= NM_BSP_B_L_16(strRecvReply.u16DataOffset);
+#ifndef ARDUINO
 			strRecvMsg.strRemoteAddr.sin_port 			= strRecvReply.strRemoteAddr.u16Port;
 			strRecvMsg.strRemoteAddr.sin_addr.s_addr 	= strRecvReply.strRemoteAddr.u32IPAddr;
-
+#endif
 			if(u16SessionID == gastrSockets[sock].u16SessionID)
 			{
 #ifdef ARDUINO
-				if((s16RecvStatus > 0) && (s16RecvStatus < (sint32)u16BufferSize))
+				// Avoid calling Socket_ReadSocketData because it pulls all the socket data
+				// from the WINC1500 at once.
+				//
+				// Call the callback with the recv address and recv data info. Later,
+				// the data will be pulled from the address using nm_read_block.
+
+				strRecvReply.s16RecvStatus = s16RecvStatus;
+				strRecvReply.u16DataOffset = u16DataOffset;
+				if(gpfAppSocketCb) {
+					if (s16RecvStatus > 0) {
+						u32Address += u16DataOffset;
+						gpfAppSocketCb(sock,SOCKET_MSG_RECV_ADDRESS,&u32Address);
+					}
+					gpfAppSocketCb(sock,u8CallbackMsgID, &strRecvReply);
+				}
 #else
 				if((s16RecvStatus > 0) && (s16RecvStatus < u16BufferSize))
-#endif
 				{
 					/* Skip incoming bytes until reaching the Start of Application Data. 
 					*/
@@ -357,6 +373,7 @@ static void m2m_ip_cb(uint8 u8OpCode, uint16 u16BufferSize,uint32 u32Address)
 					if(gpfAppSocketCb)
 						gpfAppSocketCb(sock,u8CallbackMsgID, &strRecvMsg);
 				}
+#endif
 			}
 			else
 			{
@@ -605,7 +622,11 @@ Version
 Date
 		5 June 2012
 *********************************************************************/
+#ifdef ARDUINO
+sint8 bindSocket(SOCKET sock, struct sockaddr *pstrAddr, uint8 u8AddrLen)
+#else
 sint8 bind(SOCKET sock, struct sockaddr *pstrAddr, uint8 u8AddrLen)
+#endif
 {
 	sint8	s8Ret = SOCK_ERR_INVALID_ARG;
 	if((pstrAddr != NULL) && (sock >= 0) && (gastrSockets[sock].bIsUsed == 1) && (u8AddrLen != 0))
@@ -650,7 +671,11 @@ Version
 Date
 		5 June 2012
 *********************************************************************/
+#ifdef ARDUINO
+sint8 listenSocket(SOCKET sock, uint8 backlog)
+#else
 sint8 listen(SOCKET sock, uint8 backlog)
+#endif
 {
 	sint8	s8Ret = SOCK_ERR_INVALID_ARG;
 	
@@ -830,7 +855,11 @@ Version
 Date
 		4 June 2012
 *********************************************************************/
+#ifdef ARDUINO
+sint16 sendtoSocket(SOCKET sock, void *pvSendBuffer, uint16 u16SendLength, uint16 flags, struct sockaddr *pstrDestAddr, uint8 u8AddrLen)
+#else
 sint16 sendto(SOCKET sock, void *pvSendBuffer, uint16 u16SendLength, uint16 flags, struct sockaddr *pstrDestAddr, uint8 u8AddrLen)
+#endif
 {
 #ifdef ARDUINO
 	// Silence "unused" warning
@@ -893,8 +922,11 @@ Date
 sint16 recv(SOCKET sock, void *pvRecvBuf, uint16 u16BufLen, uint32 u32Timeoutmsec)
 {
 	sint16	s16Ret = SOCK_ERR_INVALID_ARG;
-	
+#ifdef ARDUINO
+	if((sock >= 0) && /*(pvRecvBuf != NULL) && (u16BufLen != 0) &&*/ (gastrSockets[sock].bIsUsed == 1))
+#else
 	if((sock >= 0) && (pvRecvBuf != NULL) && (u16BufLen != 0) && (gastrSockets[sock].bIsUsed == 1))
+#endif
 	{
 		s16Ret = SOCK_ERR_NO_ERROR;
 		gastrSockets[sock].pu8UserBuffer 		= (uint8*)pvRecvBuf;
@@ -946,7 +978,11 @@ Version
 Date
 		4 June 2012
 *********************************************************************/
+#ifdef ARDUINO
+sint8 closeSocket(SOCKET sock)
+#else
 sint8 close(SOCKET sock)
+#endif
 {
 	sint8	s8Ret = SOCK_ERR_INVALID_ARG;
     M2M_INFO("Sock to delete <%d>\n", sock);
@@ -995,7 +1031,11 @@ Date
 sint16 recvfrom(SOCKET sock, void *pvRecvBuf, uint16 u16BufLen, uint32 u32Timeoutmsec)
 {
 	sint16	s16Ret = SOCK_ERR_NO_ERROR;
+#ifdef ARDUINO
+	if((sock >= 0) && /*(pvRecvBuf != NULL) && (u16BufLen != 0) &&*/ (gastrSockets[sock].bIsUsed == 1))
+#else
 	if((sock >= 0) && (pvRecvBuf != NULL) && (u16BufLen != 0) && (gastrSockets[sock].bIsUsed == 1))
+#endif
 	{
 		if(gastrSockets[sock].bIsUsed)
 		{
