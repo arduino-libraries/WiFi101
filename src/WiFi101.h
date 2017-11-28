@@ -28,6 +28,10 @@
 
 #include <Arduino.h>
 
+extern "C" {
+	#include "driver/include/m2m_wifi.h"
+}
+
 #include "WiFiClient.h"
 #include "WiFiSSLClient.h"
 #include "WiFiServer.h"
