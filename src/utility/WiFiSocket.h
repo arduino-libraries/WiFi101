@@ -59,8 +59,7 @@ private:
   {
     uint8_t state;
     SOCKET parent;
-    uint32_t recvAddress;
-    tstrRecvReply recvReply;
+    tstrSocketRecvMsg recvMsg;
   } _info[MAX_SOCKET];
 };
 

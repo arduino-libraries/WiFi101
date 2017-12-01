@@ -83,6 +83,9 @@ typedef struct {
 }tstrHifContext;
 
 volatile tstrHifContext gstrHifCxt;
+#ifdef ARDUINO
+volatile uint8 hif_receive_blocked = 0;
+#endif
 
 static void isr(void)
 {
@@ -96,6 +99,9 @@ static sint8 hif_set_rx_done(void)
 	uint32 reg;
 	sint8 ret = M2M_SUCCESS;
 
+#ifdef ARDUINO
+	hif_receive_blocked = 0;
+#endif
 	gstrHifCxt.u8HifRXDone = 0;
 #ifdef NM_EDGE_INTERRUPT
 	nm_bsp_interrupt_ctrl(1);
@@ -571,6 +577,11 @@ static sint8 hif_isr(void)
 					goto ERR1;
 				}
 
+#ifdef ARDUINO
+				if (hif_receive_blocked) {
+					return ret;
+				}
+#endif
 				if(gstrHifCxt.u8HifRXDone)
 				{
 					M2M_ERR("(hif) host app didn't set RX Done <%u><%X>\n", strHif.u8Gid, strHif.u8Opcode);
@@ -615,6 +626,12 @@ sint8 hif_handle_isr(void)
 {
 	sint8 ret = M2M_SUCCESS;	
 
+#ifdef ARDUINO
+	if (hif_receive_blocked) {
+		return ret;
+	}
+#endif
+
 	while (gstrHifCxt.u8Interrupt) {
 		/*must be at that place because of the race of interrupt increment and that decrement*/
 		/*when the interrupt enabled*/
@@ -622,6 +639,11 @@ sint8 hif_handle_isr(void)
 		while(1)
 		{
 			ret = hif_isr();
+#ifdef ARDUINO
+			if (hif_receive_blocked) {
+				return ret;
+			}
+#endif
 			if(ret == M2M_SUCCESS) {
 				/*we will try forever untill we get that interrupt*/
 				/*Fail return errors here due to bus errors (reading expected values)*/

@@ -683,10 +683,6 @@ typedef enum{
 	/*!<
 		Recvfrom socket event.
 	*/
-#ifdef ARDUINO
-	,
-	SOCKET_MSG_RECV_ADDRESS
-#endif
 }tenuSocketCallbackMsgType;
 
 
@@ -795,7 +791,11 @@ typedef struct{
 	@SOCK_ERR_TIMEOUT	 			 : Socket receive timed out
 */
 typedef struct{
+#ifdef ARDUINO
+	uint32					pu8Buffer;
+#else
 	uint8					*pu8Buffer;
+#endif
 	/*!<
 		Pointer to the USER buffer (passed to @ref recv and @ref recvfrom function) containing the received data chunk.
 	*/

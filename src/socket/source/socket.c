@@ -142,6 +142,7 @@ Version
 Date
 		17 July 2012
 *********************************************************************/
+#ifndef ARDUINO
 NMI_API void Socket_ReadSocketData(SOCKET sock, tstrSocketRecvMsg *pstrRecv,uint8 u8SocketMsg,
 								  uint32 u32StartAddress,uint16 u16ReadCount)
 {
@@ -181,13 +182,7 @@ NMI_API void Socket_ReadSocketData(SOCKET sock, tstrSocketRecvMsg *pstrRecv,uint
 					if(hif_receive(0, NULL, 0, 1) == M2M_SUCCESS)
 						M2M_DBG("hif_receive Success\n");
 					else
-#ifdef ARDUINO
-					{
-#endif
 						M2M_DBG("hif_receive Fail\n");
-#ifdef ARDUINO
-					}
-#endif
 					break;
 				}
 			}
@@ -199,6 +194,7 @@ NMI_API void Socket_ReadSocketData(SOCKET sock, tstrSocketRecvMsg *pstrRecv,uint
 		}while(u16ReadCount != 0);
 	}
 }
+#endif
 /*********************************************************************
 Function
 		m2m_ip_cb
@@ -219,6 +215,9 @@ Version
 Date
 		17 July 2012
 *********************************************************************/
+#ifdef ARDUINO
+extern uint8 hif_receive_blocked;
+#endif
 static void m2m_ip_cb(uint8 u8OpCode, uint16 u16BufferSize,uint32 u32Address)
 {	
 	if((u8OpCode == SOCKET_CMD_BIND) || (u8OpCode == SOCKET_CMD_SSL_BIND))
@@ -304,9 +303,7 @@ static void m2m_ip_cb(uint8 u8OpCode, uint16 u16BufferSize,uint32 u32Address)
 		sint16				s16RecvStatus;
 		tstrRecvReply		strRecvReply;
 		uint16				u16ReadSize;
-#ifndef ARDUINO
 		tstrSocketRecvMsg	strRecvMsg;
-#endif
 		uint8				u8CallbackMsgID = SOCKET_MSG_RECV;
 		uint16				u16DataOffset;
 
@@ -330,50 +327,49 @@ static void m2m_ip_cb(uint8 u8OpCode, uint16 u16BufferSize,uint32 u32Address)
 
 			s16RecvStatus	= NM_BSP_B_L_16(strRecvReply.s16RecvStatus);
 			u16DataOffset	= NM_BSP_B_L_16(strRecvReply.u16DataOffset);
-#ifndef ARDUINO
 			strRecvMsg.strRemoteAddr.sin_port 			= strRecvReply.strRemoteAddr.u16Port;
 			strRecvMsg.strRemoteAddr.sin_addr.s_addr 	= strRecvReply.strRemoteAddr.u32IPAddr;
-#endif
 			if(u16SessionID == gastrSockets[sock].u16SessionID)
 			{
-#ifdef ARDUINO
-				// Avoid calling Socket_ReadSocketData because it pulls all the socket data
-				// from the WINC1500 at once.
-				//
-				// Call the callback with the recv address and recv data info. Later,
-				// the data will be pulled from the address using nm_read_block.
-
-				strRecvReply.s16RecvStatus = s16RecvStatus;
-				strRecvReply.u16DataOffset = u16DataOffset;
-				if(gpfAppSocketCb) {
-					if (s16RecvStatus > 0) {
-						u32Address += u16DataOffset;
-						gpfAppSocketCb(sock,SOCKET_MSG_RECV_ADDRESS,&u32Address);
-					}
-					gpfAppSocketCb(sock,u8CallbackMsgID, &strRecvReply);
-				}
-#else
 				if((s16RecvStatus > 0) && (s16RecvStatus < u16BufferSize))
 				{
 					/* Skip incoming bytes until reaching the Start of Application Data. 
 					*/
 					u32Address += u16DataOffset;
+#ifdef ARDUINO
+					// Avoid calling Socket_ReadSocketData because it pulls all the socket data
+					// from the WINC1500 at once.
+					//
+					// Call the callback with the recv address and recv data info. Later,
+					// the data will be pulled from the address using hif_receive.
+					hif_receive_blocked = 1;
 
+					strRecvMsg.s16BufferSize = s16RecvStatus;
+					strRecvMsg.pu8Buffer = u32Address;
+					strRecvMsg.u16RemainingSize = 0;
+					if(gpfAppSocketCb) {
+						gpfAppSocketCb(sock,u8CallbackMsgID, &strRecvMsg);
+					}
+#else
 					/* Read the Application data and deliver it to the application callback in
 					the given application buffer. If the buffer is smaller than the received data,
 					the data is passed to the application in chunks according to its buffer size.
 					*/
 					u16ReadSize = (uint16)s16RecvStatus;
 					Socket_ReadSocketData(sock, &strRecvMsg, u8CallbackMsgID, u32Address, u16ReadSize);
+#endif
 				}
 				else
 				{
 					strRecvMsg.s16BufferSize	= s16RecvStatus;
+#ifdef ARDUINO
+					strRecvMsg.pu8Buffer		= 0;
+#else
 					strRecvMsg.pu8Buffer		= NULL;
+#endif
 					if(gpfAppSocketCb)
 						gpfAppSocketCb(sock,u8CallbackMsgID, &strRecvMsg);
 				}
-#endif
 			}
 			else
 			{

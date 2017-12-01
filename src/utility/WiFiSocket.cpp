@@ -21,10 +21,11 @@ extern "C" {
 	#include "driver/include/m2m_wifi.h"
 	#include "socket/include/m2m_socket_host_if.h"
 	#include "driver/source/m2m_hif.h"
-	#include "driver/source/nmbus.h"
 }
 
 #include "WiFiSocket.h"
+
+extern uint8 hif_receive_blocked;
 
 enum {
 	SOCKET_STATE_INVALID,
@@ -77,7 +78,7 @@ sint8 WiFiSocketClass::bind(SOCKET sock, struct sockaddr *pstrAddr, uint8 u8Addr
 		return 0;
 	}
 
-	_info[sock].recvReply.s16RecvStatus = 0;
+	_info[sock].recvMsg.s16BufferSize = 0;
 	if (sock < TCP_SOCK_MAX) {
 		// TCP
 	} else {
@@ -134,7 +135,7 @@ sint8 WiFiSocketClass::connect(SOCKET sock, struct sockaddr *pstrAddr, uint8 u8A
 		return 0;
 	}
 
-	_info[sock].recvReply.s16RecvStatus = 0;
+	_info[sock].recvMsg.s16BufferSize = 0;
 	recv(sock, NULL, 0, 0);
 
 	return 1;
@@ -155,7 +156,7 @@ int WiFiSocketClass::available(SOCKET sock)
 		return 0;
 	}
 
-	return _info[sock].recvReply.s16RecvStatus;
+	return _info[sock].recvMsg.s16BufferSize;
 }
 
 int WiFiSocketClass::peek(SOCKET sock)
@@ -166,14 +167,14 @@ int WiFiSocketClass::peek(SOCKET sock)
 		return -1;
 	}
 
-	if (_info[sock].recvReply.s16RecvStatus <= 1) {
+	if (_info[sock].recvMsg.s16BufferSize <= 0) {
 		return -1;
 	}
 
 	byte b;
 
-	if (nm_read_block(_info[sock].recvAddress, &b, (uint16)sizeof(b)) != M2M_SUCCESS) {
-		return -1;
+	if (hif_receive(_info[sock].recvMsg.pu8Buffer, &b, (uint16)sizeof(b), 0) != M2M_SUCCESS) {
+		return 0;
 	}
 
 	return b;
@@ -187,25 +188,25 @@ int WiFiSocketClass::read(SOCKET sock, uint8_t* buf, size_t size)
 		return 0;
 	}
 
-	if (_info[sock].recvReply.s16RecvStatus <= 0) {
+	if (_info[sock].recvMsg.s16BufferSize <= 0) {
 		return 0;
 	}
 
-	if ((sint16)size > _info[sock].recvReply.s16RecvStatus) {
-		size = _info[sock].recvReply.s16RecvStatus;
+	if ((sint16)size > _info[sock].recvMsg.s16BufferSize) {
+		size = _info[sock].recvMsg.s16BufferSize;
 	}
 
-	uint8 lastTransfer = ((sint16)size == _info[sock].recvReply.s16RecvStatus);
+	uint8 lastTransfer = ((sint16)size == _info[sock].recvMsg.s16BufferSize);
 
-	if (nm_read_block(_info[sock].recvAddress, buf, (sint16)size) != M2M_SUCCESS) {
+	if (hif_receive(_info[sock].recvMsg.pu8Buffer, buf, (sint16)size, lastTransfer) != M2M_SUCCESS) {
 		return 0;
 	}
 
-	_info[sock].recvAddress += size;
-	_info[sock].recvReply.s16RecvStatus -= size;
+	_info[sock].recvMsg.pu8Buffer += size;
+	_info[sock].recvMsg.s16BufferSize -= size;
 
 	if (lastTransfer) {
-		_info[sock].recvReply.s16RecvStatus = 0;
+		_info[sock].recvMsg.s16BufferSize = 0;
 
 		if (sock < TCP_SOCK_MAX) {
 			// TCP
@@ -221,12 +222,12 @@ int WiFiSocketClass::read(SOCKET sock, uint8_t* buf, size_t size)
 
 IPAddress WiFiSocketClass::remoteIP(SOCKET sock)
 {
-	return _info[sock].recvReply.strRemoteAddr.u32IPAddr;
+	return _info[sock].recvMsg.strRemoteAddr.sin_addr.s_addr;
 }
 
 uint16_t WiFiSocketClass::remotePort(SOCKET sock)
 {
-	return _info[sock].recvReply.strRemoteAddr.u16Port;
+	return _info[sock].recvMsg.strRemoteAddr.sin_port;
 }
 
 size_t WiFiSocketClass::write(SOCKET sock, const uint8_t *buf, size_t size)
@@ -242,6 +243,8 @@ size_t WiFiSocketClass::write(SOCKET sock, const uint8_t *buf, size_t size)
 	while ((err = send(sock, (void *)buf, size, 0)) < 0) {
 		// Exit on fatal error, retry if buffer not ready.
 		if (err != SOCK_ERR_BUFFER_FULL) {
+			return 0;
+		} else if (hif_receive_blocked) {
 			return 0;
 		}
 		m2m_wifi_handle_events(NULL);
@@ -264,6 +267,14 @@ sint16 WiFiSocketClass::sendto(SOCKET sock, void *pvSendBuffer, uint16 u16SendLe
 sint8 WiFiSocketClass::close(SOCKET sock)
 {
 	m2m_wifi_handle_events(NULL);
+
+	if (_info[sock].state == SOCKET_STATE_CONNECTED || _info[sock].state == SOCKET_STATE_BOUND) {
+		if (_info[sock].recvMsg.s16BufferSize > 0) {
+			_info[sock].recvMsg.s16BufferSize = 0;
+
+			hif_receive(0, NULL, 0, 1);
+		}
+	}
 
 	_info[sock].state = SOCKET_STATE_INVALID;
 	_info[sock].parent = -1;
@@ -288,7 +299,7 @@ SOCKET WiFiSocketClass::accepted(SOCKET sock)
 		if (_info[s].parent == sock && _info[s].state == SOCKET_STATE_ACCEPTED) {
 			_info[s].state = SOCKET_STATE_CONNECTED;
 
-			_info[s].recvReply.s16RecvStatus = 0;
+			_info[s].recvMsg.s16BufferSize = 0;
 			recv(s, NULL, 0, 0);
 
 			return s;
@@ -309,6 +320,7 @@ void WiFiSocketClass::handleEvent(SOCKET sock, uint8 u8Msg, void *pvMsg)
 		/* Socket bind. */
 		case SOCKET_MSG_BIND: {
 			tstrSocketBindMsg *pstrBind = (tstrSocketBindMsg *)pvMsg;
+
 			if (pstrBind && pstrBind->status == 0) {
 				_info[sock].state = SOCKET_STATE_BOUND;
 			} else {
@@ -343,6 +355,7 @@ void WiFiSocketClass::handleEvent(SOCKET sock, uint8 u8Msg, void *pvMsg)
 		/* Socket connected. */
 		case SOCKET_MSG_CONNECT: {
 			tstrSocketConnectMsg *pstrConnect = (tstrSocketConnectMsg *)pvMsg;
+
 			if (pstrConnect && pstrConnect->s8Error >= 0) {
 				_info[sock].state = SOCKET_STATE_CONNECTED;
 			} else {
@@ -354,27 +367,19 @@ void WiFiSocketClass::handleEvent(SOCKET sock, uint8 u8Msg, void *pvMsg)
 		/* Socket data received. */
 		case SOCKET_MSG_RECV:
 		case SOCKET_MSG_RECVFROM: {
-			tstrRecvReply* recvReply = (tstrRecvReply *)pvMsg;
+			tstrSocketRecvMsg *pstrRecvMsg = (tstrSocketRecvMsg *)pvMsg;
 
-			if (recvReply->s16RecvStatus <= 0) {
+			if (pstrRecvMsg->s16BufferSize <= 0) {
 				_info[sock].state = SOCKET_STATE_IDLE;
 			} else {
-				_info[sock].recvReply = *recvReply;
+				_info[sock].recvMsg = *pstrRecvMsg;
 			}
-
-			hif_receive(0, NULL, 0, 1);
 		}
 		break;
 
 		/* Socket data sent. */
 		case SOCKET_MSG_SEND: {
 			// sint16 *s16Sent = (sint16 *)pvMsg;
-		}
-		break;
-
-		/* Socket data address. (Arduino added) */ 
-		case SOCKET_MSG_RECV_ADDRESS: {
-			_info[sock].recvAddress = *((uint32_t*)pvMsg);
 		}
 		break;
 
