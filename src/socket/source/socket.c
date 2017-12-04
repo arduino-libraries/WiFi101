@@ -329,9 +329,14 @@ static void m2m_ip_cb(uint8 u8OpCode, uint16 u16BufferSize,uint32 u32Address)
 			u16DataOffset	= NM_BSP_B_L_16(strRecvReply.u16DataOffset);
 			strRecvMsg.strRemoteAddr.sin_port 			= strRecvReply.strRemoteAddr.u16Port;
 			strRecvMsg.strRemoteAddr.sin_addr.s_addr 	= strRecvReply.strRemoteAddr.u32IPAddr;
+
 			if(u16SessionID == gastrSockets[sock].u16SessionID)
 			{
+#ifdef ARDUINO
+				if((s16RecvStatus > 0) && (s16RecvStatus < (sint32)u16BufferSize))
+#else
 				if((s16RecvStatus > 0) && (s16RecvStatus < u16BufferSize))
+#endif
 				{
 					/* Skip incoming bytes until reaching the Start of Application Data. 
 					*/
