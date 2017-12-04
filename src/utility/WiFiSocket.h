@@ -54,12 +54,18 @@ public:
 
 private:
   void handleEvent(SOCKET sock, uint8 u8Msg, void *pvMsg);
+  int fillRecvBuffer(SOCKET sock);
 
   struct 
   {
     uint8_t state;
     SOCKET parent;
     tstrSocketRecvMsg recvMsg;
+    struct {
+      uint8_t* data;
+      uint8_t* head;
+      int length;
+    } buffer;
   } _info[MAX_SOCKET];
 };
 
