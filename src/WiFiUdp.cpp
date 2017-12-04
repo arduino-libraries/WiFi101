@@ -56,7 +56,7 @@ uint8_t WiFiUDP::begin(uint16_t port)
 	WiFiSocket.setopt(_socket, SOL_SOCKET, SO_SET_UDP_SEND_CALLBACK, &u32EnableCallbacks, 0);
 
 	// Bind socket:
-	if (WiFiSocket.bind(_socket, (struct sockaddr *)&addr, sizeof(struct sockaddr_in)) < 0) {
+	if (!WiFiSocket.bind(_socket, (struct sockaddr *)&addr, sizeof(struct sockaddr_in))) {
 		WiFiSocket.close(_socket);
 		_socket = -1;
 		return 0;
@@ -233,7 +233,7 @@ IPAddress WiFiUDP::remoteIP()
 	return WiFiSocket.remoteIP(_socket);
 }
 
-uint16_t  WiFiUDP::remotePort()
+uint16_t WiFiUDP::remotePort()
 {
 	if (_socket == -1) {
 		return 0;

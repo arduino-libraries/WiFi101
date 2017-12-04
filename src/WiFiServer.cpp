@@ -52,14 +52,14 @@ uint8_t WiFiServer::begin(uint8_t opt)
 	}
 
 	// Bind socket:
-	if (WiFiSocket.bind(_socket, (struct sockaddr *)&addr, sizeof(struct sockaddr_in)) < 0) {
+	if (!WiFiSocket.bind(_socket, (struct sockaddr *)&addr, sizeof(struct sockaddr_in))) {
 		WiFiSocket.close(_socket);
 		_socket = -1;
 		return 0;
 	}
 
 	// Listen socket:
-	if (WiFiSocket.listen(_socket, 0) < 0) {
+	if (!WiFiSocket.listen(_socket, 0)) {
 		WiFiSocket.close(_socket);
 		_socket = -1;
 		return 0;
