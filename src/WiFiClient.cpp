@@ -137,7 +137,7 @@ int WiFiClient::read()
 {
 	uint8_t b;
 
-	if (read(&b, sizeof(b)) == -1) {
+	if (read(&b, sizeof(b)) != 1) {
 		return -1;
 	}
 
