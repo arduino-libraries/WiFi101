@@ -35,6 +35,7 @@ extern "C" {
 class WiFiUDP : public UDP {
 private:
 	SOCKET _socket;
+	int _parsedPacketSize;
 	uint8_t _sndBuffer[SOCKET_BUFFER_UDP_SIZE];
 	uint16_t _sndSize;
 	uint16_t _sndPort;
