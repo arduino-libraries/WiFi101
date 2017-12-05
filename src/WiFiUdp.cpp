@@ -33,6 +33,7 @@ WiFiUDP::WiFiUDP()
 {
 	_socket = -1;
 	_sndSize = 0;
+	_parsedPacketSize = 0;
 }
 
 /* Start WiFiUDP socket, listening at local port PORT */
@@ -42,6 +43,7 @@ uint8_t WiFiUDP::begin(uint16_t port)
 	uint32 u32EnableCallbacks = 0;
 
 	_sndSize = 0;
+	_parsedPacketSize = 0;
 
 	// Initialize socket address structure.
 	addr.sin_family = AF_INET;
@@ -83,6 +85,10 @@ uint8_t WiFiUDP::beginMulticast(IPAddress ip, uint16_t port)
 int WiFiUDP::available()
 {
 	if (_socket == -1) {
+		return 0;
+	}
+
+	if (_parsedPacketSize <= 0) {
 		return 0;
 	}
 
@@ -165,9 +171,16 @@ int WiFiUDP::parsePacket()
 		return 0;
 	}
 
-	// TODO: if packet has been previously parsed, but not read, discard data
+	if (_parsedPacketSize > 0) {
+		// previously parsed data, discard data
+		while (available()) {
+			read();
+		}
+	}
 
-	return WiFiSocket.available(_socket);
+	_parsedPacketSize = WiFiSocket.available(_socket);
+
+	return _parsedPacketSize;
 }
 
 int WiFiUDP::read()
@@ -205,6 +218,10 @@ int WiFiUDP::read(unsigned char* buf, size_t size)
 	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 1);
 	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO5, 1);
 
+	if (result > 0) {
+		_parsedPacketSize -= result;
+	}
+
 	return result;
 }
 
@@ -219,9 +236,6 @@ int WiFiUDP::peek()
 
 void WiFiUDP::flush()
 {
-	while (available()) {
-		read();
-	}
 }
 
 IPAddress WiFiUDP::remoteIP()
