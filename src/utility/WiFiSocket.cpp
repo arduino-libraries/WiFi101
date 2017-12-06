@@ -28,7 +28,7 @@ extern "C" {
 #ifdef LIMITED_RAM_DEVICE
 #define SOCKET_BUFFER_SIZE 64
 #else
-#define SOCKET_BUFFER_SIZE SOCKET_BUFFER_MAX_LENGTH
+#define SOCKET_BUFFER_SIZE 1472
 #endif
 
 extern uint8 hif_receive_blocked;
