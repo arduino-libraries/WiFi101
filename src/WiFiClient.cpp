@@ -75,6 +75,10 @@ int WiFiClient::connect(IPAddress ip, uint16_t port, uint8_t opt, const uint8_t 
 	addr.sin_port = _htons(port);
 	addr.sin_addr.s_addr = ip;
 
+	if (connected()) {
+		stop();
+	}
+
 	// Create TCP socket:
 	if ((_socket = WiFiSocket.create(AF_INET, SOCK_STREAM, opt)) < 0) {
 		return 0;
