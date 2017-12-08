@@ -81,7 +81,7 @@ static void wifi_cb(uint8_t u8MsgType, void *pvMsg)
 					}
 					// Close sockets to clean state
 					// Clients will need to reconnect once the physical link will be re-established
-					for (int i = 0; i < TCP_SOCK_MAX; i++) {
+					for (int i = 0; i < MAX_SOCKET; i++) {
 						WiFiSocket.close(i);
 					}
 				} else if (WiFi._mode == WL_AP_MODE) {
@@ -653,6 +653,11 @@ void WiFiClass::hostname(const char* name)
 
 void WiFiClass::disconnect()
 {
+	// Close sockets to clean state
+	for (int i = 0; i < MAX_SOCKET; i++) {
+		WiFiSocket.close(i);
+	}
+
 	m2m_wifi_disconnect();
 
 	// WiFi led OFF (rev A then rev B).
@@ -662,6 +667,11 @@ void WiFiClass::disconnect()
 
 void WiFiClass::end()
 {
+	// Close sockets to clean state
+	for (int i = 0; i < MAX_SOCKET; i++) {
+		WiFiSocket.close(i);
+	}
+
 	if (_mode == WL_AP_MODE) {
 		m2m_wifi_disable_ap();
 	} else {
