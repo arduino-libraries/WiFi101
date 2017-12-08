@@ -409,10 +409,13 @@ void WiFiSocketClass::handleEvent(SOCKET sock, uint8 u8Msg, void *pvMsg)
 
 			if (pstrRecvMsg->s16BufferSize <= 0) {
 				close(sock);
-			} else {
+			} else if (_info[sock].state == SOCKET_STATE_CONNECTED || _info[sock].state == SOCKET_STATE_BOUND) {
 				_info[sock].recvMsg = *pstrRecvMsg;
 
 				fillRecvBuffer(sock);
+			} else {
+				// not connected or bound, discard data
+				hif_receive(0, NULL, 0, 1);
 			}
 		}
 		break;
