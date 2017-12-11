@@ -120,7 +120,7 @@ size_t WiFiClient::write(const uint8_t *buf, size_t size)
 	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 1);
 	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO5, 1);
 
-	if (result < 0) {
+	if (result <= 0) {
 		setWriteError();
 		return 0;
 	}
