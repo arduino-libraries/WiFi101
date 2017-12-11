@@ -144,7 +144,7 @@ int WiFiUDP::endPacket()
 	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 1);
 	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO5, 1);
 
-	return (result < 0) ? 0 : 1;
+	return (result <= 0) ? 0 : 1;
 }
 
 size_t WiFiUDP::write(uint8_t byte)
