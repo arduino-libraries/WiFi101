@@ -21,6 +21,7 @@ extern "C" {
 	#include "driver/include/m2m_wifi.h"
 	#include "socket/include/m2m_socket_host_if.h"
 	#include "driver/source/m2m_hif.h"
+	#include "driver/include/m2m_periph.h"
 }
 
 #include "WiFiSocket.h"
@@ -267,17 +268,27 @@ size_t WiFiSocketClass::write(SOCKET sock, const uint8_t *buf, size_t size)
 		return 0;
 	}
 
+	// Network led ON (rev A then rev B).
+	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 0);
+	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO5, 0);
+
 	sint16 err;
 
 	while ((err = send(sock, (void *)buf, size, 0)) < 0) {
 		// Exit on fatal error, retry if buffer not ready.
 		if (err != SOCK_ERR_BUFFER_FULL) {
-			return 0;
+			size = 0;
+			break;
 		} else if (hif_receive_blocked) {
-			return 0;
+			size = 0;
+			break;
 		}
 		m2m_wifi_handle_events(NULL);
 	}
+
+	// Network led OFF (rev A then rev B).
+	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 1);
+	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO5, 1);
 
 	return size;
 }
@@ -407,6 +418,10 @@ void WiFiSocketClass::handleEvent(SOCKET sock, uint8 u8Msg, void *pvMsg)
 		case SOCKET_MSG_RECVFROM: {
 			tstrSocketRecvMsg *pstrRecvMsg = (tstrSocketRecvMsg *)pvMsg;
 
+			// Network led ON (rev A then rev B).
+			m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 0);
+			m2m_periph_gpio_set_val(M2M_PERIPH_GPIO5, 0);
+
 			if (pstrRecvMsg->s16BufferSize <= 0) {
 				close(sock);
 			} else if (_info[sock].state == SOCKET_STATE_CONNECTED || _info[sock].state == SOCKET_STATE_BOUND) {
@@ -417,6 +432,10 @@ void WiFiSocketClass::handleEvent(SOCKET sock, uint8 u8Msg, void *pvMsg)
 				// not connected or bound, discard data
 				hif_receive(0, NULL, 0, 1);
 			}
+
+			// Network led OFF (rev A then rev B).
+			m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 1);
+			m2m_periph_gpio_set_val(M2M_PERIPH_GPIO5, 1);
 		}
 		break;
 

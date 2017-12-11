@@ -19,10 +19,6 @@
 
 #include <string.h>
 
-extern "C" {
-	#include "driver/include/m2m_periph.h"
-}
-
 #include "utility/WiFiSocket.h"
 
 #include "WiFi101.h"
@@ -130,19 +126,11 @@ int WiFiUDP::endPacket()
 {
 	struct sockaddr_in addr;
 
-	// Network led ON (rev A then rev B).
-	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 0);
-	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO5, 0);
-
 	addr.sin_family = AF_INET;
 	addr.sin_port = _htons(_sndPort);
 	addr.sin_addr.s_addr = _sndIP;
 
 	int result = WiFiSocket.sendto(_socket, (void *)_sndBuffer, _sndSize, 0, (struct sockaddr *)&addr, sizeof(addr));
-
-	// Network led OFF (rev A then rev B).
-	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 1);
-	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO5, 1);
 
 	return (result <= 0) ? 0 : 1;
 }
@@ -208,15 +196,7 @@ int WiFiUDP::read(unsigned char* buf, size_t size)
 		size_tmp = size;
 	}
 
-	// Network led ON (rev A then rev B).
-	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 0);
-	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO5, 0);
-
 	int result = WiFiSocket.read(_socket, buf, size);
-
-	// Network led OFF (rev A then rev B).
-	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 1);
-	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO5, 1);
 
 	if (result > 0) {
 		_parsedPacketSize -= result;
