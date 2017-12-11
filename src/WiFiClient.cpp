@@ -17,10 +17,6 @@
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-extern "C" {
-	#include "driver/include/m2m_periph.h"
-}
-
 #include "utility/WiFiSocket.h"
 
 #include "WiFi101.h"
@@ -110,15 +106,7 @@ size_t WiFiClient::write(const uint8_t *buf, size_t size)
 		return 0;
 	}
 
-	// Network led ON (rev A then rev B).
-	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 0);
-	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO5, 0);
-
 	int result = WiFiSocket.write(_socket, buf, size);
-
-	// Network led OFF (rev A then rev B).
-	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 1);
-	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO5, 1);
 
 	if (result <= 0) {
 		setWriteError();
@@ -162,15 +150,7 @@ int WiFiClient::read(uint8_t* buf, size_t size)
 		size_tmp = size;
 	}
 
-	// Network led ON (rev A then rev B).
-	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 0);
-	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO5, 0);
-
 	int result = WiFiSocket.read(_socket, buf, size);
-
-	// Network led OFF (rev A then rev B).
-	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 1);
-	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO5, 1);
 
 	return result;
 }
