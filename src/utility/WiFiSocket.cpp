@@ -268,9 +268,11 @@ size_t WiFiSocketClass::write(SOCKET sock, const uint8_t *buf, size_t size)
 		return 0;
 	}
 
+#ifdef CONF_PERIPH
 	// Network led ON (rev A then rev B).
 	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 0);
 	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO5, 0);
+#endif
 
 	sint16 err;
 
@@ -286,9 +288,11 @@ size_t WiFiSocketClass::write(SOCKET sock, const uint8_t *buf, size_t size)
 		m2m_wifi_handle_events(NULL);
 	}
 
+#ifdef CONF_PERIPH
 	// Network led OFF (rev A then rev B).
 	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 1);
 	m2m_periph_gpio_set_val(M2M_PERIPH_GPIO5, 1);
+#endif
 
 	return size;
 }
@@ -418,9 +422,11 @@ void WiFiSocketClass::handleEvent(SOCKET sock, uint8 u8Msg, void *pvMsg)
 		case SOCKET_MSG_RECVFROM: {
 			tstrSocketRecvMsg *pstrRecvMsg = (tstrSocketRecvMsg *)pvMsg;
 
+#ifdef CONF_PERIPH
 			// Network led ON (rev A then rev B).
 			m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 0);
 			m2m_periph_gpio_set_val(M2M_PERIPH_GPIO5, 0);
+#endif
 
 			if (pstrRecvMsg->s16BufferSize <= 0) {
 				close(sock);
@@ -433,9 +439,11 @@ void WiFiSocketClass::handleEvent(SOCKET sock, uint8 u8Msg, void *pvMsg)
 				hif_receive(0, NULL, 0, 1);
 			}
 
+#ifdef CONF_PERIPH
 			// Network led OFF (rev A then rev B).
 			m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 1);
 			m2m_periph_gpio_set_val(M2M_PERIPH_GPIO5, 1);
+#endif
 		}
 		break;
 
