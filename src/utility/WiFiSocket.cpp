@@ -245,6 +245,7 @@ int WiFiSocketClass::read(SOCKET sock, uint8_t* buf, size_t size)
 			// UDP
 			recvfrom(sock, NULL, 0, 0);
 		}
+		m2m_wifi_handle_events(NULL);
 	}
 
 	return bytesRead;
