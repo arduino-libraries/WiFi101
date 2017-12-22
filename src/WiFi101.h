@@ -92,14 +92,14 @@ public:
 	uint8_t _scan_auth;
 	uint8_t _scan_channel;
 	char _ssid[M2M_MAX_SSID_LEN];
-	WiFiClient *_client[TCP_SOCK_MAX];
+	WiFiClient _client[TCP_SOCK_MAX];
 
 	WiFiClass();
 
 	void setPins(int8_t cs, int8_t irq, int8_t rst, int8_t en = -1);
 
 	int init();
-	
+
 	char* firmwareVersion();
 
 	/* Start Wifi connection with WPA/WPA2 encryption.

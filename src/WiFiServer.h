@@ -28,7 +28,7 @@ class WiFiClient;
 class WiFiServer : public Server {
 
 private:
-	SOCKET _socket;
+	int8_t _socket;
 	uint32_t _flag;
 	uint16_t _port;
 	uint8_t begin(uint8_t opt);

@@ -24,7 +24,7 @@
 
 class WiFiUDP : public UDP {
 private:
-	SOCKET _socket;
+	int8_t _socket;
 	uint32_t _flag;
 	uint32_t _head;
 	uint32_t _tail;

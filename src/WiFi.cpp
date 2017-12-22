@@ -82,8 +82,7 @@ static void wifi_cb(uint8_t u8MsgType, void *pvMsg)
 					// Close sockets to clean state
 					// Clients will need to reconnect once the physical link will be re-established
 					for (int i=0; i < TCP_SOCK_MAX; i++) {
-						if (WiFi._client[i])
-							WiFi._client[i]->stop();
+							WiFi._client[i].stop();
 					}
 				} else if (WiFi._mode == WL_AP_MODE) {
 					WiFi._status = WL_AP_LISTENING;
@@ -102,7 +101,7 @@ static void wifi_cb(uint8_t u8MsgType, void *pvMsg)
 				WiFi._localip = pstrIPCfg->u32StaticIP;
 				WiFi._submask = pstrIPCfg->u32SubnetMask;
 				WiFi._gateway = pstrIPCfg->u32Gateway;
-				
+
 				WiFi._status = WL_CONNECTED;
 
 				// WiFi led ON (rev A then rev B).
@@ -280,7 +279,6 @@ int WiFiClass::init()
 	_dhcp = 1;
 	_resolve = 0;
 	_remoteMacAddress = 0;
-	memset(_client, 0, sizeof(WiFiClient *) * TCP_SOCK_MAX);
 
 	extern uint32 nmdrv_firm_ver;
 
@@ -313,7 +311,7 @@ extern "C" {
 char* WiFiClass::firmwareVersion()
 {
 	tstrM2mRev rev;
-	
+
 	if (!_init) {
 		init();
 	}
@@ -333,7 +331,7 @@ uint8_t WiFiClass::begin()
 	if (!_init) {
 		init();
 	}
-	
+
 	// Connect to router:
 	if (_dhcp) {
 		_localip = 0;
@@ -394,7 +392,7 @@ uint8_t WiFiClass::startConnect(const char *ssid, uint8_t u8SecType, const void 
 	if (!_init) {
 		init();
 	}
-	
+
 	// Connect to router:
 	if (_dhcp) {
 		_localip = 0;
@@ -482,7 +480,7 @@ uint8_t WiFiClass::startAP(const char *ssid, uint8_t u8SecType, const void *pvAu
 	strcpy((char *)&strM2MAPConfig.au8SSID, ssid);
 	strM2MAPConfig.u8ListenChannel = channel;
 	strM2MAPConfig.u8SecType = u8SecType;
-	if (_localip == 0) { 
+	if (_localip == 0) {
 		strM2MAPConfig.au8DHCPServerIP[0] = 192;
 		strM2MAPConfig.au8DHCPServerIP[1] = 168;
 		strM2MAPConfig.au8DHCPServerIP[2] = 1;
@@ -689,12 +687,12 @@ uint8_t *WiFiClass::macAddress(uint8_t *mac)
 {
 	m2m_wifi_get_mac_address(mac);
 	byte tmpMac[6], i;
-	
+
 	m2m_wifi_get_mac_address(tmpMac);
-	
+
 	for(i = 0; i < 6; i++)
 		mac[i] = tmpMac[5-i];
-		
+
 	return mac;
 }
 
@@ -855,7 +853,7 @@ int32_t WiFiClass::RSSI(uint8_t pos)
 }
 
 uint8_t WiFiClass::encryptionType()
-{ 
+{
 	int8_t net = scanNetworks();
 
 	for (uint8_t i = 0; i < net; ++i) {
@@ -950,17 +948,17 @@ uint8_t WiFiClass::status()
 
 int WiFiClass::hostByName(const char* aHostname, IPAddress& aResult)
 {
-	
+
 	// check if aHostname is already an ipaddress
 	if (aResult.fromString(aHostname)) {
-		// if fromString returns true we have an IP address ready 
+		// if fromString returns true we have an IP address ready
 		return 1;
 
 	} else {
 		// Network led ON (rev A then rev B).
 		m2m_periph_gpio_set_val(M2M_PERIPH_GPIO16, 0);
 		m2m_periph_gpio_set_val(M2M_PERIPH_GPIO5, 0);
-	
+
 		// Send DNS request:
 		_resolve = 0;
 		if (gethostbyname((uint8 *)aHostname) < 0) {

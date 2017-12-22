@@ -46,13 +46,15 @@
 extern "C" {
 #endif
 
+#include <stdint.h>
+
 /** \defgroup SocketHeader Socket
- *          BSD compatible socket interface beftween the host layer and the network 
+ *          BSD compatible socket interface beftween the host layer and the network
  *          protocol stacks in the firmware.
  *          These functions are used by the host application to send or receive
- *          packets and to do other socket operations.    
+ *          packets and to do other socket operations.
  */
- 
+
 /*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
 INCLUDES
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*/
@@ -79,29 +81,29 @@ MACROS
  *	The two definitions must match.
 */
 #define HOSTNAME_MAX_SIZE									64
-/*!< 
-	Maximum allowed size for a host domain name passed to the function gethostbyname @ref gethostbyname. 
-	command value. Used with the setsockopt function. 
+/*!<
+	Maximum allowed size for a host domain name passed to the function gethostbyname @ref gethostbyname.
+	command value. Used with the setsockopt function.
 
 */
-	
+
 #define SOCKET_BUFFER_MAX_LENGTH							1400
-/*!< 
-	Maximum allowed size for a socket data buffer. Used with @ref send socket 
-	function to ensure that the buffer sent is within the allowed range. 
+/*!<
+	Maximum allowed size for a socket data buffer. Used with @ref send socket
+	function to ensure that the buffer sent is within the allowed range.
 */
 
 #define  AF_INET											2
-/*!< 
+/*!<
 	The AF_INET is the address family used for IPv4. An IPv4 transport address is specified with the @ref sockaddr_in structure.
-	(It is the only supported type for the current implementation.) 
+	(It is the only supported type for the current implementation.)
 */
 
 
 #define  SOCK_STREAM										1
-/*!< 
+/*!<
 	 One of the IPv4 supported socket types for reliable connection-oriented stream connection.
-	 Passed to the @ref socket function for the socket creation operation. 
+	 Passed to the @ref socket function for the socket creation operation.
 */
 
 #define  SOCK_DGRAM											2
@@ -112,8 +114,8 @@ MACROS
 
 
 #define SOCKET_FLAGS_SSL									0x01
-/*!< 
-	This flag shall be passed to the socket API for SSL session. 
+/*!<
+	This flag shall be passed to the socket API for SSL session.
 */
 
 #define TCP_SOCK_MAX										(7)
@@ -132,13 +134,13 @@ MACROS
 */
 
 #define SOL_SOCKET											1
-/*!< 
+/*!<
 	Socket option.
 	Used with the @ref setsockopt function
 */
 
 #define SOL_SSL_SOCKET										2
-/*!< 
+/*!<
 	SSL Socket option level.
 	Used with the @ref setsockopt function
 */
@@ -182,10 +184,10 @@ MACROS
 
 #define SO_SSL_BYPASS_X509_VERIF							0x01
 /*!<
-	Allow an opened SSL socket to bypass the X509 certificate 
+	Allow an opened SSL socket to bypass the X509 certificate
 	verification process.
 	It is highly required NOT to use this socket option in production
-	software applications. It is supported for debugging and testing 
+	software applications. It is supported for debugging and testing
 	purposes.
 	The option value should be casted to int type and it is handled
 	as a boolean flag.
@@ -212,7 +214,7 @@ MACROS
 #define SO_SSL_ENABLE_SNI_VALIDATION						0x04
 /*!<
 	Enable SNI validation against the server's certificate subject
-	common name. If there is no SNI provided (via the SO_SSL_SNI 
+	common name. If there is no SNI provided (via the SO_SSL_SNI
 	option), setting this option does nothing.
 */
 
@@ -312,7 +314,7 @@ MACROS
 	SSL_CIPHER_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256		\
 )
 /*!<
-	All ciphers that use ECC crypto only. This execuldes ciphers that use RSA. They use ECDSA instead. 
+	All ciphers that use ECC crypto only. This execuldes ciphers that use RSA. They use ECDSA instead.
 	These ciphers are turned off by default at startup.
 	The application may enable them if it has an ECC math engine (like ATECC508).
 */
@@ -325,7 +327,7 @@ MACROS
 	SSL_CIPHER_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256		\
 )
 /*!<
-	All supported ECC Ciphers including those ciphers that depend on RSA and ECC. 
+	All supported ECC Ciphers including those ciphers that depend on RSA and ECC.
 	These ciphers are turned off by default at startup.
 	The application may enable them if it has an ECC math engine (like ATECC508).
 */
@@ -362,8 +364,8 @@ MACROS
 )
 /*!<
 	AES-256 Ciphers.
-	This group is disabled by default at startup because the WINC1500 HW Accelerator 
-	supports only AES-128. If the application needs to force AES-256 cipher support, 
+	This group is disabled by default at startup because the WINC1500 HW Accelerator
+	supports only AES-128. If the application needs to force AES-256 cipher support,
 	it could enable them (or any of them) explicitly by calling sslSetActiveCipherSuites.
 */
 
@@ -414,29 +416,29 @@ Socket Errors
 
 #define SOCK_ERR_INVALID_ADDRESS							-1
 /*!<
-	Socket address is invalid. The socket operation cannot be completed successfully without specifying a specific address 
+	Socket address is invalid. The socket operation cannot be completed successfully without specifying a specific address
 	For example: bind is called without specifying a port number
 */
 
 
 #define SOCK_ERR_ADDR_ALREADY_IN_USE						-2
 /*!<
-	Socket operation cannot bind on the given address. With socket operations, only one IP address per socket is permitted. 
-	Any attempt for a new socket to bind with an IP address already bound to another open socket, 
-	will return the following error code. States that bind operation failed. 
+	Socket operation cannot bind on the given address. With socket operations, only one IP address per socket is permitted.
+	Any attempt for a new socket to bind with an IP address already bound to another open socket,
+	will return the following error code. States that bind operation failed.
 */
 
 
 #define SOCK_ERR_MAX_TCP_SOCK								-3
 /*!<
-	Exceeded the maximum number of TCP sockets. A maximum number of TCP sockets opened simultaneously is defined through TCP_SOCK_MAX. 
-	It is not permitted to exceed that number at socket creation. Identifies that @ref socket operation failed. 
+	Exceeded the maximum number of TCP sockets. A maximum number of TCP sockets opened simultaneously is defined through TCP_SOCK_MAX.
+	It is not permitted to exceed that number at socket creation. Identifies that @ref socket operation failed.
 */
 
 
 #define SOCK_ERR_MAX_UDP_SOCK								-4
 /*!<
-	Exceeded the maximum number of UDP sockets. A maximum number of UDP sockets opened simultaneously is defined through UDP_SOCK_MAX. 
+	Exceeded the maximum number of UDP sockets. A maximum number of UDP sockets opened simultaneously is defined through UDP_SOCK_MAX.
 	It is not permitted to exceed that number at socket creation. Identifies that @ref socket operation failed
 */
 
@@ -450,14 +452,14 @@ Socket Errors
 #define SOCK_ERR_MAX_LISTEN_SOCK							-7
 /*!<
 	Exceeded the maximum number of TCP passive listening sockets.
-	Identifies Identifies that @ref listen operation failed. 
+	Identifies Identifies that @ref listen operation failed.
 */
 
 
 #define SOCK_ERR_INVALID									-9
 /*!<
 	The requested socket operation is not valid in the
-	current socket state. 
+	current socket state.
 	For example: @ref accept is called on a TCP socket before @ref bind or @ref listen.
 */
 
@@ -465,7 +467,7 @@ Socket Errors
 #define SOCK_ERR_ADDR_IS_REQUIRED							-11
 /*!<
 	Destination address is required. Failure to provide the socket address required for the socket operation to be completed.
-	It is generated as an error to the @ref sendto function when the address required to send the data to is not known. 
+	It is generated as an error to the @ref sendto function when the address required to send the data to is not known.
 */
 
 
@@ -478,7 +480,7 @@ Socket Errors
 
 #define SOCK_ERR_TIMEOUT									-13
 /*!<
-	The socket pending operation has Timedout. 
+	The socket pending operation has Timedout.
 */
 
 
@@ -539,7 +541,7 @@ DATA TYPES
 	Socket ID,used with all socket operations to uniquely identify the socket handler.
 	Such an ID is uniquely assigned at socket creation when calling @ref socket operation.
 */
-typedef sint8  SOCKET;
+// typedef sint8  SOCKET;
 
 
 
@@ -575,11 +577,11 @@ typedef struct{
 */
 struct sockaddr{
     uint16		sa_family;
-	/*!< 
+	/*!<
 Socket address family.
 	*/
     uint8		sa_data[14];
-	/*!< 
+	/*!<
 		    Maximum size of all the different socket address structures.
 	*/
 };
@@ -602,7 +604,7 @@ struct sockaddr_in{
 	*/
 	uint16   		sin_port;
 	/*!<
-		Port number of the socket. 
+		Port number of the socket.
 		Network sockets are identified by a pair of IP addresses and port number.
 		It must be set in the Network Byte Order format , @ref _htons (e.g. _htons(80)).
 		Can NOT have zero value.
@@ -610,7 +612,7 @@ struct sockaddr_in{
 	in_addr			sin_addr;
 	/*!<
 		IP Address of the socket.
-		The IP address is of type @ref in_addr structure. 
+		The IP address is of type @ref in_addr structure.
 		Can be set to "0" to accept any IP address for server operation. non zero otherwise.
 	*/
 	uint8			sin_zero[8];
@@ -629,10 +631,10 @@ struct sockaddr_in{
 
 @brief
 	Asynchronous APIs, make use of callback functions, in-order to return back the results once the corresponding socket operation is completed.
-	Hence resuming the normal execution of the application code while the socket operation returns the results. 
+	Hence resuming the normal execution of the application code while the socket operation returns the results.
 	Callback functions expect event messages to be passed in, in-order to identify the operation they're returning the results for.
 	The following enum identifies the type of events that are received in the callback function.
-	
+
 	Application Use:
 	In order for application developers to handle the pending events from the network controller through the callback functions.
 	A function call must be made to the function @ref m2m_wifi_handle_events at least once for each socket operation.
@@ -644,7 +646,7 @@ struct sockaddr_in{
      connect
      send
      recv
-     
+
 */
 typedef enum{
 	SOCKET_MSG_BIND	= 1,
@@ -696,13 +698,13 @@ typedef enum{
 	This structure together with the event @ref SOCKET_MSG_BIND are passed in paramters to the callback function.
 @see
      bind
-	
+
 */
 typedef struct{
 	sint8		status;
 	/*!<
-		The result of the bind operation. 
-		Holding a value of ZERO for a successful bind or otherwise a negative 
+		The result of the bind operation.
+		Holding a value of ZERO for a successful bind or otherwise a negative
 		error code corresponding to the type of error.
 	*/
 }tstrSocketBindMsg;
@@ -722,7 +724,7 @@ typedef struct{
 typedef struct{
 	sint8		status;
 	/*!<
-		Holding a value of ZERO for a successful listen or otherwise a negative 
+		Holding a value of ZERO for a successful listen or otherwise a negative
 		error code corresponding to the type of error.
 	*/
 }tstrSocketListenMsg;
@@ -736,12 +738,12 @@ typedef struct{
 @brief	Socket accept status.
 
 	Socket accept information is returned through this structure in response to the asynchronous call to the @ref accept function.
-	This structure together with the event @ref SOCKET_MSG_ACCEPT are passed-in parameters to the callback function. 
+	This structure together with the event @ref SOCKET_MSG_ACCEPT are passed-in parameters to the callback function.
 */
 typedef struct{
-	SOCKET		sock;
+	int8_t		sock;
 	/*!<
-		On a successful @ref accept operation, the return information is the socket ID for the accepted connection with the remote peer. 
+		On a successful @ref accept operation, the return information is the socket ID for the accepted connection with the remote peer.
 		Otherwise a negative error code is returned to indicate failure of the accept operation.
 	*/
 	struct		sockaddr_in	strAddr;
@@ -761,14 +763,14 @@ typedef struct{
 	This structure together with the event @ref SOCKET_MSG_CONNECT are passed-in parameters to the callback function.
 */
 typedef struct{
-	SOCKET	sock;
+	int8_t	sock;
 	/*!<
 		Socket ID referring to the socket passed to the connect function call.
 	*/
 	sint8		s8Error;
 	/*!<
-		Connect error code. 
-		Holding a value of ZERO for a successful connect or otherwise a negative 
+		Connect error code.
+		Holding a value of ZERO for a successful connect or otherwise a negative
 		error code corresponding to the type of error.
 	*/
 }tstrSocketConnectMsg;
@@ -782,8 +784,8 @@ typedef struct{
 
 	Socket receive information is returned through this structure in response to the asynchronous call to the recv or recvfrom socket functions.
 	This structure together with the events @ref SOCKET_MSG_RECV or @ref SOCKET_MSG_RECVFROM are passed-in parameters to the callback function.
-@remark 
-	In case the received data from the remote peer is larger than the USER buffer size defined during the asynchronous call to the @ref recv function, the data is 
+@remark
+	In case the received data from the remote peer is larger than the USER buffer size defined during the asynchronous call to the @ref recv function, the data is
 	delivered to the user in a number of consecutive chunks according to the USER Buffer size.
 	a negative or zero buffer size indicates an error with the following code:
 	@ref SOCK_ERR_NO_ERROR     		 : Socket connection  closed
@@ -817,14 +819,14 @@ typedef struct{
 
 @brief
 				The main socket application callback function. Applications register their main socket application callback through this function by calling  @ref registerSocketCallback.
-				In response to events received, the following callback function is called to handle the corresponding asynchronous function called. Example: @ref bind, @ref connect,...etc. 
+				In response to events received, the following callback function is called to handle the corresponding asynchronous function called. Example: @ref bind, @ref connect,...etc.
 
 @param [in] sock
 				Socket ID for the callback.
 
-				The socket callback function is called whenever a new event is recived in response 
+				The socket callback function is called whenever a new event is recived in response
 				to socket operations.
-				
+
 @param [in] u8Msg
 				 Socket event type. Possible values are:
 				  - @ref SOCKET_MSG_BIND
@@ -835,7 +837,7 @@ typedef struct{
 				  - @ref SOCKET_MSG_SEND
 				  - @ref SOCKET_MSG_SENDTO
 				  - @ref SOCKET_MSG_RECVFROM
-				
+
 @param [in] pvMsg
 				Pointer to message structure. Existing types are:
 				  - tstrSocketBindMsg
@@ -845,14 +847,14 @@ typedef struct{
 				  - tstrSocketRecvMsg
 
 @see
-	tenuSocketCallbackMsgType 
+	tenuSocketCallbackMsgType
 	tstrSocketRecvMsg
-	tstrSocketConnectMsg 
+	tstrSocketConnectMsg
 	tstrSocketAcceptMsg
 	tstrSocketListenMsg
-	tstrSocketBindMsg 
+	tstrSocketBindMsg
 */
-typedef void (*tpfAppSocketCb) (SOCKET sock, uint8 u8Msg, void * pvMsg);
+typedef void (*tpfAppSocketCb) (int8_t sock, uint8 u8Msg, void * pvMsg);
 
 
 /*!
@@ -860,7 +862,7 @@ typedef void (*tpfAppSocketCb) (SOCKET sock, uint8 u8Msg, void * pvMsg);
 	tpfAppResolveCb
 
 @brief
-        DNS resolution callback function. 
+        DNS resolution callback function.
 	Applications requiring DNS resolution should register their callback through this function by calling @ref registerSocketCallback.
 	The following callback is triggered in response to asynchronous call to the @ref gethostbyname function (DNS Resolution callback).
 
@@ -878,7 +880,7 @@ typedef void (*tpfAppResolveCb) (uint8* pu8DomainName, uint32 u32ServerIP);
 
 @brief	PING Callback
 
-	The function delivers the ping statistics for the sent ping triggered by calling 
+	The function delivers the ping statistics for the sent ping triggered by calling
 	m2m_ping_req.
 
 @param [in]	u32IPAddr
@@ -894,8 +896,8 @@ typedef void (*tpfAppResolveCb) (uint8* pu8DomainName, uint32 u32ServerIP);
 				- PING_ERR_TIMEOUT
 */
 typedef void (*tpfPingCb)(uint32 u32IPAddr, uint32 u32RTT, uint8 u8ErrorCode);
- 
- /**@}*/ 
+
+ /**@}*/
 /*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
 FUNCTION PROTOTYPES
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*/
@@ -906,14 +908,14 @@ FUNCTION PROTOTYPES
 /** @defgroup SocketInitalizationFn socketInit
  *  @ingroup SocketAPI
  *     The function performs the necessary initializations for the socket library through the following steps:
-	- A check made by the global variable gbSocketInit, ensuring that initialization for sockets is performed only once, 
+	- A check made by the global variable gbSocketInit, ensuring that initialization for sockets is performed only once,
 	 in-order to prevent reseting the socket instances already created in the global socket array (gastrSockets).
 	- Zero initializations to the global socket array (gastrSockets), which holds the list of TCP sockets.
 	- Registers the socket (Host Interface)hif callback function through the call to the hif_register_cb function.
 	   This facilitates handling  all of the socket related functions received through interrupts from the firmware.
-	   
+
  */
- /**@{*/ 
+ /**@{*/
 /*!
 @fn	\
 	NMI_API void socketInit(void);
@@ -922,9 +924,9 @@ FUNCTION PROTOTYPES
 
 @return          void
 
-@remarks 
+@remarks
 	This initialization function must be invoked before any socket operation is performed.
-	No error codes from this initialization function since the socket array is statically allocated based in the maximum number of 
+	No error codes from this initialization function since the socket array is statically allocated based in the maximum number of
 	sockets @ref MAX_SOCKET based on the systems capability.
 \section Example
 This example demonstrates the use of the socketinit for socket initialization for an mqtt chat application.
@@ -936,19 +938,19 @@ This example demonstrates the use of the socketinit for socket initialization fo
 	//Initialize the board.
 	system_init();
 
-	//Initialize the UART console. 
+	//Initialize the UART console.
 	configure_console();
 
 	// Initialize the BSP.
 	nm_bsp_init();
-	
+
 	 ----------
-	 
+
 	// Initialize socket interface.
 	socketInit();
 	registerSocketCallback(socket_event_handler, socket_resolve_handler);
 
-	// Connect to router. 
+	// Connect to router.
 	m2m_wifi_connect((char *)MAIN_WLAN_SSID, sizeof(MAIN_WLAN_SSID),
 			MAIN_WLAN_AUTH, (char *)MAIN_WLAN_PSK, M2M_WIFI_CH_ALL);
 
@@ -958,7 +960,7 @@ NMI_API void socketInit(void);
 
 
 /*!
-@fn	\			
+@fn	\
 	NMI_API void socketDeinit(void);
 
 @brief	Socket Layer De-initialization
@@ -972,32 +974,32 @@ NMI_API void socketDeinit(void);
 /** @} */
 /** @defgroup SocketCallbackFn registerSocketCallback
  *    @ingroup SocketAPI
-	  Register two callback functions one for asynchronous socket events and the other one for DNS callback registering function. 
+	  Register two callback functions one for asynchronous socket events and the other one for DNS callback registering function.
 	  The registered callback functions are used to retrieve information in response to the asynchronous socket functions called.
  */
- /**@{*/ 
+ /**@{*/
 
 
 /*!
 @fn	\
 	NMI_API void registerSocketCallback(tpfAppSocketCb socket_cb, tpfAppResolveCb resolve_cb);
-             
-@param [in]   tpfAppSocketCb 
+
+@param [in]   tpfAppSocketCb
                                  Assignment of callback function to the global callback @ref tpfAppSocketCb gpfAppSocketCb. Delivers
                                  socket messages to the host application. In response to the asynchronous function calls, such as @ref bind
                                  @ref listen @ref accept @ref connect
-                        
-@param [in] 	tpfAppResolveCb 
-                                 Assignment of callback function to the global callback @ref tpfAppResolveCb gpfAppResolveCb. 
-                                 Used for DNS resolving functionalities. The DNS resolving technique is determined by the application 
+
+@param [in] 	tpfAppResolveCb
+                                 Assignment of callback function to the global callback @ref tpfAppResolveCb gpfAppResolveCb.
+                                 Used for DNS resolving functionalities. The DNS resolving technique is determined by the application
                                  registering the callback.
                                  NULL is assigned when, DNS resolution is not required.
-				  
+
 @return          void
-@remarks 
+@remarks
 		If any of the socket functionalities is not to be used, NULL is passed in as a parameter.
       	It must be invoked after socketinit and before other socket layer operations.
-		
+
 \section Example
 	This example demonstrates the use of the registerSocketCallback to register a socket callback function with DNS resolution CB set to null
 	for a simple UDP server example.
@@ -1009,9 +1011,9 @@ NMI_API void socketDeinit(void);
 	// Initialize the board
 	system_init();
 
-	//Initialize the UART console. 
+	//Initialize the UART console.
 	configure_console();
-	
+
 	// Initialize the BSP.
 	nm_bsp_init();
 
@@ -1020,7 +1022,7 @@ NMI_API void socketDeinit(void);
 	addr.sin_port = _htons(MAIN_WIFI_M2M_SERVER_PORT);
 	addr.sin_addr.s_addr = _htonl(MAIN_WIFI_M2M_SERVER_IP);
 
-	// Initialize Wi-Fi parameters structure. 
+	// Initialize Wi-Fi parameters structure.
 	memset((uint8_t *)&param, 0, sizeof(tstrWifiInitParam));
 
 	// Initialize Wi-Fi driver with data and status callbacks.
@@ -1047,16 +1049,16 @@ NMI_API void registerSocketCallback(tpfAppSocketCb socket_cb, tpfAppResolveCb re
 
 /** @defgroup SocketFn socket
  *    @ingroup SocketAPI
- * 	Synchronous socket allocation function based on the specified socket type. Created sockets are non-blocking and their possible types are either TCP or a UDP sockets. 
- *  The maximum allowed number of TCP sockets is @ref TCP_SOCK_MAX sockets while the maximum number of UDP sockets that can be created simultaneously is @ref UDP_SOCK_MAX sockets. 
- *    
+ * 	Synchronous socket allocation function based on the specified socket type. Created sockets are non-blocking and their possible types are either TCP or a UDP sockets.
+ *  The maximum allowed number of TCP sockets is @ref TCP_SOCK_MAX sockets while the maximum number of UDP sockets that can be created simultaneously is @ref UDP_SOCK_MAX sockets.
+ *
 */
  /**@{*/
 /*!
 @fn	\
-	NMI_API SOCKET socket(uint16 u16Domain, uint8 u8Type, uint8 u8Flags);
+	NMI_API int8_t socket(uint16 u16Domain, uint8 u8Type, uint8 u8Flags);
 
-	
+
 @param [in]	u16Domain
 				Socket family. The only allowed value is AF_INET (IPv4.0) for TCP/UDP sockets.
 
@@ -1086,12 +1088,12 @@ NMI_API void registerSocketCallback(tpfAppSocketCb socket_cb, tpfAppResolveCb re
 	close
 	setsockopt
 	getsockopt
-	
-@return	
+
+@return
 	On successful socket creation, a non-blocking socket type is created and a socket ID is returned
 	In case of failure the function returns a negative value, identifying one of the socket error codes defined.
-	For example: @ref SOCK_ERR_INVALID for invalid argument or 
-	                    @ref SOCK_ERR_MAX_TCP_SOCK	if the number of TCP allocated sockets exceeds the number of available sockets. 
+	For example: @ref SOCK_ERR_INVALID for invalid argument or
+	                    @ref SOCK_ERR_MAX_TCP_SOCK	if the number of TCP allocated sockets exceeds the number of available sockets.
 
 @remarks
  	       The socket function must be called a priori to any other related socket functions "e.g. send, recv, close ..etc"
@@ -1100,51 +1102,51 @@ NMI_API void registerSocketCallback(tpfAppSocketCb socket_cb, tpfAppResolveCb re
 socket operations. Socket creation is dependent on the socket type.
 \subsection sub1 UDP example
 @code
-	SOCKET UdpServerSocket = -1;
-	
+	int8_t UdpServerSocket = -1;
+
 	UdpServerSocket = socket(AF_INET, SOCK_DGRAM, 0);
-	
+
 @endcode
 \subsection sub2 TCP example
 @code
-	static SOCKET tcp_client_socket = -1;
+	static int8_t tcp_client_socket = -1;
 
 	tcp_client_socket = socket(AF_INET, SOCK_STREAM, 0));
 @endcode
 \subsection sub3 SSL example
 @code
-static SOCKET ssl_socket = -1;
+static int8_t ssl_socket = -1;
 
 ssl_socket = socket(AF_INET, SOCK_STREAM, SOCK_FLAGS_SSL));
 @endcode
 */
-NMI_API SOCKET socket(uint16 u16Domain, uint8 u8Type, uint8 u8Flags);
+NMI_API int8_t socket(uint16 u16Domain, uint8 u8Type, uint8 u8Flags);
 
 
 /** @} */
 /** @defgroup BindFn bind
  *  @ingroup SocketAPI
-*	Asynchronous bind function associates the provided address and local port to the socket. 
-*   The function can be used with both TCP and UDP sockets it's mandatory to call the @ref bind function before starting any UDP or TCP server operation. 
-*   Upon socket bind completion, the application will receive a @ref SOCKET_MSG_BIND message in the socket callback. 
+*	Asynchronous bind function associates the provided address and local port to the socket.
+*   The function can be used with both TCP and UDP sockets it's mandatory to call the @ref bind function before starting any UDP or TCP server operation.
+*   Upon socket bind completion, the application will receive a @ref SOCKET_MSG_BIND message in the socket callback.
 */
  /**@{*/
 /*!
 \fn	\
-	NMI_API sint8 bind(SOCKET sock, struct sockaddr *pstrAddr, uint8 u8AddrLen);
- 
+	NMI_API sint8 bind(int8_t sock, struct sockaddr *pstrAddr, uint8 u8AddrLen);
+
 
 @param [in]	sock
 				Socket ID, must hold a non negative value.
 				A negative value will return a socket error @ref SOCK_ERR_INVALID_ARG. Indicating that an invalid argument is passed in.
 
 @param [in] pstrAddr
-				Pointer to socket address structure "sockaddr_in" 
+				Pointer to socket address structure "sockaddr_in"
 				[sockaddr_in](@ref sockaddr_in)
-								    
+
 
 @param [in] u8AddrLen
-				Size of the given socket address structure in bytes. 
+				Size of the given socket address structure in bytes.
 
 @pre
 	The socket function must be called to allocate a socket before passing the socket ID to the bind function.
@@ -1159,12 +1161,12 @@ NMI_API SOCKET socket(uint16 u16Domain, uint8 u8Type, uint8 u8Flags);
 	send
 	sendto
 
-@return		
-	The function returns ZERO for successful operations and a negative value otherwise. 
+@return
+	The function returns ZERO for successful operations and a negative value otherwise.
 	The possible error values are:
-	- [SOCK_ERR_NO_ERROR](@ref SOCK_ERR_NO_ERROR)	
+	- [SOCK_ERR_NO_ERROR](@ref SOCK_ERR_NO_ERROR)
 		Indicating that the operation was successful.
-		
+
 	- [SOCK_ERR_INVALID_ARG](@ref SOCK_ERR_INVALID_ARG)
 		Indicating passing invalid arguments such as negative socket ID or NULL socket address structure.
 
@@ -1174,9 +1176,9 @@ NMI_API SOCKET socket(uint16 u16Domain, uint8 u8Type, uint8 u8Flags);
 	This example demonstrates the call of the bind socket operation after a successful socket operation.
 @code
 	struct sockaddr_in	addr;
-	SOCKET udpServerSocket =-1;
+	int8_t udpServerSocket =-1;
 	int ret = -1;
-	
+
 	if(udpServerSocket == -1)
 	{
 		udpServerSocket = socket(AF_INET, SOCK_DGRAM, 0);
@@ -1199,30 +1201,30 @@ NMI_API SOCKET socket(uint16 u16Domain, uint8 u8Type, uint8 u8Flags);
 			return;
 		}
 	}
-@endcode	
+@endcode
 */
-NMI_API sint8 bind(SOCKET sock, struct sockaddr *pstrAddr, uint8 u8AddrLen);
+NMI_API sint8 bind(int8_t sock, struct sockaddr *pstrAddr, uint8 u8AddrLen);
 
 
 /** @} */
 
 /** @defgroup ListenFn listen
  *   @ingroup SocketAPI
- * 	After successful socket binding to an IP address and port on the system, start listening on a passive socket for incoming connections. 
-       The socket must be bound on a local port or the listen operation fails. 
+ * 	After successful socket binding to an IP address and port on the system, start listening on a passive socket for incoming connections.
+       The socket must be bound on a local port or the listen operation fails.
        Upon the call to the asynchronous listen function, response is received through the event [SOCKET_MSG_BIND](@ref SOCKET_MSG_BIND)
 	in the socket callback.
-	A successful listen means the TCP server operation is active. If a connection is accepted, then the application socket callback function is 
+	A successful listen means the TCP server operation is active. If a connection is accepted, then the application socket callback function is
 	notified with the new connected socket through the event @ref SOCKET_MSG_ACCEPT. Hence there is no need to call the @ref accept function
 	after calling @ref listen.
-	
+
 	After a connection is accepted, the user is then required to call the @ref recv to receive any packets transmitted by the remote host or to receive notification of socket connection
 	termination.
  */
  /**@{*/
 /*!
 @fn	\
-	NMI_API sint8 listen(SOCKET sock, uint8 backlog);
+	NMI_API sint8 listen(int8_t sock, uint8 backlog);
 
 @param [in]	sock
 				Socket ID, must hold a non negative value.
@@ -1230,7 +1232,7 @@ NMI_API sint8 bind(SOCKET sock, struct sockaddr *pstrAddr, uint8 u8AddrLen);
 
 @param [in] backlog
 				Not used by the current implementation.
-				
+
 @pre
 	The bind function must be called to assign the port number and IP address to the socket before the listen operation.
 
@@ -1242,12 +1244,12 @@ NMI_API sint8 bind(SOCKET sock, struct sockaddr *pstrAddr, uint8 u8AddrLen);
 	send
 	sendto
 
-@return		
-	The function returns ZERO for successful operations and a negative value otherwise. 
+@return
+	The function returns ZERO for successful operations and a negative value otherwise.
 	The possible error values are:
-	- [SOCK_ERR_NO_ERROR](@ref SOCK_ERR_NO_ERROR)	
+	- [SOCK_ERR_NO_ERROR](@ref SOCK_ERR_NO_ERROR)
 		Indicating that the operation was successful.
-		
+
 	- [SOCK_ERR_INVALID_ARG](@ref SOCK_ERR_INVALID_ARG)
 		Indicating passing invalid arguments such as negative socket ID.
 
@@ -1256,12 +1258,12 @@ NMI_API sint8 bind(SOCKET sock, struct sockaddr *pstrAddr, uint8 u8AddrLen);
 \section Example
 This example demonstrates the call of the listen socket operation after a successful socket operation.
 @code
-	static void TCP_Socketcallback(SOCKET sock, uint8 u8Msg, void * pvMsg)
-	{	
+	static void TCP_Socketcallback(int8_t sock, uint8 u8Msg, void * pvMsg)
+	{
 		int ret =-1;
-		
+
 		switch(u8Msg)
-		{	
+		{
 		case SOCKET_MSG_BIND:
 			{
 				tstrSocketBindMsg	*pstrBind = (tstrSocketBindMsg*)pvMsg;
@@ -1270,7 +1272,7 @@ This example demonstrates the call of the listen socket operation after a succes
 					if(pstrBind->status == 0)
 					{
 						ret = listen(sock, 0);
-						
+
 						if(ret <0)
 							printf("Listen failure! Error = %d\n",ret);
 					}
@@ -1305,7 +1307,7 @@ This example demonstrates the call of the listen socket operation after a succes
 		case SOCKET_MSG_ACCEPT:
 			{
 				tstrSocketAcceptMsg	*pstrAccept = (tstrSocketAcceptMsg*)pvMsg;
-				
+
 				if(pstrAccept->sock >= 0)
 				{
 					TcpNotificationSocket = pstrAccept->sock;
@@ -1317,7 +1319,7 @@ This example demonstrates the call of the listen socket operation after a succes
 				}
 			}
 			break;
-		
+
 		default:
 			break;
 		}
@@ -1325,17 +1327,17 @@ This example demonstrates the call of the listen socket operation after a succes
 
 @endcode
 */
-NMI_API sint8 listen(SOCKET sock, uint8 backlog);
+NMI_API sint8 listen(int8_t sock, uint8 backlog);
 /** @} */
 /** @defgroup AcceptFn accept
  *    @ingroup SocketAPI
- *	The function has no current implementation. An empty deceleration is used to prevent errors when legacy application code is used. 
+ *	The function has no current implementation. An empty deceleration is used to prevent errors when legacy application code is used.
  *     For recent application use, the accept function can be safer as it has no effect and could be safely removed from any application using it.
  */
  /**@{*/
 /*!
 @fn	\
-	NMI_API sint8 accept(SOCKET sock, struct sockaddr *addr, uint8 *addrlen);
+	NMI_API sint8 accept(int8_t sock, struct sockaddr *addr, uint8 *addrlen);
 
 @param [in]	sock
 				Socket ID, must hold a non negative value.
@@ -1346,30 +1348,30 @@ NMI_API sint8 listen(SOCKET sock, uint8 backlog);
 @param [in] addrlen
 				Not used in the current implementation.
 
-@return		
-	The function returns ZERO for successful operations and a negative value otherwise. 
+@return
+	The function returns ZERO for successful operations and a negative value otherwise.
 	The possible error values are:
-	- [SOCK_ERR_NO_ERROR](@ref SOCK_ERR_NO_ERROR)	
+	- [SOCK_ERR_NO_ERROR](@ref SOCK_ERR_NO_ERROR)
 		Indicating that the operation was successful.
-		
+
 	- [SOCK_ERR_INVALID_ARG](@ref SOCK_ERR_INVALID_ARG)
 		Indicating passing invalid arguments such as negative socket ID.
 */
-NMI_API sint8 accept(SOCKET sock, struct sockaddr *addr, uint8 *addrlen);
+NMI_API sint8 accept(int8_t sock, struct sockaddr *addr, uint8 *addrlen);
 /** @} */
 /** @defgroup ConnectFn connect
  *    @ingroup SocketAPI
  *  	Establishes a TCP connection with a remote server.
 	The asynchronous connect function must be called after receiving a valid socket ID from the @ref socket function.
-	The application socket callback function is notified of a successful new  socket connection through the event @ref SOCKET_MSG_CONNECT. 
+	The application socket callback function is notified of a successful new  socket connection through the event @ref SOCKET_MSG_CONNECT.
 	A successful connect means the TCP session is active. The application is then required to make a call to the @ref recv
 	to receive any packets transmitted by the remote server, unless the application is interrupted by a notification of socket connection
 	termination.
  */
  /**@{*/
 /*!
-@fn	\	
-	NMI_API sint8 connect(SOCKET sock, struct sockaddr *pstrAddr, uint8 u8AddrLen);
+@fn	\
+	NMI_API sint8 connect(int8_t sock, struct sockaddr *pstrAddr, uint8 u8AddrLen);
 
 @param [in]	sock
 				Socket ID, must hold a non negative value.
@@ -1378,11 +1380,11 @@ NMI_API sint8 accept(SOCKET sock, struct sockaddr *addr, uint8 *addrlen);
 @param [in]	pstrAddr
 				Address of the remote server.
 @param [in] 	pstrAddr
-				Pointer to socket address structure "sockaddr_in" 
+				Pointer to socket address structure "sockaddr_in"
 				[sockaddr_in](@ref sockaddr_in)
 
 @param [in]	u8AddrLen
-				 Size of the given socket address structure in bytes. 
+				 Size of the given socket address structure in bytes.
 				 Not currently used, implemented for BSD compatibility only.
 @pre
 	The socket function must be called to allocate a TCP socket before passing the socket ID to the bind function.
@@ -1393,27 +1395,27 @@ NMI_API sint8 accept(SOCKET sock, struct sockaddr *addr, uint8 *addrlen);
 	recv
 	send
 	close
-	
-@return		
-	The function returns ZERO for successful operations and a negative value otherwise. 
+
+@return
+	The function returns ZERO for successful operations and a negative value otherwise.
 	The possible error values are:
-	- [SOCK_ERR_NO_ERROR](@ref SOCK_ERR_NO_ERROR)	
+	- [SOCK_ERR_NO_ERROR](@ref SOCK_ERR_NO_ERROR)
 		Indicating that the operation was successful.
-		
+
 	- [SOCK_ERR_INVALID_ARG](@ref SOCK_ERR_INVALID_ARG)
 		Indicating passing invalid arguments such as negative socket ID or NULL socket address structure.
 
 	- [SOCK_ERR_INVALID](@ref SOCK_ERR_INVALID)
 		Indicate socket connect failure.
 \section Example
-   The example demonstrates a TCP application, showing how the asynchronous call to the connect function is made through the main function and how the 
+   The example demonstrates a TCP application, showing how the asynchronous call to the connect function is made through the main function and how the
    callback function handles the @ref SOCKET_MSG_CONNECT event.
 \subsection sub1 Main Function
 @code
 	struct sockaddr_in	Serv_Addr;
-	SOCKET TcpClientSocket =-1;
+	int8_t TcpClientSocket =-1;
 	int ret = -1
-	
+
 	TcpClientSocket = socket(AF_INET,SOCK_STREAM,0);
 	Serv_Addr.sin_family = AF_INET;
 	Serv_Addr.sin_port = _htons(1234);
@@ -1432,7 +1434,7 @@ NMI_API sint8 accept(SOCKET sock, struct sockaddr *addr, uint8 *addrlen);
 			printf("Connection successful.\n");
 			break;
 		}
-	}while(1)	
+	}while(1)
 @endcode
 \subsection sub2 Socket Callback
 @code
@@ -1445,7 +1447,7 @@ NMI_API sint8 accept(SOCKET sock, struct sockaddr *addr, uint8 *addrlen);
 			uint16	u16MsgSize;
 
 			printf("Connect success!\n");
-			
+
 			u16MsgSize = FormatMsg(u8ClientID, acBuffer);
 			send(sock, acBuffer, u16MsgSize, 0);
 			recv(pstrNotification->Socket, (void*)au8Msg,GROWL_DESCRIPTION_MAX_LENGTH, GROWL_RX_TIMEOUT);
@@ -1460,18 +1462,18 @@ NMI_API sint8 accept(SOCKET sock, struct sockaddr *addr, uint8 *addrlen);
 @endcode
 */
 #ifdef ARDUINO
-NMI_API sint8 connectSocket(SOCKET sock, struct sockaddr *pstrAddr, uint8 u8AddrLen);
+NMI_API sint8 connectSocket(int8_t sock, struct sockaddr *pstrAddr, uint8 u8AddrLen);
 #else
-NMI_API sint8 connect(SOCKET sock, struct sockaddr *pstrAddr, uint8 u8AddrLen);
+NMI_API sint8 connect(int8_t sock, struct sockaddr *pstrAddr, uint8 u8AddrLen);
 #endif
 /** @} */
 /** @defgroup ReceiveFn recv
  *    @ingroup SocketAPI
- * 	An asynchronous receive function, used to retrieve data from a TCP stream. 
- 	Before calling the recv function, a successful socket connection status must have been received through any of the two socket events 
+ * 	An asynchronous receive function, used to retrieve data from a TCP stream.
+ 	Before calling the recv function, a successful socket connection status must have been received through any of the two socket events
  	[SOCKET_MSG_CONNECT] or [SOCKET_MSG_ACCEPT], from  the socket callback. Hence, indicating that the socket is already connected to a remote
-	host. 
-	The application receives the required data in response to this asynchronous call through the reception of the event @ref SOCKET_MSG_RECV in the 
+	host.
+	The application receives the required data in response to this asynchronous call through the reception of the event @ref SOCKET_MSG_RECV in the
 	socket callback.
 
 	Receiving the SOCKET_MSG_RECV message in the callback with zero or negative buffer length indicates the following:
@@ -1483,15 +1485,15 @@ NMI_API sint8 connect(SOCKET sock, struct sockaddr *pstrAddr, uint8 u8AddrLen);
  /**@{*/
 /*!
 @fn	\
-	NMI_API sint16 recv(SOCKET sock, void *pvRecvBuf, uint16 u16BufLen, uint32 u32Timeoutmsec);
-	
+	NMI_API sint16 recv(int8_t sock, void *pvRecvBuf, uint16 u16BufLen, uint32 u32Timeoutmsec);
+
 @param [in]	sock
 				Socket ID, must hold a non negative value.
 				A negative value will return a socket error @ref SOCK_ERR_INVALID_ARG. Indicating that an invalid argument is passed in.
 
 
 @param [in]	pvRecvBuf
-				Pointer to a buffer that will hold the received data. The buffer is used 
+				Pointer to a buffer that will hold the received data. The buffer is used
 				in the recv callback to deliver the received data to the caller. The buffer must
 				be resident in memory (heap or global buffer).
 
@@ -1505,7 +1507,7 @@ NMI_API sint8 connect(SOCKET sock, struct sockaddr *pstrAddr, uint8 u8AddrLen);
 @pre
 	- The socket function must be called to allocate a TCP socket before passing the socket ID to the recv function.
 	- The socket in a connected state is expected to receive data through the socket interface.
-	
+
 @see
 	socket
 	connect
@@ -1513,26 +1515,26 @@ NMI_API sint8 connect(SOCKET sock, struct sockaddr *pstrAddr, uint8 u8AddrLen);
 	listen
 	recvfrom
 	close
-	
 
-@return		
+
+@return
 	The function returns ZERO for successful operations and a negative value otherwise.
 	The possible error values are:
-	- [SOCK_ERR_NO_ERROR](@ref SOCK_ERR_NO_ERROR)	
+	- [SOCK_ERR_NO_ERROR](@ref SOCK_ERR_NO_ERROR)
 		Indicating that the operation was successful.
-		
+
 	- [SOCK_ERR_INVALID_ARG](@ref SOCK_ERR_INVALID_ARG)
 		Indicating passing invalid arguments such as negative socket ID or NULL Recieve buffer.
 
 	- [SOCK_ERR_BUFFER_FULL](@ref SOCK_ERR_BUFFER_FULL)
 		Indicate socket receive failure.
 \section Example
-   The example demonstrates a code snippet for the calling of the recv function in the socket callback upon notification of the accept or connect events, and the parsing of the 
+   The example demonstrates a code snippet for the calling of the recv function in the socket callback upon notification of the accept or connect events, and the parsing of the
    received data when the  SOCKET_MSG_RECV event is received.
 @code
-	
+
 	switch(u8Msg)
-	{	
+	{
 
 	case SOCKET_MSG_ACCEPT:
 		{
@@ -1553,11 +1555,11 @@ NMI_API sint8 connect(SOCKET sock, struct sockaddr *pstrAddr, uint8 u8AddrLen);
 	case SOCKET_MSG_RECV:
 		{
 			tstrSocketRecvMsg	*pstrRx = (tstrSocketRecvMsg*)pvMsg;
-			
+
 			if(pstrRx->s16BufferSize > 0)
 			{
-				
-				recv(sock,gau8RxBuffer,sizeof(gau8RxBuffer),TEST_RECV_TIMEOUT);			
+
+				recv(sock,gau8RxBuffer,sizeof(gau8RxBuffer),TEST_RECV_TIMEOUT);
 			}
 			else
 			{
@@ -1566,14 +1568,14 @@ NMI_API sint8 connect(SOCKET sock, struct sockaddr *pstrAddr, uint8 u8AddrLen);
 			}
 		}
 		break;
-	
+
 	default:
 		break;
 	}
 }
 @endcode
 */
-NMI_API sint16 recv(SOCKET sock, void *pvRecvBuf, uint16 u16BufLen, uint32 u32Timeoutmsec);
+NMI_API sint16 recv(int8_t sock, void *pvRecvBuf, uint16 u16BufLen, uint32 u32Timeoutmsec);
 /** @} */
 /** @defgroup ReceiveFromSocketFn recvfrom
  *   @ingroup SocketAPI
@@ -1584,9 +1586,9 @@ NMI_API sint16 recv(SOCKET sock, void *pvRecvBuf, uint16 u16BufLen, uint32 u32Ti
 *	with successful status in the socket callback).
 *
 *	Upon calling the recvfrom function with a successful return code, the application is expected to receive a notification
-*	in the socket callback whenever a message is received through the @ref SOCKET_MSG_RECVFROM event. 
+*	in the socket callback whenever a message is received through the @ref SOCKET_MSG_RECVFROM event.
 *
-*	Receiving the SOCKET_MSG_RECVFROM message in the callback with zero, indicates that the socket is closed. 
+*	Receiving the SOCKET_MSG_RECVFROM message in the callback with zero, indicates that the socket is closed.
 *	Whereby a negative buffer length indicates one of the socket error codes such as socket timeout error @SOCK_ERR_TIMEOUT:
 *
 *	The recvfrom callback can also be used to show the IP address of the remote host that sent the frame by
@@ -1594,8 +1596,8 @@ NMI_API sint16 recv(SOCKET sock, void *pvRecvBuf, uint16 u16BufLen, uint32 u32Ti
  */
  /**@{*/
 /*!
-@fn	\	
-	NMI_API sint16 recvfrom(SOCKET sock, void *pvRecvBuf, uint16 u16BufLen, uint32 u32TimeoutSeconds);
+@fn	\
+	NMI_API sint16 recvfrom(int8_t sock, void *pvRecvBuf, uint16 u16BufLen, uint32 u32TimeoutSeconds);
 
 @param [in]	sock
 				Socket ID, must hold a non negative value.
@@ -1616,29 +1618,29 @@ NMI_API sint16 recv(SOCKET sock, void *pvRecvBuf, uint16 u16BufLen, uint32 u32Ti
 @pre
 	- The socket function must be called to allocate a UDP socket before passing the socket ID to the recvfrom function.
  	- The socket corresponding to the socket ID must be successfully bound to a local port through the call to a @ref bind function.
-	
+
 @see
 	socket
 	bind
 	close
 
-@return		
+@return
 	The function returns ZERO for successful operations and a negative value otherwise.
 	The possible error values are:
-	- [SOCK_ERR_NO_ERROR](@ref SOCK_ERR_NO_ERROR)	
+	- [SOCK_ERR_NO_ERROR](@ref SOCK_ERR_NO_ERROR)
 		Indicating that the operation was successful.
-		
+
 	- [SOCK_ERR_INVALID_ARG](@ref SOCK_ERR_INVALID_ARG)
 		Indicating passing invalid arguments such as negative socket ID or NULL Receive buffer.
 
 	- [SOCK_ERR_BUFFER_FULL](@ref SOCK_ERR_BUFFER_FULL)
 		Indicate socket receive failure.
 \section Example
-   The example demonstrates a code snippet for the calling of the recvfrom function in the socket callback upon notification of a successful bind event, and the parsing of the 
+   The example demonstrates a code snippet for the calling of the recvfrom function in the socket callback upon notification of a successful bind event, and the parsing of the
    received data when the  SOCKET_MSG_RECVFROM event is received.
 @code
 	switch(u8Msg)
-	{	
+	{
 
 	case SOCKET_MSG_BIND:
 		{
@@ -1662,7 +1664,7 @@ NMI_API sint16 recv(SOCKET sock, void *pvRecvBuf, uint16 u16BufLen, uint32 u32Ti
 	case SOCKET_MSG_RECVFROM:
 		{
 			tstrSocketRecvMsg	*pstrRx = (tstrSocketRecvMsg*)pvMsg;
-			
+
 			if(pstrRx->s16BufferSize > 0)
 			{
 				//get the remote host address and port number
@@ -1670,8 +1672,8 @@ NMI_API sint16 recv(SOCKET sock, void *pvRecvBuf, uint16 u16BufLen, uint32 u32Ti
 				uint32 strRemoteHostAddr = pstrRx->strRemoteAddr.sin_addr.s_addr;
 
 				printf("Recieved frame with size = %d.\tHost address=%x, Port number = %d\n\n",pstrRx->s16BufferSize,strRemoteHostAddr, u16port);
-				
-				ret = recvfrom(sock,gau8SocketTestBuffer,sizeof(gau8SocketTestBuffer),TEST_RECV_TIMEOUT);			
+
+				ret = recvfrom(sock,gau8SocketTestBuffer,sizeof(gau8SocketTestBuffer),TEST_RECV_TIMEOUT);
 			}
 			else
 			{
@@ -1680,14 +1682,14 @@ NMI_API sint16 recv(SOCKET sock, void *pvRecvBuf, uint16 u16BufLen, uint32 u32Ti
 			}
 		}
 		break;
-	
+
 	default:
 		break;
 	}
 }
 @endcode
 */
-NMI_API sint16 recvfrom(SOCKET sock, void *pvRecvBuf, uint16 u16BufLen, uint32 u32Timeoutmsec);
+NMI_API sint16 recvfrom(int8_t sock, void *pvRecvBuf, uint16 u16BufLen, uint32 u32Timeoutmsec);
 /** @} */
 /** @defgroup SendFn send
  *   @ingroup SocketAPI
@@ -1696,83 +1698,83 @@ NMI_API sint16 recvfrom(SOCKET sock, void *pvRecvBuf, uint16 u16BufLen, uint32 u
 *  Called by the application code when there is outgoing data available required to be sent on a specific socket handler.
 *  The only difference between this function and the similar @ref sendto function, is the type of socket the data is sent on and the parameters passed in.
 *  @ref send function is most commonly called for sockets in a connected state.
-*  After the data is sent, the socket callback function registered using registerSocketCallback(), is expected to receive an event of type 
+*  After the data is sent, the socket callback function registered using registerSocketCallback(), is expected to receive an event of type
 *  @ref SOCKET_MSG_SEND holding information containing the number of data bytes sent.
  */
  /**@{*/
 /*!
-@fn	\		
-	NMI_API sint16 send(SOCKET sock, void *pvSendBuffer, uint16 u16SendLength, uint16 u16Flags);
+@fn	\
+	NMI_API sint16 send(int8_t sock, void *pvSendBuffer, uint16 u16SendLength, uint16 u16Flags);
 
 @param [in]	sock
 			Socket ID, must hold a non negative value.
 			A negative value will return a socket error @ref SOCK_ERR_INVALID_ARG. Indicating that an invalid argument is passed in.
-	
+
 @param [in]	pvSendBuffer
-	Pointer to a buffer  holding data to be transmitted. 
+	Pointer to a buffer  holding data to be transmitted.
 
 @param [in]	u16SendLength
 	The buffer size in bytes.
 
 @param [in]	u16Flags
 	Not used in the current implementation.
-	
-@pre 
-	Sockets must be initialized using socketInit. \n 
-	
+
+@pre
+	Sockets must be initialized using socketInit. \n
+
 	For TCP Socket:\n
-		Must use a successfully connected Socket (so that the intended recipient address is known ahead of sending the data). 
+		Must use a successfully connected Socket (so that the intended recipient address is known ahead of sending the data).
 		Hence this function is expected to be called after a successful socket connect operation(in client case or accept in the
 		the server case).\n
-		
+
 	For UDP Socket:\n
 		UDP sockets most commonly use @ref sendto function, where the destination address is defined. However, in-order to send outgoing data
-		using the @ref send function, at least one successful call must be made to the @ref sendto function a priori the consecutive calls to the @ref send function, 
+		using the @ref send function, at least one successful call must be made to the @ref sendto function a priori the consecutive calls to the @ref send function,
 		to ensure that the destination address is saved in the firmware.
-	
+
 @see
 	socketInit
 	recv
 	sendto
 	socket
 	connect
-	accept 
-	sendto  
-	
+	accept
+	sendto
+
 @warning
 	u16SendLength must not exceed @ref SOCKET_BUFFER_MAX_LENGTH. \n
 	Use a valid socket identifier through the a prior call to the @ref socket function.
 	Must use a valid buffer pointer.
 	Successful  completion of a call to send() does not guarantee delivery of the message,
 	A negative return value indicates only locally-detected errors
-	
-	
-@return		
-	The function shall return @ref SOCK_ERR_NO_ERROR for successful operation and a negative value (indicating the error) otherwise. 
+
+
+@return
+	The function shall return @ref SOCK_ERR_NO_ERROR for successful operation and a negative value (indicating the error) otherwise.
 */
-NMI_API sint16 send(SOCKET sock, void *pvSendBuffer, uint16 u16SendLength, uint16 u16Flags);
+NMI_API sint16 send(int8_t sock, void *pvSendBuffer, uint16 u16SendLength, uint16 u16Flags);
 /** @} */
 /** @defgroup SendToSocketFn sendto
  *  @ingroup SocketAPI
 *    Asynchronous sending function, used to send data on a UDP socket.
 *    Called by the application code when there is data required to be sent on a UDP socket handler.
-*    The application code is expected to receive data from a successful bounded socket node. 
+*    The application code is expected to receive data from a successful bounded socket node.
 *    The only difference between this function and the similar @ref send function, is the type of socket the data is received on. This function works
 *    only with UDP sockets.
-*    After the data is sent, the socket callback function registered using registerSocketCallback(), is expected to receive an event of type 
+*    After the data is sent, the socket callback function registered using registerSocketCallback(), is expected to receive an event of type
 *    @ref SOCKET_MSG_SENDTO.
 */
  /**@{*/
 /*!
 @fn	\
-	NMI_API sint16 sendto(SOCKET sock, void *pvSendBuffer, uint16 u16SendLength, uint16 flags, struct sockaddr *pstrDestAddr, uint8 u8AddrLen);
+	NMI_API sint16 sendto(int8_t sock, void *pvSendBuffer, uint16 u16SendLength, uint16 flags, struct sockaddr *pstrDestAddr, uint8 u8AddrLen);
 
 @param [in]	sock
 				Socket ID, must hold a non negative value.
 				A negative value will return a socket error @ref SOCK_ERR_INVALID_ARG. Indicating that an invalid argument is passed in.
 
 @param [in]	pvSendBuffer
-				Pointer to a buffer holding data to be transmitted. 
+				Pointer to a buffer holding data to be transmitted.
 				A NULL value will return a socket error @ref SOCK_ERR_INVALID_ARG. Indicating that an invalid argument is passed in.
 
 @param [in]	u16SendLength
@@ -1785,31 +1787,31 @@ NMI_API sint16 send(SOCKET sock, void *pvSendBuffer, uint16 u16SendLength, uint1
 				The destination address.
 
 @param [in]	u8AddrLen
-				Destination address length in bytes. 
+				Destination address length in bytes.
 				Not used in the current implementation, only included for BSD compatibility.
-@pre 
+@pre
 		Sockets must be initialized using socketInit.
-				
+
 @see
-	socketInit 
+	socketInit
 	recvfrom
 	sendto
 	socket
 	connect
-	accept 
-	send  
-	
+	accept
+	send
+
 @warning
 	u16SendLength must not exceed @ref SOCKET_BUFFER_MAX_LENGTH. \n
 	Use a valid socket (returned from socket ).
-	A valid buffer pointer must be used (not NULL). \n 
+	A valid buffer pointer must be used (not NULL). \n
 	Successful  completion of a call to sendto() does not guarantee delivery of the message,
 	A negative return value indicates only locally-detected errors
 
 @return
-	The function  returns @ref SOCK_ERR_NO_ERROR for successful operation and a negative value (indicating the error) otherwise. 
+	The function  returns @ref SOCK_ERR_NO_ERROR for successful operation and a negative value (indicating the error) otherwise.
 */
-NMI_API sint16 sendto(SOCKET sock, void *pvSendBuffer, uint16 u16SendLength, uint16 flags, struct sockaddr *pstrDestAddr, uint8 u8AddrLen);
+NMI_API sint16 sendto(int8_t sock, void *pvSendBuffer, uint16 u16SendLength, uint16 flags, struct sockaddr *pstrDestAddr, uint8 u8AddrLen);
 /** @} */
 /** @defgroup CloseSocketFn close
  *  @ingroup SocketAPI
@@ -1818,16 +1820,16 @@ NMI_API sint16 sendto(SOCKET sock, void *pvSendBuffer, uint16 u16SendLength, uin
  /**@{*/
 /*!
 @fn	\
-	NMI_API sint8 close(SOCKET sock);
+	NMI_API sint8 close(int8_t sock);
 
 @param [in]	sock
 				Socket ID, must hold a non negative value.
 				A negative value will return a socket error @ref SOCK_ERR_INVALID_ARG. Indicating that an invalid argument is passed in.
-	
-@pre 
+
+@pre
 		Sockets must be initialized through the call of the socketInit function.
 		@ref close is called only for valid socket identifiers created through the @ref socket function.
-		
+
 @warning
 	If @ref close is called while there are still pending messages (sent or received ) they will be discarded.
 
@@ -1835,10 +1837,10 @@ NMI_API sint16 sendto(SOCKET sock, void *pvSendBuffer, uint16 u16SendLength, uin
 	socketInit
 	socket
 
-@return		
-	The function returned @ref SOCK_ERR_NO_ERROR for successful operation and a negative value (indicating the error) otherwise. 
+@return
+	The function returned @ref SOCK_ERR_NO_ERROR for successful operation and a negative value (indicating the error) otherwise.
 */
-NMI_API sint8 close(SOCKET sock);
+NMI_API sint8 close(int8_t sock);
 
 
 /** @} */
@@ -1847,8 +1849,8 @@ NMI_API sint8 close(SOCKET sock);
 *  Synchronous  function which returns a BSD socket compliant Internet Protocol (IPv4) socket address.
 *  This IPv4 address in the input string parameter could either be specified as a host name, or as a numeric string representation like n.n.n.n known as the IPv4 dotted-decimal format
 *   (i.e. "192.168.10.1").
-*  This function is used whenever an ip address needs to be set in the proper format 
-*  (i.e. for the @ref tstrM2MIPConfig structure). 
+*  This function is used whenever an ip address needs to be set in the proper format
+*  (i.e. for the @ref tstrM2MIPConfig structure).
 */
  /**@{*/
 /*!
@@ -1861,7 +1863,7 @@ NMI_API sint8 close(SOCKET sock);
 @return
 	Unsigned 32-bit integer representing the IP address in Network byte order
 	(eg. "192.168.10.1" will be expressed as 0x010AA8C0).
-		
+
 */
 NMI_API uint32 nmi_inet_addr(char *pcIpAddr);
 
@@ -1869,8 +1871,8 @@ NMI_API uint32 nmi_inet_addr(char *pcIpAddr);
 /** @} */
 /** @defgroup gethostbynameFn gethostbyname
  *  @ingroup SocketAPI
-*   Asynchronous DNS resolving function. This function use DNS to resolve a domain name into the corresponding IP address. 
-*   A call to this function will cause a DNS request to be sent and the response will be delivered to the DNS callback function registered using registerSocketCallback() 
+*   Asynchronous DNS resolving function. This function use DNS to resolve a domain name into the corresponding IP address.
+*   A call to this function will cause a DNS request to be sent and the response will be delivered to the DNS callback function registered using registerSocketCallback()
  */
  /**@{*/
 /*!
@@ -1880,15 +1882,15 @@ NMI_API uint32 nmi_inet_addr(char *pcIpAddr);
 @param [in]	pcHostName
 				NULL terminated string containing the domain name for the remote host.
 				Its size must not exceed [HOSTNAME_MAX_SIZE](@ref HOSTNAME_MAX_SIZE).
-				
+
 @see
 	registerSocketCallback
-	
+
 @warning
 	Successful completion of a call to gethostbyname() does not guarantee success of the DNS request,
 	a negative return value indicates only locally-detected errors
-	
-@return		
+
+@return
 	- [SOCK_ERR_NO_ERROR](@ref SOCK_ERR_NO_ERROR)
 	- [SOCK_ERR_INVALID_ARG](@ref SOCK_ERR_INVALID_ARG)
 */
@@ -1898,7 +1900,7 @@ NMI_API sint8 gethostbyname(uint8 * pcHostName);
 /** @} */
 /** @defgroup sslEnableCertExpirationCheckFn sslEnableCertExpirationCheck
  *  @ingroup SocketAPI
-*   Configure the behavior of the SSL Library for Certificate Expiry Validation. 
+*   Configure the behavior of the SSL Library for Certificate Expiry Validation.
  */
  /**@{*/
 /*!
@@ -1908,7 +1910,7 @@ NMI_API sint8 sslEnableCertExpirationCheck(tenuSslCertExpSettings enuValidationS
 @param [in]	enuValidationSetting
 				See @ref tenuSslCertExpSettings for details.
 
-@return		
+@return
 	- [SOCK_ERR_NO_ERROR](@ref SOCK_ERR_NO_ERROR) for successful operation and negative error code otherwise.
 
 @sa		tenuSslCertExpSettings
@@ -1924,26 +1926,26 @@ NMI_API sint8 sslEnableCertExpirationCheck(tenuSslCertExpSettings enuValidationS
 *	argument, at the protocol level specified by the level argument, to the value
 *	pointed to by the option_value argument for the socket specified by the socket argument.
 *
-* <p>Possible protocol level values supported are @ref SOL_SOCKET and @ref SOL_SSL_SOCKET. 
+* <p>Possible protocol level values supported are @ref SOL_SOCKET and @ref SOL_SSL_SOCKET.
 * Possible options when the protocol level is @ref SOL_SOCKET :</p>
 * <table style="width: 100%">
 * 	<tr>
 * 		<td style="height: 22px"><strong>@ref SO_SET_UDP_SEND_CALLBACK</strong></td>
-* 		<td style="height: 22px">Enable/Disable callback messages for sendto(). 
-* 		Since UDP is unreliable by default the user maybe interested (or not) in 
-* 		receiving a message of @ref SOCKET_MSG_SENDTO for each call of sendto(). 
+* 		<td style="height: 22px">Enable/Disable callback messages for sendto().
+* 		Since UDP is unreliable by default the user maybe interested (or not) in
+* 		receiving a message of @ref SOCKET_MSG_SENDTO for each call of sendto().
 * 		Enabled if option value equals @ref TRUE, disabled otherwise.</td>
 * 	</tr>
 * 	<tr>
 * 		<td><strong>@ref IP_ADD_MEMBERSHIP</strong></td>
-* 		<td>Valid for UDP sockets. This option is used to receive frames sent to 
-* 		a multicast group. option_value shall be a pointer to Unsigned 32-bit 
+* 		<td>Valid for UDP sockets. This option is used to receive frames sent to
+* 		a multicast group. option_value shall be a pointer to Unsigned 32-bit
 * 		integer containing the multicast IPv4 address. </td>
 * 	</tr>
 * 	<tr>
 * 		<td><strong>@ref IP_DROP_MEMBERSHIP</strong></td>
-* 		<td>Valid for UDP sockets. This option is used to stop receiving frames 
-* 		sent to a multicast group. option_value shall be a pointer to Unsigned 
+* 		<td>Valid for UDP sockets. This option is used to stop receiving frames
+* 		sent to a multicast group. option_value shall be a pointer to Unsigned
 * 		32-bit integer containing the multicast IPv4 address.</td>
 * 	</tr>
 * </table>
@@ -1952,30 +1954,30 @@ NMI_API sint8 sslEnableCertExpirationCheck(tenuSslCertExpSettings enuValidationS
 * 	<tr>
 * 		<td style="height: 22px"><strong>
 * 		@ref SO_SSL_BYPASS_X509_VERIF</strong></td>
-* 		<td style="height: 22px">Allow an opened SSL socket to bypass the X509 
-* 		certificate verification process. It is highly recommended <strong>NOT</strong> to use 
-* 		this socket option in production software applications. The option is 
-* 		supported for debugging and testing purposes. The option value should be 
+* 		<td style="height: 22px">Allow an opened SSL socket to bypass the X509
+* 		certificate verification process. It is highly recommended <strong>NOT</strong> to use
+* 		this socket option in production software applications. The option is
+* 		supported for debugging and testing purposes. The option value should be
 * 		casted to int type and it is handled as a boolean flag.</td>
 * 	</tr>
 * 	<tr>
 * 		<td><strong>@ref SO_SSL_SNI</strong></td>
-* 		<td>Set the Server Name Indicator (SNI) for an SSL socket. The SNI is a 
-* 		null terminated string containing the server name associated with the 
+* 		<td>Set the Server Name Indicator (SNI) for an SSL socket. The SNI is a
+* 		null terminated string containing the server name associated with the
 * 		connection. It must not exceed the size of @ref HOSTNAME_MAX_SIZE.</td>
 * 	</tr>
 * 	<tr>
 * 		<td><strong>@ref SO_SSL_ENABLE_SESSION_CACHING</strong></td>
-* 		<td>This option allow the TLS to cache the session information for fast 
-* 		TLS session establishment in future connections using the TLS Protocol 
+* 		<td>This option allow the TLS to cache the session information for fast
+* 		TLS session establishment in future connections using the TLS Protocol
 * 		session resume features.</td>
 * 	</tr>
 * </table>
  */
  /**@{*/
 /*!
-@fn	\		
-	NMI_API sint8 setsockopt(SOCKET socket, uint8 u8Level, uint8 option_name,
+@fn	\
+	NMI_API sint8 setsockopt(int8_t socket, uint8 u8Level, uint8 option_name,
        const void *option_value, uint16 u16OptionLen);
 
 @param [in]	sock
@@ -1992,12 +1994,12 @@ NMI_API sint8 sslEnableCertExpirationCheck(tenuSslCertExpSettings enuValidationS
 
 @param [in]	option_len
 				 length of the option value in bytes.
-@return		
-	The function shall return \ref SOCK_ERR_NO_ERROR for successful operation 
-	and a negative value (indicating the error) otherwise. 
+@return
+	The function shall return \ref SOCK_ERR_NO_ERROR for successful operation
+	and a negative value (indicating the error) otherwise.
 @sa SOL_SOCKET, SOL_SSL_SOCKET, IP_ADD_MEMBERSHIP, IP_DROP_MEMBERSHIP
 */
-NMI_API sint8 setsockopt(SOCKET socket, uint8 u8Level, uint8 option_name,
+NMI_API sint8 setsockopt(int8_t socket, uint8 u8Level, uint8 option_name,
        const void *option_value, uint16 u16OptionLen);
 
 
@@ -2010,7 +2012,7 @@ NMI_API sint8 setsockopt(SOCKET socket, uint8 u8Level, uint8 option_name,
  /**@{*/
 /*!
 @fn	\
-	sint8 getsockopt(SOCKET sock, uint8 u8Level, uint8 u8OptName, const void *pvOptValue, uint8 * pu8OptLen);
+	sint8 getsockopt(int8_t sock, uint8 u8Level, uint8 u8OptName, const void *pvOptValue, uint8 * pu8OptLen);
 
 @brief
 
@@ -2027,7 +2029,7 @@ NMI_API sint8 setsockopt(SOCKET socket, uint8 u8Level, uint8 option_name,
 @return
 	The function shall return ZERO for successful operation and a negative value otherwise.
 */
-NMI_API sint8 getsockopt(SOCKET sock, uint8 u8Level, uint8 u8OptName, const void *pvOptValue, uint8* pu8OptLen);
+NMI_API sint8 getsockopt(int8_t sock, uint8 u8Level, uint8 u8OptName, const void *pvOptValue, uint8* pu8OptLen);
 /** @} */
 
 /**@}*/
@@ -2044,14 +2046,14 @@ NMI_API sint8 getsockopt(SOCKET sock, uint8 u8Level, uint8 u8OptName, const void
 				Target Destination IP Address for the ping request. It must be represented in Network byte order.
 				The function nmi_inet_addr could be used to translate the dotted decimal notation IP
 				to its Network bytes order integer represntative.
- 
+
 @param [in]	u8TTL
 				IP TTL value for the ping request. If set to ZERO, the dfault value SHALL be used.
 
 @param [in]	fpPingCb
 				Callback will be called to deliver the ping statistics.
 
-@see           nmi_inet_addr       
+@see           nmi_inet_addr
 @return        The function returns @ref M2M_SUCCESS for successful operations and a negative value otherwise.
 */
 NMI_API sint8 m2m_ping_req(uint32 u32DstIP, uint8 u8TTL, tpfPingCb fpPingCb);
