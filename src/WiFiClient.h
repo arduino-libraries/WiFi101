@@ -55,6 +55,9 @@ public:
 
 	using Print::write;
 
+	virtual IPAddress remoteIP();
+	virtual uint16_t remotePort();
+
 private:
 	SOCKET _socket;
 
