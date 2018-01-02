@@ -208,3 +208,21 @@ bool WiFiClient::operator!=(const WiFiClient &other) const
 {
 	return (_socket != other._socket);
 }
+
+IPAddress WiFiClient::remoteIP()
+{
+	if (_socket == -1) {
+		return IPAddress(0, 0, 0, 0);
+	}
+
+	return WiFiSocket.remoteIP(_socket);
+}
+
+uint16_t WiFiClient::remotePort()
+{
+	if (_socket == -1) {
+		return 0;
+	}
+
+	return _htons(WiFiSocket.remotePort(_socket));
+}

@@ -151,6 +151,8 @@ sint8 WiFiSocketClass::connect(SOCKET sock, struct sockaddr *pstrAddr, uint8 u8A
 	}
 
 	_info[sock].recvMsg.s16BufferSize = 0;
+	_info[sock].recvMsg.strRemoteAddr.sin_port = ((struct sockaddr_in*)pstrAddr)->sin_port;
+	_info[sock].recvMsg.strRemoteAddr.sin_addr.s_addr = ((struct sockaddr_in*)pstrAddr)->sin_addr.s_addr;
 	recv(sock, NULL, 0, 0);
 
 	return 1;
@@ -402,6 +404,7 @@ void WiFiSocketClass::handleEvent(SOCKET sock, uint8 u8Msg, void *pvMsg)
 			if (pstrAccept && pstrAccept->sock > -1) {
 				_info[pstrAccept->sock].state = SOCKET_STATE_ACCEPTED;
 				_info[pstrAccept->sock].parent = sock;
+				_info[pstrAccept->sock].recvMsg.strRemoteAddr = pstrAccept->strAddr;
 			}
 		}
 		break;
@@ -432,7 +435,14 @@ void WiFiSocketClass::handleEvent(SOCKET sock, uint8 u8Msg, void *pvMsg)
 			if (pstrRecvMsg->s16BufferSize <= 0) {
 				close(sock);
 			} else if (_info[sock].state == SOCKET_STATE_CONNECTED || _info[sock].state == SOCKET_STATE_BOUND) {
-				_info[sock].recvMsg = *pstrRecvMsg;
+				_info[sock].recvMsg.pu8Buffer = pstrRecvMsg->pu8Buffer;
+				_info[sock].recvMsg.s16BufferSize = pstrRecvMsg->s16BufferSize;
+				if (sock < TCP_SOCK_MAX) {
+					// TCP
+				} else {
+					// UDP
+					_info[sock].recvMsg.strRemoteAddr = pstrRecvMsg->strRemoteAddr;
+				}
 
 				fillRecvBuffer(sock);
 			} else {
