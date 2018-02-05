@@ -806,6 +806,10 @@ uint8_t* WiFiClass::remoteMacAddress(uint8_t* remoteMacAddress)
 
 int32_t WiFiClass::RSSI()
 {
+	if (_mode == WL_RESET_MODE) {
+		return -100;
+	}
+
 	// Clear pending events:
 	m2m_wifi_handle_events(NULL);
 
