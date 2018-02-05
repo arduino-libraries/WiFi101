@@ -288,9 +288,11 @@ int WiFiClass::init()
 	ret = m2m_wifi_init(&param);
 	if (M2M_SUCCESS != ret && M2M_ERR_FW_VER_MISMATCH != ret) {
 #ifdef CONF_PERIPH
-		// Error led ON (rev A then rev B).
-		m2m_periph_gpio_set_val(M2M_PERIPH_GPIO18, 0);
-		m2m_periph_gpio_set_dir(M2M_PERIPH_GPIO6, 1);
+		if (ret != M2M_ERR_INVALID) {
+			// Error led ON (rev A then rev B).
+			m2m_periph_gpio_set_val(M2M_PERIPH_GPIO18, 0);
+			m2m_periph_gpio_set_dir(M2M_PERIPH_GPIO6, 1);
+		}
 #endif
 		return ret;
 	}
