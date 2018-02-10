@@ -132,7 +132,7 @@ int WiFiUDP::endPacket()
 
 	int result = WiFiSocket.sendto(_socket, (void *)_sndBuffer, _sndSize, 0, (struct sockaddr *)&addr, sizeof(addr));
 
-	return (result <= 0) ? 0 : 1;
+	return (result < 0) ? 0 : 1;
 }
 
 size_t WiFiUDP::write(uint8_t byte)
