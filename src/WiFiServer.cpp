@@ -46,7 +46,7 @@ uint8_t WiFiServer::begin(uint8_t opt)
 	addr.sin_port = _htons(_port);
 	addr.sin_addr.s_addr = 0;
 
-	if (_socket != -1) {
+	if (_socket != -1 && WiFiSocket.listening(_socket)) {
 		WiFiSocket.close(_socket);
 		_socket = -1;
 	}
