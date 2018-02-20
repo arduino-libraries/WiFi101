@@ -1,5 +1,9 @@
 WiFi101 ?.?.? - ????.??.??
 
+WiFi101 0.15.2 - 2018.02.20
+
+* Fixed issue with WiFiServer::begin() stopping first listening server
+
 WiFi101 0.15.1 - 2018.02.14
 
 * Fixed compatibility with Arduino Due
