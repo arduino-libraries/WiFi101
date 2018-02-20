@@ -22,7 +22,8 @@
 #include "WiFiClient.h"
 #include "WiFiServer.h"
 
-WiFiServer::WiFiServer(uint16_t port)
+WiFiServer::WiFiServer(uint16_t port) :
+	_socket(-1)
 {
 	_port = port;
 }
