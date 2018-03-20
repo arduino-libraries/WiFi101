@@ -172,6 +172,13 @@ uint8 WiFiSocketClass::listening(SOCKET sock)
 	return (_info[sock].state == SOCKET_STATE_LISTENING);
 }
 
+uint8 WiFiSocketClass::bound(SOCKET sock)
+{
+	m2m_wifi_handle_events(NULL);
+
+	return (_info[sock].state == SOCKET_STATE_BOUND);
+}
+
 int WiFiSocketClass::available(SOCKET sock)
 {
 	m2m_wifi_handle_events(NULL);

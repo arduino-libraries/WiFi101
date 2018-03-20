@@ -40,6 +40,7 @@ public:
   sint8 connect(SOCKET sock, struct sockaddr *pstrAddr, uint8 u8AddrLen);
   uint8 connected(SOCKET sock);
   uint8 listening(SOCKET sock);
+  uint8 bound(SOCKET sock);
   int available(SOCKET sock);
   int peek(SOCKET sock);
   int read(SOCKET sock, uint8_t* buf, size_t size);
