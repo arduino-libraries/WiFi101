@@ -46,6 +46,11 @@ uint8_t WiFiUDP::begin(uint16_t port)
 	addr.sin_port = _htons(port);
 	addr.sin_addr.s_addr = 0;
 
+	if (_socket != -1 && WiFiSocket.bound(_socket)) {
+		WiFiSocket.close(_socket);
+		_socket = -1;
+	}
+
 	// Open UDP server socket.
 	if ((_socket = WiFiSocket.create(AF_INET, SOCK_DGRAM, 0)) < 0) {
 		return 0;
