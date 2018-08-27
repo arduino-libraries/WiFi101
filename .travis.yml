@@ -1,7 +1,7 @@
 language: generic
 env:
   global:
-    - IDE_VERSION=1.8.5
+    - CLI_VERSION=0.2.1-alpha.preview
   matrix:
     - BOARD="arduino:avr:uno"
     - BOARD="arduino:avr:mega:cpu=atmega2560"
@@ -10,20 +10,26 @@ env:
     - BOARD="arduino:samd:mkr1000"
     - BOARD="Intel:arc32:arduino_101"
 before_install:
-  - wget http://downloads.arduino.cc/arduino-$IDE_VERSION-linux64.tar.xz
-  - tar xf arduino-$IDE_VERSION-linux64.tar.xz
-  - mv arduino-$IDE_VERSION $HOME/arduino-ide
-  - export PATH=$PATH:$HOME/arduino-ide
+  - wget http://downloads.arduino.cc/arduino-cli/arduino-cli-$CLI_VERSION-linux64.tar.bz2
+  - tar xf arduino-cli-$CLI_VERSION-linux64.tar.bz2
+  - mkdir -p $HOME/bin
+  - mkdir -p $HOME/.arduino15
+  - mv arduino-cli-$CLI_VERSION-linux64 $HOME/bin/arduino-cli
+  - export PATH=$PATH:$HOME/bin
+  - arduino-cli core update-index
+  - if [[ "$BOARD" =~ "arduino:avr:" ]]; then
+      arduino-cli core install arduino:avr;
+    fi
   - if [[ "$BOARD" =~ "arduino:sam:" ]]; then
-      arduino --install-boards arduino:sam;
+      arduino-cli core install arduino:sam;
     fi
   - if [[ "$BOARD" =~ "arduino:samd:" ]]; then
-      arduino --install-boards arduino:samd;
+      arduino-cli core install arduino:samd;
     fi
   - if [[ "$BOARD" =~ "Intel:arc32" ]]; then
-      arduino --install-boards Intel:arc32;
+      arduino-cli core install Intel:arc32;
     fi
-  - buildExampleSketch() { arduino --verbose-build --verify --board $BOARD $PWD/examples/$1/$1.ino; }
+  - buildExampleSketch() { arduino-cli compile --verbose --warnings all --fqbn $BOARD $PWD/examples/$1; }
 install:
   - mkdir -p $HOME/Arduino/libraries
   - ln -s $PWD $HOME/Arduino/libraries/.
