@@ -34,6 +34,9 @@ extern "C" {
 #define SOCKET_BUFFER_SIZE      1472
 #endif
 
+// uncomment to allocate socket buffers at compile time instead of using malloc/free
+//#define USE_STATIC_ALLOCATION
+
 class WiFiSocketClass {
 public:
   WiFiSocketClass();
@@ -70,7 +73,11 @@ private:
     SOCKET parent;
     tstrSocketRecvMsg recvMsg;
     struct {
+#ifdef USE_STATIC_ALLOCATION
+      uint8_t data[SOCKET_BUFFER_SIZE];
+#else
       uint8_t* data;
+#endif
       uint8_t* head;
       int length;
     } buffer;
