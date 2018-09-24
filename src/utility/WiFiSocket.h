@@ -28,6 +28,12 @@ extern "C" {
 #include <Arduino.h>
 #include <IPAddress.h>
 
+#ifdef LIMITED_RAM_DEVICE
+#define SOCKET_BUFFER_SIZE      64
+#else
+#define SOCKET_BUFFER_SIZE      1472
+#endif
+
 class WiFiSocketClass {
 public:
   WiFiSocketClass();
