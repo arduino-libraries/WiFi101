@@ -26,12 +26,6 @@ extern "C" {
 
 #include "WiFiSocket.h"
 
-#ifdef LIMITED_RAM_DEVICE
-#define SOCKET_BUFFER_SIZE 64
-#else
-#define SOCKET_BUFFER_SIZE 1472
-#endif
-
 extern uint8 hif_receive_blocked;
 
 enum {
@@ -52,8 +46,12 @@ WiFiSocketClass::WiFiSocketClass()
 		_info[i].state = SOCKET_STATE_INVALID;
 		_info[i].parent = -1;
 		_info[i].recvMsg.s16BufferSize = 0;
+#ifdef USE_STATIC_ALLOCATION
+		_info[i].buffer.head = _info[i].buffer.data;
+#else
 		_info[i].buffer.data = NULL;
 		_info[i].buffer.head = NULL;
+#endif
 		_info[i].buffer.length = 0;
 	}
 }
@@ -341,11 +339,15 @@ sint8 WiFiSocketClass::close(SOCKET sock)
 	_info[sock].state = SOCKET_STATE_INVALID;
 	_info[sock].parent = -1;
 
+#ifdef USE_STATIC_ALLOCATION
+	_info[sock].buffer.head = _info[sock].buffer.data;
+#else
 	if (_info[sock].buffer.data != NULL) {
 		free(_info[sock].buffer.data);
 	}
 	_info[sock].buffer.data = NULL;
 	_info[sock].buffer.head = NULL;
+#endif
 	_info[sock].buffer.length = 0;
 	_info[sock].recvMsg.s16BufferSize = 0;
 
@@ -485,11 +487,13 @@ void WiFiSocketClass::handleEvent(SOCKET sock, uint8 u8Msg, void *pvMsg)
 
 int WiFiSocketClass::fillRecvBuffer(SOCKET sock)
 {
+#ifndef USE_STATIC_ALLOCATION
 	if (_info[sock].buffer.data == NULL) {
 		_info[sock].buffer.data = (uint8_t*)malloc(SOCKET_BUFFER_SIZE);
 		_info[sock].buffer.head = _info[sock].buffer.data;
 		_info[sock].buffer.length = 0;
 	}
+#endif
 
 	int size = _info[sock].recvMsg.s16BufferSize;
 
