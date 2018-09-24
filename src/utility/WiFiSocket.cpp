@@ -26,12 +26,6 @@ extern "C" {
 
 #include "WiFiSocket.h"
 
-#ifdef LIMITED_RAM_DEVICE
-#define SOCKET_BUFFER_SIZE 64
-#else
-#define SOCKET_BUFFER_SIZE 1472
-#endif
-
 extern uint8 hif_receive_blocked;
 
 enum {
@@ -48,13 +42,20 @@ enum {
 
 WiFiSocketClass::WiFiSocketClass()
 {
-	for (int i = 0; i < MAX_SOCKET; i++) {
+	for (int i = 0; i < MAX_SOCKET_ALLOCATED; i++) {
 		_info[i].state = SOCKET_STATE_INVALID;
 		_info[i].parent = -1;
 		_info[i].recvMsg.s16BufferSize = 0;
+#ifdef USE_STATIC_ALLOCATION
+		_info[i].buffer.head = _info[i].buffer.data;
+#else
 		_info[i].buffer.data = NULL;
 		_info[i].buffer.head = NULL;
+#endif
 		_info[i].buffer.length = 0;
+	}
+	for (int i = 0; i < MAX_SOCKET; i++) {
+		_handleMap[i] = -1;
 	}
 }
 
@@ -66,9 +67,13 @@ SOCKET WiFiSocketClass::create(uint16 u16Domain, uint8 u8Type, uint8 u8Flags)
 {
 	SOCKET sock = socket(u16Domain, u8Type, u8Flags);
 
-	if (sock > 0) {
-		_info[sock].state = SOCKET_STATE_IDLE;
-		_info[sock].parent = -1;
+	if (sock >= 0) {
+		_handleMap[sock] = sock;
+#if TCP_SOCK_MAX > TCP_SOCK_ALLOCATED
+		if (sock >= TCP_SOCK_MAX) _handleMap[sock] -= (TCP_SOCK_MAX - TCP_SOCK_ALLOCATED);
+#endif
+		_info[_handleMap[sock]].state = SOCKET_STATE_IDLE;
+		_info[_handleMap[sock]].parent = -1;
 	}
 
 	return sock;
@@ -80,20 +85,20 @@ sint8 WiFiSocketClass::bind(SOCKET sock, struct sockaddr *pstrAddr, uint8 u8Addr
 		return 0;
 	}
 
-	_info[sock].state = SOCKET_STATE_BINDING;
+	_info[_handleMap[sock]].state = SOCKET_STATE_BINDING;
 
 	unsigned long start = millis();
 
-	while (_info[sock].state == SOCKET_STATE_BINDING && millis() - start < 2000) {
+	while (_info[_handleMap[sock]].state == SOCKET_STATE_BINDING && millis() - start < 2000) {
 		m2m_wifi_handle_events(NULL);
 	}
 
-	if (_info[sock].state != SOCKET_STATE_BOUND) {
-		_info[sock].state = SOCKET_STATE_IDLE;
+	if (_info[_handleMap[sock]].state != SOCKET_STATE_BOUND) {
+		_info[_handleMap[sock]].state = SOCKET_STATE_IDLE;
 		return 0;
 	}
 
-	_info[sock].recvMsg.s16BufferSize = 0;
+	_info[_handleMap[sock]].recvMsg.s16BufferSize = 0;
 	if (sock < TCP_SOCK_MAX) {
 		// TCP
 	} else {
@@ -110,16 +115,16 @@ sint8 WiFiSocketClass::listen(SOCKET sock, uint8 backlog)
 		return 0;
 	}
 
-	_info[sock].state = SOCKET_STATE_LISTEN;
+	_info[_handleMap[sock]].state = SOCKET_STATE_LISTEN;
 
 	unsigned long start = millis();
 
-	while (_info[sock].state == SOCKET_STATE_LISTEN && millis() - start < 2000) {
+	while (_info[_handleMap[sock]].state == SOCKET_STATE_LISTEN && millis() - start < 2000) {
 		m2m_wifi_handle_events(NULL);
 	}
 
-	if (_info[sock].state != SOCKET_STATE_LISTENING) {
-		_info[sock].state = SOCKET_STATE_IDLE;
+	if (_info[_handleMap[sock]].state != SOCKET_STATE_LISTENING) {
+		_info[_handleMap[sock]].state = SOCKET_STATE_IDLE;
 		return 0;
 	}
 
@@ -137,22 +142,22 @@ sint8 WiFiSocketClass::connect(SOCKET sock, struct sockaddr *pstrAddr, uint8 u8A
 		return 0;
 	}
 
-	_info[sock].state = SOCKET_STATE_CONNECTING;
+	_info[_handleMap[sock]].state = SOCKET_STATE_CONNECTING;
 
 	unsigned long start = millis();
 
-	while (_info[sock].state == SOCKET_STATE_CONNECTING && millis() - start < 20000) {
+	while (_info[_handleMap[sock]].state == SOCKET_STATE_CONNECTING && millis() - start < 20000) {
 		m2m_wifi_handle_events(NULL);
 	}
 
-	if (_info[sock].state != SOCKET_STATE_CONNECTED) {
-		_info[sock].state = SOCKET_STATE_IDLE;
+	if (_info[_handleMap[sock]].state != SOCKET_STATE_CONNECTED) {
+		_info[_handleMap[sock]].state = SOCKET_STATE_IDLE;
 		return 0;
 	}
 
-	_info[sock].recvMsg.s16BufferSize = 0;
-	_info[sock].recvMsg.strRemoteAddr.sin_port = ((struct sockaddr_in*)pstrAddr)->sin_port;
-	_info[sock].recvMsg.strRemoteAddr.sin_addr.s_addr = ((struct sockaddr_in*)pstrAddr)->sin_addr.s_addr;
+	_info[_handleMap[sock]].recvMsg.s16BufferSize = 0;
+	_info[_handleMap[sock]].recvMsg.strRemoteAddr.sin_port = ((struct sockaddr_in*)pstrAddr)->sin_port;
+	_info[_handleMap[sock]].recvMsg.strRemoteAddr.sin_addr.s_addr = ((struct sockaddr_in*)pstrAddr)->sin_addr.s_addr;
 	recv(sock, NULL, 0, 0);
 
 	return 1;
@@ -162,39 +167,39 @@ uint8 WiFiSocketClass::connected(SOCKET sock)
 {
 	m2m_wifi_handle_events(NULL);
 
-	return (_info[sock].state == SOCKET_STATE_CONNECTED);
+	return (_info[_handleMap[sock]].state == SOCKET_STATE_CONNECTED);
 }
 
 uint8 WiFiSocketClass::listening(SOCKET sock)
 {
 	m2m_wifi_handle_events(NULL);
 
-	return (_info[sock].state == SOCKET_STATE_LISTENING);
+	return (_info[_handleMap[sock]].state == SOCKET_STATE_LISTENING);
 }
 
 uint8 WiFiSocketClass::bound(SOCKET sock)
 {
 	m2m_wifi_handle_events(NULL);
 
-	return (_info[sock].state == SOCKET_STATE_BOUND);
+	return (_info[_handleMap[sock]].state == SOCKET_STATE_BOUND);
 }
 
 int WiFiSocketClass::available(SOCKET sock)
 {
 	m2m_wifi_handle_events(NULL);
 
-	if (_info[sock].state != SOCKET_STATE_CONNECTED && _info[sock].state != SOCKET_STATE_BOUND) {
+	if (_info[_handleMap[sock]].state != SOCKET_STATE_CONNECTED && _info[_handleMap[sock]].state != SOCKET_STATE_BOUND) {
 		return 0;
 	}
 
-	return (_info[sock].buffer.length + _info[sock].recvMsg.s16BufferSize);
+	return (_info[_handleMap[sock]].buffer.length + _info[_handleMap[sock]].recvMsg.s16BufferSize);
 }
 
 int WiFiSocketClass::peek(SOCKET sock)
 {
 	m2m_wifi_handle_events(NULL);
 
-	if (_info[sock].state != SOCKET_STATE_CONNECTED && _info[sock].state != SOCKET_STATE_BOUND) {
+	if (_info[_handleMap[sock]].state != SOCKET_STATE_CONNECTED && _info[_handleMap[sock]].state != SOCKET_STATE_BOUND) {
 		return -1;
 	}
 
@@ -202,20 +207,20 @@ int WiFiSocketClass::peek(SOCKET sock)
 		return -1;
 	}
 
-	if (_info[sock].buffer.length == 0 && _info[sock].recvMsg.s16BufferSize) {
+	if (_info[_handleMap[sock]].buffer.length == 0 && _info[_handleMap[sock]].recvMsg.s16BufferSize) {
 		if (!fillRecvBuffer(sock)) {
 			return -1;
 		}
 	}
 
-	return *_info[sock].buffer.head;
+	return *_info[_handleMap[sock]].buffer.head;
 }
 
 int WiFiSocketClass::read(SOCKET sock, uint8_t* buf, size_t size)
 {
 	m2m_wifi_handle_events(NULL);
 
-	if (_info[sock].state != SOCKET_STATE_CONNECTED && _info[sock].state != SOCKET_STATE_BOUND) {
+	if (_info[_handleMap[sock]].state != SOCKET_STATE_CONNECTED && _info[_handleMap[sock]].state != SOCKET_STATE_BOUND) {
 		return 0;
 	}
 
@@ -232,7 +237,7 @@ int WiFiSocketClass::read(SOCKET sock, uint8_t* buf, size_t size)
 	int bytesRead = 0;
 
 	while (size) {
-		if (_info[sock].buffer.length == 0 && _info[sock].recvMsg.s16BufferSize) {
+		if (_info[_handleMap[sock]].buffer.length == 0 && _info[_handleMap[sock]].recvMsg.s16BufferSize) {
 			if (!fillRecvBuffer(sock)) {
 				break;
 			}
@@ -240,20 +245,20 @@ int WiFiSocketClass::read(SOCKET sock, uint8_t* buf, size_t size)
 
 		int toCopy = size;
 
-		if (toCopy > _info[sock].buffer.length) {
-			toCopy = _info[sock].buffer.length;
+		if (toCopy > _info[_handleMap[sock]].buffer.length) {
+			toCopy = _info[_handleMap[sock]].buffer.length;
 		}
 
-		memcpy(buf, _info[sock].buffer.head, toCopy);
-		_info[sock].buffer.head += toCopy;
-		_info[sock].buffer.length -= toCopy;
+		memcpy(buf, _info[_handleMap[sock]].buffer.head, toCopy);
+		_info[_handleMap[sock]].buffer.head += toCopy;
+		_info[_handleMap[sock]].buffer.length -= toCopy;
 
 		buf += toCopy;
 		size -= toCopy;
 		bytesRead += toCopy;
 	}
 
-	if (_info[sock].buffer.length == 0 && _info[sock].recvMsg.s16BufferSize == 0) {
+	if (_info[_handleMap[sock]].buffer.length == 0 && _info[_handleMap[sock]].recvMsg.s16BufferSize == 0) {
 		if (sock < TCP_SOCK_MAX) {
 			// TCP
 			recv(sock, NULL, 0, 0);
@@ -269,19 +274,19 @@ int WiFiSocketClass::read(SOCKET sock, uint8_t* buf, size_t size)
 
 IPAddress WiFiSocketClass::remoteIP(SOCKET sock)
 {
-	return _info[sock].recvMsg.strRemoteAddr.sin_addr.s_addr;
+	return _info[_handleMap[sock]].recvMsg.strRemoteAddr.sin_addr.s_addr;
 }
 
 uint16_t WiFiSocketClass::remotePort(SOCKET sock)
 {
-	return _info[sock].recvMsg.strRemoteAddr.sin_port;
+	return _info[_handleMap[sock]].recvMsg.strRemoteAddr.sin_port;
 }
 
 size_t WiFiSocketClass::write(SOCKET sock, const uint8_t *buf, size_t size)
 {
 	m2m_wifi_handle_events(NULL);
 
-	if (_info[sock].state != SOCKET_STATE_CONNECTED) {
+	if (_info[_handleMap[sock]].state != SOCKET_STATE_CONNECTED) {
 		return 0;
 	}
 
@@ -318,7 +323,7 @@ sint16 WiFiSocketClass::sendto(SOCKET sock, void *pvSendBuffer, uint16 u16SendLe
 {
 	m2m_wifi_handle_events(NULL);
 
-	if (_info[sock].state != SOCKET_STATE_BOUND) {
+	if (_info[_handleMap[sock]].state != SOCKET_STATE_BOUND) {
 		return 0;
 	}
 
@@ -329,32 +334,36 @@ sint8 WiFiSocketClass::close(SOCKET sock)
 {
 	m2m_wifi_handle_events(NULL);
 
-	if (_info[sock].state == SOCKET_STATE_CONNECTED || _info[sock].state == SOCKET_STATE_BOUND) {
-		if (_info[sock].recvMsg.s16BufferSize > 0) {
-			_info[sock].recvMsg.s16BufferSize = 0;
+	if (_info[_handleMap[sock]].state == SOCKET_STATE_CONNECTED || _info[_handleMap[sock]].state == SOCKET_STATE_BOUND) {
+		if (_info[_handleMap[sock]].recvMsg.s16BufferSize > 0) {
+			_info[_handleMap[sock]].recvMsg.s16BufferSize = 0;
 
 			// flush any data not processed
 			hif_receive(0, NULL, 0, 1);
 		}
 	}
 
-	_info[sock].state = SOCKET_STATE_INVALID;
-	_info[sock].parent = -1;
+	_info[_handleMap[sock]].state = SOCKET_STATE_INVALID;
+	_info[_handleMap[sock]].parent = -1;
 
-	if (_info[sock].buffer.data != NULL) {
-		free(_info[sock].buffer.data);
+#ifdef USE_STATIC_ALLOCATION
+	_info[_handleMap[sock]].buffer.head = _info[_handleMap[sock]].buffer.data;
+#else
+	if (_info[_handleMap[sock]].buffer.data != NULL) {
+		free(_info[_handleMap[sock]].buffer.data);
 	}
-	_info[sock].buffer.data = NULL;
-	_info[sock].buffer.head = NULL;
-	_info[sock].buffer.length = 0;
-	_info[sock].recvMsg.s16BufferSize = 0;
+	_info[_handleMap[sock]].buffer.data = NULL;
+	_info[_handleMap[sock]].buffer.head = NULL;
+#endif
+	_info[_handleMap[sock]].buffer.length = 0;
+	_info[_handleMap[sock]].recvMsg.s16BufferSize = 0;
 
 	return ::close(sock);
 }
 
 int WiFiSocketClass::hasParent(SOCKET sock, SOCKET child)
 {
-	if (_info[child].parent != sock) {
+	if (_info[_handleMap[child]].parent != sock) {
 		return 0;
 	}
 
@@ -365,11 +374,11 @@ SOCKET WiFiSocketClass::accepted(SOCKET sock)
 {
 	m2m_wifi_handle_events(NULL);
 
-	for (SOCKET s = 0; s < TCP_SOCK_MAX; s++) {
-		if (_info[s].parent == sock && _info[s].state == SOCKET_STATE_ACCEPTED) {
-			_info[s].state = SOCKET_STATE_CONNECTED;
+	for (SOCKET s = 0; s < TCP_SOCK_ALLOCATED; s++) {
+		if (_info[_handleMap[s]].parent == sock && _info[_handleMap[s]].state == SOCKET_STATE_ACCEPTED) {
+			_info[_handleMap[s]].state = SOCKET_STATE_CONNECTED;
 
-			_info[s].recvMsg.s16BufferSize = 0;
+			_info[_handleMap[s]].recvMsg.s16BufferSize = 0;
 			recv(s, NULL, 0, 0);
 
 			return s;
@@ -392,9 +401,9 @@ void WiFiSocketClass::handleEvent(SOCKET sock, uint8 u8Msg, void *pvMsg)
 			tstrSocketBindMsg *pstrBind = (tstrSocketBindMsg *)pvMsg;
 
 			if (pstrBind && pstrBind->status == 0) {
-				_info[sock].state = SOCKET_STATE_BOUND;
+				_info[_handleMap[sock]].state = SOCKET_STATE_BOUND;
 			} else {
-				_info[sock].state = SOCKET_STATE_IDLE;
+				_info[_handleMap[sock]].state = SOCKET_STATE_IDLE;
 			}
 		}
 		break;
@@ -404,9 +413,9 @@ void WiFiSocketClass::handleEvent(SOCKET sock, uint8 u8Msg, void *pvMsg)
 			tstrSocketListenMsg *pstrListen = (tstrSocketListenMsg *)pvMsg;
 
 			if (pstrListen && pstrListen->status == 0) {
-				_info[sock].state = SOCKET_STATE_LISTENING;
+				_info[_handleMap[sock]].state = SOCKET_STATE_LISTENING;
 			} else {
-				_info[sock].state = SOCKET_STATE_IDLE;
+				_info[_handleMap[sock]].state = SOCKET_STATE_IDLE;
 			}
 		}
 		break;
@@ -416,9 +425,9 @@ void WiFiSocketClass::handleEvent(SOCKET sock, uint8 u8Msg, void *pvMsg)
 			tstrSocketAcceptMsg *pstrAccept = (tstrSocketAcceptMsg*)pvMsg;
 
 			if (pstrAccept && pstrAccept->sock > -1) {
-				_info[pstrAccept->sock].state = SOCKET_STATE_ACCEPTED;
-				_info[pstrAccept->sock].parent = sock;
-				_info[pstrAccept->sock].recvMsg.strRemoteAddr = pstrAccept->strAddr;
+				_info[_handleMap[pstrAccept->sock]].state = SOCKET_STATE_ACCEPTED;
+				_info[_handleMap[pstrAccept->sock]].parent = sock;
+				_info[_handleMap[pstrAccept->sock]].recvMsg.strRemoteAddr = pstrAccept->strAddr;
 			}
 		}
 		break;
@@ -428,9 +437,9 @@ void WiFiSocketClass::handleEvent(SOCKET sock, uint8 u8Msg, void *pvMsg)
 			tstrSocketConnectMsg *pstrConnect = (tstrSocketConnectMsg *)pvMsg;
 
 			if (pstrConnect && pstrConnect->s8Error >= 0) {
-				_info[sock].state = SOCKET_STATE_CONNECTED;
+				_info[_handleMap[sock]].state = SOCKET_STATE_CONNECTED;
 			} else {
-				_info[sock].state = SOCKET_STATE_IDLE;
+				_info[_handleMap[sock]].state = SOCKET_STATE_IDLE;
 			}
 		}
 		break;
@@ -448,14 +457,14 @@ void WiFiSocketClass::handleEvent(SOCKET sock, uint8 u8Msg, void *pvMsg)
 
 			if (pstrRecvMsg->s16BufferSize <= 0) {
 				close(sock);
-			} else if (_info[sock].state == SOCKET_STATE_CONNECTED || _info[sock].state == SOCKET_STATE_BOUND) {
-				_info[sock].recvMsg.pu8Buffer = pstrRecvMsg->pu8Buffer;
-				_info[sock].recvMsg.s16BufferSize = pstrRecvMsg->s16BufferSize;
+			} else if (_info[_handleMap[sock]].state == SOCKET_STATE_CONNECTED || _info[_handleMap[sock]].state == SOCKET_STATE_BOUND) {
+				_info[_handleMap[sock]].recvMsg.pu8Buffer = pstrRecvMsg->pu8Buffer;
+				_info[_handleMap[sock]].recvMsg.s16BufferSize = pstrRecvMsg->s16BufferSize;
 				if (sock < TCP_SOCK_MAX) {
 					// TCP
 				} else {
 					// UDP
-					_info[sock].recvMsg.strRemoteAddr = pstrRecvMsg->strRemoteAddr;
+					_info[_handleMap[sock]].recvMsg.strRemoteAddr = pstrRecvMsg->strRemoteAddr;
 				}
 
 				fillRecvBuffer(sock);
@@ -485,28 +494,30 @@ void WiFiSocketClass::handleEvent(SOCKET sock, uint8 u8Msg, void *pvMsg)
 
 int WiFiSocketClass::fillRecvBuffer(SOCKET sock)
 {
-	if (_info[sock].buffer.data == NULL) {
-		_info[sock].buffer.data = (uint8_t*)malloc(SOCKET_BUFFER_SIZE);
-		_info[sock].buffer.head = _info[sock].buffer.data;
-		_info[sock].buffer.length = 0;
+#ifndef USE_STATIC_ALLOCATION
+	if (_info[_handleMap[sock]].buffer.data == NULL) {
+		_info[_handleMap[sock]].buffer.data = (uint8_t*)malloc(SOCKET_BUFFER_SIZE);
+		_info[_handleMap[sock]].buffer.head = _info[_handleMap[sock]].buffer.data;
+		_info[_handleMap[sock]].buffer.length = 0;
 	}
+#endif
 
-	int size = _info[sock].recvMsg.s16BufferSize;
+	int size = _info[_handleMap[sock]].recvMsg.s16BufferSize;
 
 	if (size > SOCKET_BUFFER_SIZE) {
 		size = SOCKET_BUFFER_SIZE;
 	}
 
-	uint8 lastTransfer = ((sint16)size == _info[sock].recvMsg.s16BufferSize);
+	uint8 lastTransfer = ((sint16)size == _info[_handleMap[sock]].recvMsg.s16BufferSize);
 
-	if (hif_receive(_info[sock].recvMsg.pu8Buffer, _info[sock].buffer.data, (sint16)size, lastTransfer) != M2M_SUCCESS) {
+	if (hif_receive(_info[_handleMap[sock]].recvMsg.pu8Buffer, _info[_handleMap[sock]].buffer.data, (sint16)size, lastTransfer) != M2M_SUCCESS) {
 		return 0;
 	}
 
-	_info[sock].buffer.head = _info[sock].buffer.data;
-	_info[sock].buffer.length = size;
-	_info[sock].recvMsg.pu8Buffer += size;
-	_info[sock].recvMsg.s16BufferSize -= size;
+	_info[_handleMap[sock]].buffer.head = _info[_handleMap[sock]].buffer.data;
+	_info[_handleMap[sock]].buffer.length = size;
+	_info[_handleMap[sock]].recvMsg.pu8Buffer += size;
+	_info[_handleMap[sock]].recvMsg.s16BufferSize -= size;
 
 	return 1;
 }
