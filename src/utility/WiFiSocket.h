@@ -37,6 +37,17 @@ extern "C" {
 // uncomment to allocate socket buffers at compile time instead of using malloc/free
 //#define USE_STATIC_ALLOCATION
 
+// set actual buffer count for TCP/UDP sockets (max 7 and 4 respectively)
+#define TCP_SOCK_ALLOCATED      7
+#define UDP_SOCK_ALLOCATED      4
+
+// total socket buffers to allocate
+#define MAX_SOCKET_ALLOCATED    (TCP_SOCK_ALLOCATED + UDP_SOCK_ALLOCATED)
+
+#if TCP_SOCK_ALLOCATED > 7 || UDP_SOCK_ALLOCATED > 4
+  #error Cannot support more than 7 TCP or 4 UDP sockets simultaneously
+#endif
+
 class WiFiSocketClass {
 public:
   WiFiSocketClass();
@@ -67,7 +78,9 @@ private:
   void handleEvent(SOCKET sock, uint8 u8Msg, void *pvMsg);
   int fillRecvBuffer(SOCKET sock);
 
-  struct 
+  SOCKET _handleMap[MAX_SOCKET];
+
+  struct
   {
     uint8_t state;
     SOCKET parent;
@@ -81,7 +94,7 @@ private:
       uint8_t* head;
       int length;
     } buffer;
-  } _info[MAX_SOCKET];
+  } _info[MAX_SOCKET_ALLOCATED];
 };
 
 extern WiFiSocketClass WiFiSocket;
