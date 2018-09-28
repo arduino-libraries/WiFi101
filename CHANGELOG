@@ -1,5 +1,15 @@
 WiFi101 ?.?.? - ????.??.??
 
+WiFi101 0.15.2 - 2018.02.20
+
+* Fixed issue with WiFiServer::begin() stopping first listening server
+
+WiFi101 0.15.1 - 2018.02.14
+
+* Fixed compatibility with Arduino Due
+* Fixed return code of WiFiUdp::endPacket(). Thanks @mlitke
+* Fixed WiFiServer::available() hanging after WiFi.end() is called
+
 WiFi101 0.15.0 - 2018.01.02
 
 * Fixed WiFi.status() hanging if no shield was present
