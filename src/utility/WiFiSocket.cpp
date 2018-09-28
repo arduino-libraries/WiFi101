@@ -319,7 +319,7 @@ sint16 WiFiSocketClass::sendto(SOCKET sock, void *pvSendBuffer, uint16 u16SendLe
 	m2m_wifi_handle_events(NULL);
 
 	if (_info[sock].state != SOCKET_STATE_BOUND) {
-		return 0;
+		return -1;
 	}
 
 	return ::sendto(sock, pvSendBuffer, u16SendLength, flags, pstrDestAddr, u8AddrLen);
