@@ -1,5 +1,15 @@
 WiFi101 ?.?.? - ????.??.??
 
+WiFi101 0.15.3 - 2018.11.21
+
+* Fixed unreachable destination issue in UDP packet transmission
+* Changed where required, in library's examples, the server's URL arduino.cc\80 in example.org\80, because http://arduino.cc will be no longer available
+* Changed the MAC address print in the library's example now are showed corectly all the MAC address chars
+* Fixed WiFiUDP::endPacket() return value in accord with sendig returns. Thanks to @mjlitke @jrowberg
+* Changed WiFiSocketClass::create(...) return condition. Thanks to @jrowberg
+* Changed server and URL to avoid 301 response from Server
+* Fixed initialization Server issue by adding socket initialization in WiFiServer::WiFiServer constructor
+
 WiFi101 0.15.2 - 2018.02.20
 
 * Fixed issue with WiFiServer::begin() stopping first listening server
