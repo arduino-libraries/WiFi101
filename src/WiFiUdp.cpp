@@ -47,7 +47,7 @@ uint8_t WiFiUDP::begin(uint16_t port)
 	addr.sin_addr.s_addr = 0;
 
 	if (_socket != -1 && WiFiSocket.bound(_socket)) {
-		WiFiSocket.close(_socket);
+		WiFiSocket.sock_close(_socket);
 		_socket = -1;
 	}
 
@@ -60,7 +60,7 @@ uint8_t WiFiUDP::begin(uint16_t port)
 
 	// Bind socket:
 	if (!WiFiSocket.bind(_socket, (struct sockaddr *)&addr, sizeof(struct sockaddr_in))) {
-		WiFiSocket.close(_socket);
+		WiFiSocket.sock_close(_socket);
 		_socket = -1;
 		return 0;
 	}
@@ -103,7 +103,7 @@ void WiFiUDP::stop()
 		return;
 	}
 
-	WiFiSocket.close(_socket);
+	WiFiSocket.sock_close(_socket);
 	_socket = -1;
 }
 

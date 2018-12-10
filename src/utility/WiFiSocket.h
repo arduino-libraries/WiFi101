@@ -48,7 +48,7 @@ public:
   sint16 sendto(SOCKET sock, void *pvSendBuffer, uint16 u16SendLength, uint16 flags, struct sockaddr *pstrDestAddr, uint8 u8AddrLen);
   IPAddress remoteIP(SOCKET sock);
   uint16_t remotePort(SOCKET sock);
-  sint8 close(SOCKET sock);
+  sint8 sock_close(SOCKET sock);
   SOCKET accepted(SOCKET sock);
   int hasParent(SOCKET sock, SOCKET child);
 

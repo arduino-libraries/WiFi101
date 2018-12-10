@@ -1194,7 +1194,7 @@ NMI_API SOCKET socket(uint16 u16Domain, uint8 u8Type, uint8 u8Flags);
 			if(ret != 0)
 			{
 				printf("Bind Failed. Error code = %d\n",ret);
-				close(udpServerSocket);
+				sock_close(udpServerSocket);
 			}
 		}
 		else
@@ -1279,7 +1279,7 @@ This example demonstrates the call of the listen socket operation after a succes
 					else
 					{
 						M2M_ERR("bind Failure!\n");
-						close(sock);
+						sock_close(sock);
 					}
 				}
 			}
@@ -1298,7 +1298,7 @@ This example demonstrates the call of the listen socket operation after a succes
 					else
 					{
 						M2M_ERR("listen Failure!\n");
-						close(sock);
+						sock_close(sock);
 					}
 				}
 			}
@@ -1456,7 +1456,7 @@ NMI_API sint8 accept(SOCKET sock, struct sockaddr *addr, uint8 *addrlen);
 		else
 		{
 			M2M_DBG("Connection Failed, Error: %d\n",pstrConnect->s8Error");
-			close(pstrNotification->Socket);
+			sock_close(pstrNotification->Socket);
 		}
 	}
 @endcode
@@ -1560,7 +1560,7 @@ NMI_API sint8 connect(SOCKET sock, struct sockaddr *pstrAddr, uint8 u8AddrLen);
 			else
 			{
 				printf("Socet recv Error: %d\n",pstrRx->s16BufferSize);
-				close(sock);
+				sock_close(sock);
 			}
 		}
 		break;
@@ -1674,7 +1674,7 @@ NMI_API sint16 recv(SOCKET sock, void *pvRecvBuf, uint16 u16BufLen, uint32 u32Ti
 			else
 			{
 				printf("Socet recv Error: %d\n",pstrRx->s16BufferSize);
-				ret = close(sock);
+				ret = sock_close(sock);
 			}
 		}
 		break;
@@ -1816,7 +1816,7 @@ NMI_API sint16 sendto(SOCKET sock, void *pvSendBuffer, uint16 u16SendLength, uin
  /**@{*/
 /*!
 @fn	\
-	NMI_API sint8 close(SOCKET sock);
+	NMI_API sint8 sock_close(SOCKET sock);
 
 @param [in]	sock
 				Socket ID, must hold a non negative value.
@@ -1836,7 +1836,7 @@ NMI_API sint16 sendto(SOCKET sock, void *pvSendBuffer, uint16 u16SendLength, uin
 @return		
 	The function returned @ref SOCK_ERR_NO_ERROR for successful operation and a negative value (indicating the error) otherwise. 
 */
-NMI_API sint8 close(SOCKET sock);
+NMI_API sint8 sock_close(SOCKET sock);
 /** @} */
 /** @defgroup InetAddressFn nmi_inet_addr
 *  @ingroup SocketAPI

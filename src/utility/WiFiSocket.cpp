@@ -332,7 +332,7 @@ sint16 WiFiSocketClass::sendto(SOCKET sock, void *pvSendBuffer, uint16 u16SendLe
 	}	
 }
 
-sint8 WiFiSocketClass::close(SOCKET sock)
+sint8 WiFiSocketClass::sock_close(SOCKET sock)
 {
 	m2m_wifi_handle_events(NULL);
 
@@ -357,7 +357,7 @@ sint8 WiFiSocketClass::close(SOCKET sock)
 	_info[sock].recvMsg.s16BufferSize = 0;
 	memset(&_info[sock]._lastSendtoAddr, 0x00, sizeof(_info[sock]._lastSendtoAddr));
 
-	return ::close(sock);
+	return ::sock_close(sock);
 }
 
 int WiFiSocketClass::hasParent(SOCKET sock, SOCKET child)
@@ -455,7 +455,7 @@ void WiFiSocketClass::handleEvent(SOCKET sock, uint8 u8Msg, void *pvMsg)
 #endif
 
 			if (pstrRecvMsg->s16BufferSize <= 0) {
-				close(sock);
+				sock_close(sock);
 			} else if (_info[sock].state == SOCKET_STATE_CONNECTED || _info[sock].state == SOCKET_STATE_BOUND) {
 				_info[sock].recvMsg.pu8Buffer = pstrRecvMsg->pu8Buffer;
 				_info[sock].recvMsg.s16BufferSize = pstrRecvMsg->s16BufferSize;
