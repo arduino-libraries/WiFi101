@@ -38,7 +38,7 @@ script:
   - buildExampleSketch ConnectNoEncryption
   - buildExampleSketch ConnectWithWEP
   - buildExampleSketch ConnectWithWPA
-  - buildExampleSketch FirmwareUpdater
+  - if ! [[ "$BOARD" =~ "arduino:avr:" ]]; then buildExampleSketch FirmwareUpdater; fi
   - buildExampleSketch MDNS_WiFiWebServer
   - buildExampleSketch ScanNetworks
   - buildExampleSketch SimpleWebServerWiFi
