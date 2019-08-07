@@ -10,10 +10,8 @@ env:
     - BOARD="arduino:samd:mkr1000"
     - BOARD="Intel:arc32:arduino_101"
 before_install:
-  - wget http://downloads.arduino.cc/arduino-cli/arduino-cli-$CLI_VERSION-linux64.tar.bz2
-  - tar xf arduino-cli-$CLI_VERSION-linux64.tar.bz2
-  - mkdir -p $HOME/bin
-  - mv arduino-cli-*-linux64 $HOME/bin/arduino-cli
+  - mkdir -p "$HOME/bin"
+  - curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | BINDIR="$HOME/bin" sh
   - export PATH=$PATH:$HOME/bin
   - arduino-cli core update-index
   - if [[ "$BOARD" =~ "arduino:avr:" ]]; then
