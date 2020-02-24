@@ -20,13 +20,15 @@
 #include "WiFiSSLClient.h"
 
 WiFiSSLClient::WiFiSSLClient() : 
-	WiFiClient()
+	
 {
+	WiFiClient()
 }
 
 WiFiSSLClient::WiFiSSLClient(uint8_t sock) :
-	WiFiClient(sock)
+	
 {  
+	WiFiClient(sock)
 }
 
 int WiFiSSLClient::connect(IPAddress ip, uint16_t port)
