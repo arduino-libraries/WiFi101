@@ -14,11 +14,11 @@ WiFi101 0.15.3 - 2018.11.21
 * Fixed WiFiUDP::endPacket() return value in accord with sending returns. Thanks to @mjlitke @jrowberg
 * Changed WiFiSocketClass::create(...) return condition. Thanks to @jrowberg
 * Changed server and URL to avoid 301 response from Server
-* Fixed initialization Server issue by adding socket initialization in WiFiServer::WiFiServer constructor
+* Fixed initialization Server issue by adding socket initialization in WiFiServer:: WiFiServer constructor
 
 WiFi101 0.15.2 - 2018.02.20
 
-* Fixed issue with WiFiServer::begin() stopping first listening server
+* Fixed issue with WiFiServer:: begin() stopping first listening server
 
 WiFi101 0.15.1 - 2018.02.14
 
@@ -40,7 +40,7 @@ WiFi101 0.14.3 - 2017.06.01
 
 WiFi101 0.14.2 - 2017.05.08
 
-* Fixed issues with WiFiServer::write not working
+* Fixed issues with WiFiServer:: write not working
 
 WiFi101 0.14.1 - 2017.04.20
 
