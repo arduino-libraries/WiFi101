@@ -10,8 +10,8 @@ WiFi101 0.15.3 - 2018.11.21
 
 * Fixed unreachable destination issue in UDP packet transmission
 * Changed where required, in library's examples, the server's URL arduino.cc\80 in example.org\80, because http://arduino.cc will be no longer available
-* Changed the MAC address print in the library's example now are showed corectly all the MAC address chars
-* Fixed WiFiUDP::endPacket() return value in accord with sendig returns. Thanks to @mjlitke @jrowberg
+* Changed the MAC address print in the library's example now are showed correctly all the MAC address chars
+* Fixed WiFiUDP::endPacket() return value in accord with sending returns. Thanks to @mjlitke @jrowberg
 * Changed WiFiSocketClass::create(...) return condition. Thanks to @jrowberg
 * Changed server and URL to avoid 301 response from Server
 * Fixed initialization Server issue by adding socket initialization in WiFiServer::WiFiServer constructor
@@ -51,7 +51,7 @@ WiFi101 0.14.0 - 2017.03.22
 
 * Added support for firmware 19.5.2
 * Add ability to create Access Point with WPA security (f/w 19.5.2 or higher)
-* Add WiFi.hostname(name) method to set custom host name for DHCP (f/w 19.5.2 or higher)
+* Add WiFi.hostname(name) method to set custom hostname for DHCP (f/w 19.5.2 or higher)
 * Enables support for AES-256 Ciphers (f/w 19.5.2 or higher)
 * Make provisioning mode backwards compatible with f/w 19.4.4 and older
 
@@ -108,13 +108,13 @@ WiFi101 0.9.1 - 2016.04.19
 
 WiFi101 0.9.0 - 2016.03.21
 
-* Fixed WiFi.status() hanging when shield is not present
+* Fixed WiFi.status() hanging when a shield is not present
 * Fixed MAC address returning 00:00:00:00:00:00 with firmware version 19.3.0
 * Fixed SSL write functionality with firmware version 19.3.0
 * Fixed previous version of the library not working on the Uno and other boards that used PCINT's
-* Added beginAP(...) API's to create access point with WEP passwords
+* Added beginAP(...) API's to create an access point with WEP passwords
 * Fixed beginAP(...) channel off by one error
-* Fixed WiFi.status() always returning WL_CONNECTED once connected, even if access point is disconnected later
+* Fixed WiFi.status() always returning WL_CONNECTED once connected, even if the access point is disconnected later
 * Added beginMulti API for Multicast UDP support
 * Added WiFiMDNSResponder class and MDNS Web server example
 
@@ -128,7 +128,7 @@ WiFi101 0.8.0 - 2016.02.15
 WiFi101 0.7.0 - 2015.01.11
 
 * Added support for WiFi Firmware 19.4.4
-* WiFi.hostByName(...) will not try resolve the domain name if it's already a numeric IP
+* WiFi.hostByName(...) will not try to resolve the domain name if it's already a numeric IP
 * Fixed manual IP configuration (no DHCP)
 * Fixed WiFiServer.available(), now follows API specification
 * Fixed WEP key connection
@@ -140,16 +140,15 @@ WiFi101 0.6.0 - 2015.11.27
 
 * Fixed bug with AVR boards when Web Server is used
 * Fixed UDP read bug on AVR Boards
-* Added missing inlcude for SSL Client
+* Added missing include for SSL Client
 * Fixed peek() function
 * Fixed some examples
 
 WiFi101 0.5.1 - 2015.10.06
 
 * Improved support for AVR Boards (Uno, Mega, Leonardo, etc.) and
-  ARM based boards (Due and Zero).
+  ARM-based boards (Due and Zero).
 
 WiFi101 0.5.0 - 2015.10.01
 
 * Initial release
-
