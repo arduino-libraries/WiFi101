@@ -22,7 +22,7 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include <avr/pgmspace.h>
-#ifndef ARDUINO_ARCH_AVR
+#ifndef __AVR__
 #include <strings.h>
 #endif
 
