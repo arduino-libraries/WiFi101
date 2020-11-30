@@ -26,7 +26,7 @@ typedef struct __attribute__((__packed__)) {
   uint32_t arg1;
   uint16_t payloadLength;
 
-  // payloadLenght bytes of data follows...
+  // payloadLength bytes of data follows...
 } UartPacket;
 
 static const int MAX_PAYLOAD_SIZE = 1024;
@@ -125,5 +125,3 @@ void loop() {
     }
   }
 }
-
-

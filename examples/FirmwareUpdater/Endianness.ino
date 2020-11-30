@@ -1,5 +1,5 @@
 /*
-  Endianess.ino - Network byte order conversion functions.
+  Endianness.ino - Network byte order conversion functions.
   Copyright (c) 2015 Arduino LLC.  All right reserved.
 
   This library is free software; you can redistribute it and/or
@@ -59,4 +59,3 @@ uint32_t toNetwork32(uint32_t to) {
 uint16_t toNetwork16(uint16_t to) {
   return fromNetwork16(to);
 }
-

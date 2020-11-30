@@ -1,9 +1,9 @@
 /*
- * This example check if the firmware loaded on the WiFi101
+ * This example checks if the firmware loaded on the WiFi101
  * shield is updated.
  *
  * Circuit:
- * - WiFi101 Shield attached
+ * - WiFi 101 Shield attached
  *
  * Created 29 July 2015 by Cristian Maglie
  * This code is in the public domain.
@@ -24,7 +24,7 @@ void setup() {
   Serial.println();
 
   // Check for the presence of the shield
-  Serial.print("WiFi101 shield: ");
+  Serial.print("WiFi 101 Shield: ");
   if (WiFi.status() == WL_NO_SHIELD) {
     Serial.println("NOT PRESENT");
     return; // don't continue
@@ -55,7 +55,7 @@ void setup() {
     Serial.println("Check result: PASSED");
   } else {
     Serial.println("Check result: NOT PASSED");
-    Serial.println(" - The firmware version on the shield do not match the");
+    Serial.println(" - The firmware version on the shield does not match the");
     Serial.println("   version required by the library, you may experience");
     Serial.println("   issues or failures.");
   }
@@ -64,4 +64,3 @@ void setup() {
 void loop() {
   // do nothing
 }
-

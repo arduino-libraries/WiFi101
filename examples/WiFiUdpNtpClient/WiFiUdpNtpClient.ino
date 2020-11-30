@@ -48,7 +48,7 @@ void setup()
 
   // check for the presence of the shield:
   if (WiFi.status() == WL_NO_SHIELD) {
-    Serial.println("WiFi shield not present");
+    Serial.println("WiFi 101 Shield not present");
     // don't continue:
     while (true);
   }
@@ -64,7 +64,7 @@ void setup()
     delay(10000);
   }
 
-  Serial.println("Connected to wifi");
+  Serial.println("Connected to WiFi");
   printWiFiStatus();
 
   Serial.println("\nStarting connection to server...");
@@ -82,7 +82,7 @@ void loop()
     Udp.read(packetBuffer, NTP_PACKET_SIZE); // read the packet into the buffer
 
     //the timestamp starts at byte 40 of the received packet and is four bytes,
-    // or two words, long. First, esxtract the two words:
+    // or two words, long. First, extract the two words:
 
     unsigned long highWord = word(packetBuffer[40], packetBuffer[41]);
     unsigned long lowWord = word(packetBuffer[42], packetBuffer[43]);
@@ -159,7 +159,7 @@ void printWiFiStatus() {
   Serial.print("SSID: ");
   Serial.println(WiFi.SSID());
 
-  // print your WiFi shield's IP address:
+  // print your WiFi 101 Shield's IP address:
   IPAddress ip = WiFi.localIP();
   Serial.print("IP Address: ");
   Serial.println(ip);
@@ -170,13 +170,3 @@ void printWiFiStatus() {
   Serial.print(rssi);
   Serial.println(" dBm");
 }
-
-
-
-
-
-
-
-
-
-
