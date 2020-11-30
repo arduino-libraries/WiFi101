@@ -1,12 +1,12 @@
 /*
 
  This example connects to a WEP-encrypted WiFi network.
- Then it prints the  MAC address of the WiFi shield,
+ Then it prints the MAC address of the WiFi 101 Shield,
  the IP address obtained, and other network details.
 
  If you use 40-bit WEP, you need a key that is 10 characters long,
  and the characters must be hexadecimal (0-9 or A-F).
- e.g.  for 40-bit, ABBADEAF01 will work, but ABBADEAF won't work
+ e.g. for 40-bit, ABBADEAF01 will work, but ABBADEAF won't work
  (too short) and ABBAISDEAF won't work (I and S are not
  hexadecimal characters).
 
@@ -15,7 +15,7 @@
  all in the 0-9, A-F range.
 
  Circuit:
- * WiFi shield attached
+ * WiFi 101 Shield attached
 
  created 13 July 2010
  by dlf (Metodo2 srl)
@@ -41,7 +41,7 @@ void setup() {
 
   // check for the presence of the shield:
   if (WiFi.status() == WL_NO_SHIELD) {
-    Serial.println("WiFi shield not present");
+    Serial.println("WiFi 101 Shield not present");
     // don't continue:
     while (true);
   }
@@ -69,7 +69,7 @@ void loop() {
 }
 
 void printWiFiData() {
-  // print your WiFi shield's IP address:
+  // print your WiFi 101 Shield's IP address:
   IPAddress ip = WiFi.localIP();
   Serial.print("IP Address: ");
   Serial.println(ip);

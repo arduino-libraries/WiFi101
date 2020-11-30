@@ -95,7 +95,7 @@ bool WiFiMDNSResponder::begin(const char* _name, uint32_t _ttlSeconds)
   int nameLength = strlen(_name);
 
   if (nameLength > 255) {
-    // Can only handle domains that are upto 255 chars in length.
+    // Can only handle domains that are up to 255 chars in length.
     minimumExpectedRequestLength = 0;
     return false;
   }

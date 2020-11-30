@@ -2,7 +2,7 @@
   WiFi Web Server LED Blink
 
  A simple web server that lets you blink an LED via the web.
- This sketch will print the IP address of your WiFi Shield (once connected)
+ This sketch will print the IP address of your WiFi 101 Shield (once connected)
  to the Serial monitor. From there, you can open that address in a web browser
  to turn on and off the LED on pin 9.
 
@@ -14,7 +14,7 @@
  WEP or WPA, change the WiFi.begin() call accordingly.
 
  Circuit:
- * WiFi shield attached
+ * WiFi 101 Shield attached
  * LED attached to pin 9
 
  created 25 Nov 2012
@@ -38,7 +38,7 @@ void setup() {
 
   // check for the presence of the shield:
   if (WiFi.status() == WL_NO_SHIELD) {
-    Serial.println("WiFi shield not present");
+    Serial.println("WiFi 101 Shield not present");
     while (true);       // don't continue
   }
 
@@ -64,7 +64,7 @@ void loop() {
     Serial.println("new client");           // print a message out the serial port
     String currentLine = "";                // make a String to hold incoming data from the client
     while (client.connected()) {            // loop while the client's connected
-      if (client.available()) {             // if there's bytes to read from the client,
+      if (client.available()) {             // if there are bytes to read from the client,
         char c = client.read();             // read a byte, then
         Serial.write(c);                    // print it out the serial monitor
         if (c == '\n') {                    // if the byte is a newline character
@@ -106,7 +106,7 @@ void loop() {
     }
     // close the connection:
     client.stop();
-    Serial.println("client disonnected");
+    Serial.println("client disconnected");
   }
 }
 
@@ -115,7 +115,7 @@ void printWiFiStatus() {
   Serial.print("SSID: ");
   Serial.println(WiFi.SSID());
 
-  // print your WiFi shield's IP address:
+  // print your WiFi 101 Shield's IP address:
   IPAddress ip = WiFi.localIP();
   Serial.print("IP Address: ");
   Serial.println(ip);

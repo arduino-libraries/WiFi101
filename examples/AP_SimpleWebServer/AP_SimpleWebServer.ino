@@ -41,7 +41,7 @@ void setup() {
 
   // check for the presence of the shield:
   if (WiFi.status() == WL_NO_SHIELD) {
-    Serial.println("WiFi shield not present");
+    Serial.println("WiFi 101 Shield not present");
     // don't continue
     while (true);
   }
@@ -54,7 +54,7 @@ void setup() {
   Serial.print("Creating access point named: ");
   Serial.println(ssid);
 
-  // Create open network. Change this line if you want to create an WEP network:
+  // Create open network. Change this line if you want to create a WEP network:
   status = WiFi.beginAP(ssid);
   if (status != WL_AP_LISTENING) {
     Serial.println("Creating access point failed");
@@ -76,7 +76,7 @@ void setup() {
 void loop() {
   // compare the previous status to the current status
   if (status != WiFi.status()) {
-    // it has changed update the variable
+    // it has changed, so update the variable
     status = WiFi.status();
 
     if (status == WL_AP_CONNECTED) {
@@ -98,7 +98,7 @@ void loop() {
     Serial.println("new client");           // print a message out the serial port
     String currentLine = "";                // make a String to hold incoming data from the client
     while (client.connected()) {            // loop while the client's connected
-      if (client.available()) {             // if there's bytes to read from the client,
+      if (client.available()) {             // if there are bytes to read from the client,
         char c = client.read();             // read a byte, then
         Serial.write(c);                    // print it out the serial monitor
         if (c == '\n') {                    // if the byte is a newline character
@@ -149,7 +149,7 @@ void printWiFiStatus() {
   Serial.print("SSID: ");
   Serial.println(WiFi.SSID());
 
-  // print your WiFi shield's IP address:
+  // print your WiFi 101 Shield's IP address:
   IPAddress ip = WiFi.localIP();
   Serial.print("IP Address: ");
   Serial.println(ip);

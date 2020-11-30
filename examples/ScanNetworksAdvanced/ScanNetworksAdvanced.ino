@@ -1,13 +1,13 @@
 /*
 
-  This example  prints the WiFi 101 shield or MKR1000 MAC address, and
-  scans for available WiFi networks using the WiFi 101 shield or MKR1000 board.
+  This example  prints the WiFi 101 Shield or MKR1000 MAC address, and
+  scans for available WiFi networks using the WiFi 101 Shield or MKR1000 board.
   Every ten seconds, it scans again. It doesn't actually
   connect to any network, so no encryption scheme is specified.
   BSSID and WiFi channel are printed
 
   Circuit:
-   WiFi 101 shield attached or MKR1000 board
+   WiFi 101 Shield attached or MKR1000 board
 
   This example is based on ScanNetworks
 
@@ -28,7 +28,7 @@ void setup() {
 
   // check for the presence of the shield:
   if (WiFi.status() == WL_NO_SHIELD) {
-    Serial.println("WiFi shield not present");
+    Serial.println("WiFi 101 Shield not present");
     // don't continue:
     while (true);
   }
