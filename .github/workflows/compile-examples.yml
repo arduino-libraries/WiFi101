@@ -1,0 +1,82 @@
+name: Compile Examples
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/compile-examples.yml"
+      - "examples/**"
+      - "src/**"
+  push:
+    paths:
+      - ".github/workflows/compile-examples.yml"
+      - "examples/**"
+      - "src/**"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    env:
+      # sketch paths to compile (recursive) for all boards
+      UNIVERSAL_SKETCH_PATHS: |
+        - examples/AP_SimpleWebServer
+        - examples/CheckWifi101FirmwareVersion
+        - examples/ConnectNoEncryption
+        - examples/ConnectWithWEP
+        - examples/ConnectWithWPA
+        - examples/MDNS_WiFiWebServer
+        - examples/Provisioning_WiFiWebServer
+        - examples/ScanNetworks
+        - examples/ScanNetworksAdvanced
+        - examples/SimpleWebServerWiFi
+        - examples/WiFiChatServer
+        - examples/WiFiPing
+        - examples/WiFiSSLClient
+        - examples/WiFiUdpNtpClient
+        - examples/WiFiUdpSendReceiveString
+        - examples/WiFiWebClient
+        - examples/WiFiWebClientRepeating
+        - examples/WiFiWebServer
+
+    strategy:
+      fail-fast: false
+
+      matrix:
+        board:
+          - fqbn: arduino:avr:uno
+            firmwareUpdaterSupport: false
+          - fqbn: arduino:avr:mega
+            firmwareUpdaterSupport: false
+          - fqbn: arduino:sam:arduino_due_x_dbg
+            firmwareUpdaterSupport: true
+          - fqbn: arduino:samd:arduino_zero_edbg
+            firmwareUpdaterSupport: true
+          - fqbn: arduino:samd:mkr1000
+            firmwareUpdaterSupport: true
+          - fqbn: Intel:arc32:arduino_101
+            firmwareUpdaterSupport: true
+
+        # make board type-specific customizations to the matrix jobs
+        include:
+          - board:
+              firmwareUpdaterSupport: true
+            firmwareUpdater-sketch-paths: |
+              - examples/FirmwareUpdater
+          - board:
+              firmwareUpdaterSupport: false
+            firmwareUpdater-sketch-paths: ""
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Compile examples
+        uses: arduino/compile-sketches@main
+        with:
+          fqbn: ${{ matrix.board.fqbn }}
+          libraries: |
+            # Install the WiFi101 library from the local path
+            - source-path: ./
+          sketch-paths: |
+            ${{ env.UNIVERSAL_SKETCH_PATHS }}
+            ${{ matrix.firmwareUpdater-sketch-paths }}
