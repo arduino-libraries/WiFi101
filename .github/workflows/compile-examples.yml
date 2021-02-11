@@ -74,6 +74,7 @@ jobs:
       - name: Compile examples
         uses: arduino/compile-sketches@main
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           fqbn: ${{ matrix.board.fqbn }}
           libraries: |
             # Install the WiFi101 library from the local path
