@@ -1,3 +1,5 @@
+name: Report Size Deltas
+
 on:
   schedule:
     - cron:  '*/5 * * * *'
