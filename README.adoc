@@ -4,8 +4,9 @@
 
 = {repository-name} library for for the Arduino WiFi Shield 101 and MKR1000 board =
 
-image:https://github.com/{repository-owner}/{repository-name}/workflows/Compile%20Examples/badge.svg["Compile Examples Status", link="https://github.com/{repository-owner}/{repository-name}/actions?workflow=Compile+Examples"]
-image:https://github.com/{repository-owner}/{repository-name}/workflows/Spell%20Check/badge.svg["Spell Check Status", link="https://github.com/{repository-owner}/{repository-name}/actions?workflow=Spell+Check"]
+image:https://github.com/{repository-owner}/{repository-name}/actions/workflows/check-arduino.yml/badge.svg["Check Arduino status", link="https://github.com/{repository-owner}/{repository-name}/actions/workflows/check-arduino.yml"]
+image:https://github.com/{repository-owner}/{repository-name}/actions/workflows/compile-examples.yml/badge.svg["Compile Examples status", link="https://github.com/{repository-owner}/{repository-name}/actions/workflows/compile-examples.yml"]
+image:https://github.com/{repository-owner}/{repository-name}/actions/workflows/spell-check.yml/badge.svg["Spell Check status", link="https://github.com/{repository-owner}/{repository-name}/actions/workflows/spell-check.yml"]
 
 This library implements a network driver for devices based
 on the ATMEL WINC1500 WiFi module.

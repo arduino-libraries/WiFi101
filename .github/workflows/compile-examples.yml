@@ -11,9 +11,15 @@ on:
       - ".github/workflows/compile-examples.yml"
       - "examples/**"
       - "src/**"
+  schedule:
+    # Run every Tuesday at 8 AM UTC to catch breakage caused by changes to external resources (libraries, platforms).
+    - cron: "0 8 * * TUE"
+  workflow_dispatch:
+  repository_dispatch:
 
 jobs:
   build:
+    name: ${{ matrix.board.fqbn }}
     runs-on: ubuntu-latest
 
     env:
@@ -72,7 +78,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Compile examples
-        uses: arduino/compile-sketches@main
+        uses: arduino/compile-sketches@v1
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           fqbn: ${{ matrix.board.fqbn }}
