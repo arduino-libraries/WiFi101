@@ -247,7 +247,7 @@ nothing
 
 ### `WiFi.beginAP()`
 #### Description
-Initializes the WiFi101 library in Access Point (AP) mode. Other WiFi devices will be able to disover and connect to the created Access Point.
+Initializes the WiFi101 library in Access Point (AP) mode. Other WiFi devices will be able to discover and connect to the created Access Point.
 
 #### Syntax
 ```
@@ -555,6 +555,7 @@ WiFi.setDNS(dns_server1, dns_server2)
 ```
 #### Parameters
 dns_server1: the IP address of the primary DNS server
+
 dns_server2: the IP address of the secondary DNS server
 
 #### Returns 
@@ -2035,7 +2036,7 @@ void loop() {
 
 ### `ConnectSSL()`
 #### Description
-Connect to the IP address and port specified in the constructor using the SSL protocol. The method connectSSL is required when the server provides only HTTPS connections. Before using this metod, it is required to load the SSL certificate used by the server into the Arduino WiFi Shield 101. The shield comes already loaded with certificates and it should be ready to use. To change or upload new SSL certificates you should follow the procedures that will be made available. connectSSL() also supports DNS lookups when using a domain name (ex:google.com).
+Connect to the IP address and port specified in the constructor using the SSL protocol. The method connectSSL is required when the server provides only HTTPS connections. Before using this method, it is required to load the SSL certificate used by the server into the Arduino WiFi Shield 101. The shield comes already loaded with certificates and it should be ready to use. To change or upload new SSL certificates you should follow the procedures that will be made available. connectSSL() also supports DNS lookups when using a domain name (ex:google.com).
 
 #### Syntax
 ```
@@ -2374,6 +2375,7 @@ WiFiUDP.beginPacket(hostIp, port);
 ```
 #### Parameters
 hostName: the address of the remote host. It accepts a character string or an IPAddress
+
 hostIp: the IP address of the remote connection (4 bytes)
 port: the port of the remote connection (int)
 #### Returns 
@@ -2408,7 +2410,9 @@ WiFiUDP.write(buffer, size);
 ```
 #### Parameters
 byte: the outgoing byte
+
 buffer: the outgoing message
+
 size: the size of the buffer
 #### Returns 
 single byte into the packet
@@ -2460,6 +2464,7 @@ WiFiUDP.read(buffer, len);
 ```
 #### Parameters
 buffer: buffer to hold incoming packets (char*)
+
 len: maximum size of the buffer (int)
 
 #### Returns 
