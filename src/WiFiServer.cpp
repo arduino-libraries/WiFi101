@@ -101,6 +101,22 @@ WiFiClient WiFiServer::available(uint8_t* status)
 	return WiFiClient();
 }
 
+WiFiClient WiFiServer::accept()
+{
+	if (_socket != -1 && !WiFiSocket.listening(_socket)) {
+		_socket = -1;
+	}
+
+	if (_socket != -1) {
+		SOCKET child = WiFiSocket.accepted(_socket);
+
+		if (child > -1) {
+			return WiFiClient(child);
+		}
+	}
+	return WiFiClient();
+}
+
 uint8_t WiFiServer::status() {
 	// Deprecated.
 	return 0;
