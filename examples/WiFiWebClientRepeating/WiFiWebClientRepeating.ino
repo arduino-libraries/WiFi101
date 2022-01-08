@@ -2,10 +2,10 @@
   Repeating WiFi Web Client
 
  This sketch connects to a a web server and makes a request
- using an Arduino WiFi shield.
+ using an Arduino WiFi 101 Shield.
 
  Circuit:
- * WiFi shield attached to pins SPI pins and pin 7
+ * WiFi 101 Shield attached to pins SPI pins and pin 7
 
  created 23 April 2012
  modified 31 May 2012
@@ -47,7 +47,7 @@ void setup() {
 
   // check for the presence of the shield:
   if (WiFi.status() == WL_NO_SHIELD) {
-    Serial.println("WiFi shield not present");
+    Serial.println("WiFi 101 Shield not present");
     // don't continue:
     while (true);
   }
@@ -85,8 +85,8 @@ void loop() {
 
 // this method makes a HTTP connection to the server:
 void httpRequest() {
-  // close any connection before send a new request.
-  // This will free the socket on the WiFi shield
+  // close any connection before sending a new request.
+  // This will free the socket on the WiFi 101 Shield
   client.stop();
 
   // if there's a successful connection:
@@ -114,7 +114,7 @@ void printWiFiStatus() {
   Serial.print("SSID: ");
   Serial.println(WiFi.SSID());
 
-  // print your WiFi shield's IP address:
+  // print your WiFi 101 Shield's IP address:
   IPAddress ip = WiFi.localIP();
   Serial.print("IP Address: ");
   Serial.println(ip);

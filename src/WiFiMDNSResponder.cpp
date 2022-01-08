@@ -21,8 +21,10 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
+#ifdef ARDUINO_ARCH_AVR
 #include <avr/pgmspace.h>
-#ifndef ARDUINO_ARCH_AVR
+#endif
+#ifndef __AVR__
 #include <strings.h>
 #endif
 
@@ -93,7 +95,7 @@ bool WiFiMDNSResponder::begin(const char* _name, uint32_t _ttlSeconds)
   int nameLength = strlen(_name);
 
   if (nameLength > 255) {
-    // Can only handle domains that are upto 255 chars in length.
+    // Can only handle domains that are up to 255 chars in length.
     minimumExpectedRequestLength = 0;
     return false;
   }

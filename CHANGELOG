@@ -1,17 +1,17 @@
 WiFi101 ?.?.? - ????.??.??
 
-WiFi101 0.16.0 - 2018.04.04
+WiFi101 0.16.0 - 2019.04.04
 
 * Added WiFi.setTimeout(timeout) API to set timeout of WiFi.begin(...)
-* Changed check firmware version comparision from == to >=
+* Changed check firmware version comparison from == to >=
 * Updated latest firmware version for model B to 19.6.1
 
 WiFi101 0.15.3 - 2018.11.21
 
 * Fixed unreachable destination issue in UDP packet transmission
-* Changed where required, in library's examples, the server's URL arduino.cc\80 in example.org\80, because http://arduino.cc will be no longer available
-* Changed the MAC address print in the library's example now are showed corectly all the MAC address chars
-* Fixed WiFiUDP::endPacket() return value in accord with sendig returns. Thanks to @mjlitke @jrowberg
+* Changed where required, in library's examples, the server's URL arduino.cc\80 to example.org\80, because http://arduino.cc will be no longer available
+* Changed the MAC address print in the library's example now are showed correctly all the MAC address chars
+* Fixed WiFiUDP::endPacket() return value in accord with sending returns. Thanks to @mjlitke @jrowberg
 * Changed WiFiSocketClass::create(...) return condition. Thanks to @jrowberg
 * Changed server and URL to avoid 301 response from Server
 * Fixed initialization Server issue by adding socket initialization in WiFiServer::WiFiServer constructor
@@ -45,7 +45,7 @@ WiFi101 0.14.2 - 2017.05.08
 WiFi101 0.14.1 - 2017.04.20
 
 * Fixed issues with WiFiMDNSResponder and Windows using Bonjour
-* Correct cast of buffer size when processing received data 
+* Correct cast of buffer size when processing received data
 
 WiFi101 0.14.0 - 2017.03.22
 
@@ -69,7 +69,7 @@ WiFi101 0.12.0 - 2017.01.05
 * Fixed WiFi.getTime() not returning 0, if time has not been synced via NTP
 * Fixed crashing when connecting after scanning
 * Fixed WiFiServer::available() returning valid client on outbound client connection
-* Added WiFiUdp::beginMulticast(port) function for compatiblity with EthernetUdp, as beginMulti was inconsistent
+* Added WiFiUdp::beginMulticast(port) function for compatibility with EthernetUdp, as beginMulti was inconsistent
 
 WiFi101 0.11.2 - 2016.12.15
 
@@ -93,7 +93,7 @@ WiFi101 0.10.0 - 2016.09.08
 
 * Added WiFi.end() to disconnect from the AP or end AP mode
 * Added new WiFi.ping(...) functionality. Thanks @PKGeorgiev
-* Added WiFi.setPins(...) to customize the CS, INTN, RESET and CHIPEN pins 
+* Added WiFi.setPins(...) to customize the CS, INTN, RESET and CHIPEN pins
 * Add new WL_AP_LISTENING, WL_AP_CONNECTED, and WL_AP_FAILED status types for AP mode
 * Fixed return value of WiFiUDP::beginPacket(host, port) when host is successfully resolved
 * Added power management methods: WiFi.lowPowerMode(), WiFi.maxLowPowerMode(), WiFi.noLowPowerMode()
@@ -128,7 +128,7 @@ WiFi101 0.8.0 - 2016.02.15
 WiFi101 0.7.0 - 2015.01.11
 
 * Added support for WiFi Firmware 19.4.4
-* WiFi.hostByName(...) will not try resolve the domain name if it's already a numeric IP
+* WiFi.hostByName(...) will not try to resolve the domain name if it's already a numeric IP
 * Fixed manual IP configuration (no DHCP)
 * Fixed WiFiServer.available(), now follows API specification
 * Fixed WEP key connection
@@ -140,7 +140,7 @@ WiFi101 0.6.0 - 2015.11.27
 
 * Fixed bug with AVR boards when Web Server is used
 * Fixed UDP read bug on AVR Boards
-* Added missing inlcude for SSL Client
+* Added missing include for SSL Client
 * Fixed peek() function
 * Fixed some examples
 

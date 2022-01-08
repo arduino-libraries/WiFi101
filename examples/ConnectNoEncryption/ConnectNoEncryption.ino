@@ -1,11 +1,11 @@
 /*
 
  This example connects to an unencrypted WiFi network.
- Then it prints the  MAC address of the WiFi shield,
+ Then it prints the MAC address of the WiFi 101 Shield,
  the IP address obtained, and other network details.
 
  Circuit:
- * WiFi shield attached
+ * WiFi 101 Shield attached
 
  created 13 July 2010
  by dlf (Metodo2 srl)
@@ -28,7 +28,7 @@ void setup() {
 
   // check for the presence of the shield:
   if (WiFi.status() == WL_NO_SHIELD) {
-    Serial.println("WiFi shield not present");
+    Serial.println("WiFi 101 Shield not present");
     // don't continue:
     while (true);
   }
@@ -56,7 +56,7 @@ void loop() {
 }
 
 void printWiFiData() {
-  // print your WiFi shield's IP address:
+  // print your WiFi 101 Shield's IP address:
   IPAddress ip = WiFi.localIP();
   Serial.print("IP Address: ");
   Serial.println(ip);

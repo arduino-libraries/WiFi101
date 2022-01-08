@@ -1,12 +1,12 @@
 /*
 
- This example  prints the WiFi shield's MAC address, and
- scans for available WiFi networks using the WiFi shield.
+ This example  prints the WiFi 101 Shield's MAC address, and
+ scans for available WiFi networks using the WiFi 101 Shield.
  Every ten seconds, it scans again. It doesn't actually
  connect to any network, so no encryption scheme is specified.
 
  Circuit:
- * WiFi shield attached
+ * WiFi 101 Shield attached
 
  created 13 July 2010
  by dlf (Metodo2 srl)
@@ -27,7 +27,7 @@ void setup() {
 
   // check for the presence of the shield:
   if (WiFi.status() == WL_NO_SHIELD) {
-    Serial.println("WiFi shield not present");
+    Serial.println("WiFi 101 Shield not present");
     // don't continue:
     while (true);
   }
@@ -48,7 +48,7 @@ void loop() {
 }
 
 void printMacAddress() {
-  // the MAC address of your WiFi shield
+  // the MAC address of your WiFi 101 Shield
   byte mac[6];
 
   // print your MAC address:
@@ -63,7 +63,7 @@ void listNetworks() {
   int numSsid = WiFi.scanNetworks();
   if (numSsid == -1)
   {
-    Serial.println("Couldn't get a wifi connection");
+    Serial.println("Couldn't get a WiFi connection");
     while (true);
   }
 

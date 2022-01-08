@@ -2,14 +2,14 @@
   WiFi Web Server
 
   A simple web server that shows the value of the analog input pins.
-  using a WiFi shield.
+  using a WiFi 101 Shield.
 
   This example is written to configure the WiFi settings using provisioning mode.
   It also sets up an mDNS server so the IP address of the board doesn't have to
   be obtained via the serial monitor.
 
   Circuit:
-   WiFi shield attached
+   WiFi 101 Shield attached
    Analog inputs attached to pins A0 through A5 (optional)
 
   created 13 July 2010
@@ -42,7 +42,7 @@ void setup() {
 
   // check for the presence of the shield:
   if (WiFi.status() == WL_NO_SHIELD) {
-    Serial.println("WiFi shield not present");
+    Serial.println("WiFi 101 Shield not present");
     // don't continue:
     while (true);
   }
@@ -98,17 +98,17 @@ void loop() {
   WiFiClient client = server.available();
   if (client) {
     Serial.println("new client");
-    // an http request ends with a blank line
+    // an HTTP request ends with a blank line
     bool currentLineIsBlank = true;
     while (client.connected()) {
       if (client.available()) {
         char c = client.read();
         Serial.write(c);
         // if you've gotten to the end of the line (received a newline
-        // character) and the line is blank, the http request has ended,
+        // character) and the line is blank, the HTTP request has ended,
         // so you can send a reply
         if (c == '\n' && currentLineIsBlank) {
-          // send a standard http response header
+          // send a standard HTTP response header
           client.println("HTTP/1.1 200 OK");
           client.println("Content-Type: text/html");
           client.println("Connection: close");  // the connection will be closed after completion of the response
@@ -143,7 +143,7 @@ void loop() {
 
     // close the connection:
     client.stop();
-    Serial.println("client disonnected");
+    Serial.println("client disconnected");
   }
 }
 
@@ -153,7 +153,7 @@ void printWiFiStatus() {
   Serial.print("SSID: ");
   Serial.println(WiFi.SSID());
 
-  // print your WiFi shield's IP address:
+  // print your WiFi 101 Shield's IP address:
   IPAddress ip = WiFi.localIP();
   Serial.print("IP Address: ");
   Serial.println(ip);
@@ -164,4 +164,3 @@ void printWiFiStatus() {
   Serial.print(rssi);
   Serial.println(" dBm");
 }
-

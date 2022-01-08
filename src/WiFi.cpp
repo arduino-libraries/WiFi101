@@ -29,7 +29,7 @@
 #endif
 
 #if !defined(_TIME_H_) && !defined(TIME_H)
-// another library overrided the time.h header
+// another library overrode the time.h header
 #define WIFI_101_NO_TIME_H
 #endif
 
@@ -506,7 +506,7 @@ uint8_t WiFiClass::startAP(const char *ssid, uint8_t u8SecType, const void *pvAu
 	}
 
 	if (channel == 0) {
-		channel = 1; // channel 1 is the minium channel
+		channel = 1; // channel 1 is the minimum channel
 	}
 
 	// Enter Access Point mode:
