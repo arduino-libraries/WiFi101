@@ -65,6 +65,7 @@
 sint8 chip_apply_conf(uint32 u32Conf)
 {
 	sint8 ret = M2M_SUCCESS;
+	uint16 retries = TIMEOUT;
 	uint32 val32 = u32Conf;
 	
 #if (defined __ENABLE_PMU__) || (defined CONF_WINC_INT_PMU)
@@ -98,9 +99,9 @@ sint8 chip_apply_conf(uint32 u32Conf)
 		} else {
 			break;
 		}
-	} while(1);
+	} while(--retries);
 
-	return M2M_SUCCESS;
+	return retries ? M2M_SUCCESS : M2M_ERR_TIME_OUT;
 }
 void chip_idle(void)
 {
