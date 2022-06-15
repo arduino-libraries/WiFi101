@@ -59,11 +59,7 @@
 
 
 
-#ifdef ARDUINO
-#define TIMEOUT						(2000)
-#else
-#define TIMEOUT						(0xfffffffful)
-#endif
+#define TIMEOUT				(2000)
 #define WAKUP_TRAILS_TIMEOUT		(4)
 
 sint8 chip_apply_conf(uint32 u32Conf)
