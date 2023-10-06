@@ -18,6 +18,7 @@
 */
 
 #include "utility/WiFiSocket.h"
+#include "utility/tcp_states.h"
 
 #include "WiFiClient.h"
 #include "WiFiServer.h"
@@ -102,8 +103,9 @@ WiFiClient WiFiServer::available(uint8_t* status)
 }
 
 uint8_t WiFiServer::status() {
-	// Deprecated.
-	return 0;
+	if (_socket != -1 && WiFiSocket.listening(_socket))
+		return LISTEN;
+	return CLOSED;
 }
 
 size_t WiFiServer::write(uint8_t b)
