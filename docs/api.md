@@ -891,7 +891,7 @@ host: the host to ping (string)
 ttl: Time of live (optional, defaults to 128). Maximum number of routers the request can be forwarded to.
 
 #### Returns 
-WL_PING_SUCCESS when the ping was successful
+the RTT value (>=0) when the ping was successful
 WL_PING_DEST_UNREACHABLE when the destination (IP or host is unreachable)
 WL_PING_TIMEOUT when the ping times out
 WL_PING_UNKNOWN_HOST when the host cannot be resolved via DNS
