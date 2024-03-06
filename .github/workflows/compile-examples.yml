@@ -51,17 +51,35 @@ jobs:
       matrix:
         board:
           - fqbn: arduino:avr:uno
+            platforms: |
+              - name: arduino:avr
             firmwareUpdaterSupport: false
+            artifact-name-suffix: arduino-avr-uno
           - fqbn: arduino:avr:mega
+            platforms: |
+              - name: arduino:avr
             firmwareUpdaterSupport: false
+            artifact-name-suffix: arduino-avr-mega
           - fqbn: arduino:sam:arduino_due_x_dbg
+            platforms: |
+              - name: arduino:sam
             firmwareUpdaterSupport: true
+            artifact-name-suffix: arduino-sam-arduino_due_x_dbg
           - fqbn: arduino:samd:arduino_zero_edbg
+            platforms: |
+              - name: arduino:samd
             firmwareUpdaterSupport: true
+            artifact-name-suffix: arduino-samd-arduino_zero_edbg
           - fqbn: arduino:samd:mkr1000
+            platforms: |
+              - name: arduino:samd
             firmwareUpdaterSupport: true
+            artifact-name-suffix: arduino-samd-mkr1000
           - fqbn: Intel:arc32:arduino_101
+            platforms: |
+              - name: Intel:arc32
             firmwareUpdaterSupport: true
+            artifact-name-suffix: Intel-arc32-arduino_101
 
         # make board type-specific customizations to the matrix jobs
         include:
@@ -82,6 +100,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           fqbn: ${{ matrix.board.fqbn }}
+          platforms: ${{ matrix.board.platforms }}
           libraries: |
             # Install the WiFi101 library from the local path
             - source-path: ./
@@ -94,5 +113,6 @@ jobs:
       - name: Save memory usage change report as artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.SKETCHES_REPORTS_PATH }}
+          if-no-files-found: error
           path: ${{ env.SKETCHES_REPORTS_PATH }}
+          name: sketches-report-${{ matrix.board.artifact-name-suffix }}
