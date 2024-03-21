@@ -92,7 +92,8 @@ static void init_chip_pins(void)
 	if (gi8Winc1501ChipEnPin > -1)
 	{
 		/* Configure CHIP_EN as pull-up */
-		pinMode(gi8Winc1501ChipEnPin, INPUT_PULLUP);
+		pinMode(gi8Winc1501ChipEnPin, OUTPUT);
+		digitalWrite(gi8Winc1501ChipEnPin, HIGH);
 	}
 }
 
@@ -101,12 +102,11 @@ static void deinit_chip_pins(void)
 	if (gi8Winc1501ResetPin > -1)
 	{
 		digitalWrite(gi8Winc1501ResetPin, LOW);
-		pinMode(gi8Winc1501ResetPin, INPUT);
 	}
 
 	if (gi8Winc1501ChipEnPin > -1)
 	{
-		pinMode(gi8Winc1501ChipEnPin, INPUT);
+		digitalWrite(gi8Winc1501ChipEnPin, LOW);
 	}
 }
 
