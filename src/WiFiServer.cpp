@@ -106,6 +106,11 @@ uint8_t WiFiServer::status() {
 	return 0;
 }
 
+WiFiServer::operator bool()
+{
+	return (_socket != -1 && WiFiSocket.listening(_socket));
+}
+
 size_t WiFiServer::write(uint8_t b)
 {
 	return write(&b, 1);
