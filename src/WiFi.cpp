@@ -85,6 +85,7 @@ void WiFiClass::handleEvent(uint8_t u8MsgType, void *pvMsg)
 						_localip = 0;
 						_submask = 0;
 						_gateway = 0;
+						_dnsip = 0;
 					}
 					// Close sockets to clean state
 					// Clients will need to reconnect once the physical link will be re-established
@@ -110,6 +111,7 @@ void WiFiClass::handleEvent(uint8_t u8MsgType, void *pvMsg)
 				_localip = pstrIPCfg->u32StaticIP;
 				_submask = pstrIPCfg->u32SubnetMask;
 				_gateway = pstrIPCfg->u32Gateway;
+				_dnsip = pstrIPCfg->u32DNS;
 				
 				_status = WL_CONNECTED;
 
@@ -150,6 +152,7 @@ void WiFiClass::handleEvent(uint8_t u8MsgType, void *pvMsg)
 				_localip = 0;
 				_submask = 0;
 				_gateway = 0;
+				_dnsip = 0;
 				m2m_wifi_connect((char *)pstrProvInfo->au8SSID, strlen((char *)pstrProvInfo->au8SSID),
 						pstrProvInfo->u8SecType, pstrProvInfo->au8Password, M2M_WIFI_CH_ALL);
 			} else {
@@ -306,6 +309,7 @@ int WiFiClass::init()
 	_localip = 0;
 	_submask = 0;
 	_gateway = 0;
+	_dnsip = 0;
 	_dhcp = 1;
 	_resolve = 0;
 	_remoteMacAddress = 0;
@@ -369,6 +373,7 @@ uint8_t WiFiClass::begin()
 		_localip = 0;
 		_submask = 0;
 		_gateway = 0;
+		_dnsip = 0;
 	}
 	if (m2m_wifi_default_connect() < 0) {
 		_status = WL_CONNECT_FAILED;
@@ -431,6 +436,7 @@ uint8_t WiFiClass::startConnect(const char *ssid, uint8_t u8SecType, const void 
 		_localip = 0;
 		_submask = 0;
 		_gateway = 0;
+		_dnsip = 0;
 	}
 	if (m2m_wifi_connect((char*)ssid, strlen(ssid), u8SecType, (void*)pvAuthInfo, M2M_WIFI_CH_ALL) < 0) {
 		_status = WL_CONNECT_FAILED;
@@ -553,6 +559,7 @@ uint8_t WiFiClass::startAP(const char *ssid, uint8_t u8SecType, const void *pvAu
 	m2m_memcpy((uint8 *)&_localip, (uint8 *)&strM2MAPConfig.au8DHCPServerIP[0], 4);
 	_submask = 0x00FFFFFF;
 	_gateway = _localip;
+	_dnsip = _localip;
 
 #ifdef CONF_PERIPH
 	// WiFi led ON (rev A then rev B).
@@ -619,6 +626,7 @@ uint8_t WiFiClass::startProvision(const char *ssid, const char *url, uint8_t cha
 	m2m_memcpy((uint8 *)&_localip, (uint8 *)&strM2MAPConfig.au8DHCPServerIP[0], 4);
 	_submask = 0x00FFFFFF;
 	_gateway = _localip;
+	_dnsip = _localip;
 
 #ifdef CONF_PERIPH
 	// WiFi led ON (rev A then rev B).
@@ -674,6 +682,7 @@ void WiFiClass::config(IPAddress local_ip, IPAddress dns_server, IPAddress gatew
 	_localip = conf.u32StaticIP;
 	_submask = conf.u32SubnetMask;
 	_gateway = conf.u32Gateway;
+	_dnsip = conf.u32DNS;
 }
 
 void WiFiClass::hostname(const char* name)
@@ -761,6 +770,13 @@ uint32_t WiFiClass::subnetMask()
 uint32_t WiFiClass::gatewayIP()
 {
 	return _gateway;
+}
+
+uint32_t WiFiClass::dnsIP(int n)
+{
+  if (n > 0)
+    return IPAddress(0, 0, 0, 0);
+	return _dnsip;
 }
 
 char* WiFiClass::SSID()
