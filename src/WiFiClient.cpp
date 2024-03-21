@@ -22,15 +22,21 @@
 #include "WiFi101.h"
 #include "WiFiClient.h"
 
+#ifndef WIFI101_CLIENT_CONNECTION_TIMEOUT
+#define WIFI101_CLIENT_CONNECTION_TIMEOUT 20000
+#endif
+
 WiFiClient::WiFiClient()
 {
 	_socket = -1;
+	_timeout = WIFI101_CLIENT_CONNECTION_TIMEOUT;
 }
 
 WiFiClient::WiFiClient(uint8_t sock)
 {
 	// Spawn connected TCP client from TCP server socket:
 	_socket = sock;
+	_timeout = WIFI101_CLIENT_CONNECTION_TIMEOUT;
 }
 
 int WiFiClient::connectSSL(const char* host, uint16_t port)
@@ -85,7 +91,7 @@ int WiFiClient::connect(IPAddress ip, uint16_t port, uint8_t opt, const uint8_t 
 	}
 
 	// Connect to remote host:
-	if (!WiFiSocket.connect(_socket, (struct sockaddr *)&addr, sizeof(struct sockaddr_in))) {
+	if (!WiFiSocket.connect(_socket, (struct sockaddr *)&addr, sizeof(struct sockaddr_in), _timeout)) {
 		WiFiSocket.close(_socket);
 		_socket = -1;
 		return 0;
