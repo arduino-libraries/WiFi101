@@ -240,3 +240,8 @@ uint16_t WiFiUDP::remotePort()
 
 	return _htons(WiFiSocket.remotePort(_socket));
 }
+
+IPAddress  WiFiUDP::destinationIP()
+{
+	return _sndIP;
+}
