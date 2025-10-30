@@ -124,6 +124,7 @@ public:
 	void config(IPAddress local_ip, IPAddress dns_server, IPAddress gateway, IPAddress subnet);
 
 	void hostname(const char* name);
+	void setHostname(const char* name) {hostname(name);}
 
 	void disconnect();
 	void end();
