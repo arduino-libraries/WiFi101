@@ -37,7 +37,7 @@ public:
   sint8 bind(SOCKET sock, struct sockaddr *pstrAddr, uint8 u8AddrLen);
   sint8 listen(SOCKET sock, uint8 backlog);
   sint8 setopt(SOCKET socket, uint8 u8Level, uint8 option_name, const void *option_value, uint16 u16OptionLen);
-  sint8 connect(SOCKET sock, struct sockaddr *pstrAddr, uint8 u8AddrLen);
+  sint8 connect(SOCKET sock, struct sockaddr *pstrAddr, uint8 u8AddrLen, uint16 timeout);
   uint8 connected(SOCKET sock);
   uint8 listening(SOCKET sock);
   uint8 bound(SOCKET sock);

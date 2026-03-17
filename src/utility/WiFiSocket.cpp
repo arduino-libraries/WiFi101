@@ -132,7 +132,7 @@ sint8 WiFiSocketClass::setopt(SOCKET socket, uint8 u8Level, uint8 option_name, c
 	return setsockopt(socket, u8Level, option_name, option_value, u16OptionLen);
 }
 
-sint8 WiFiSocketClass::connect(SOCKET sock, struct sockaddr *pstrAddr, uint8 u8AddrLen)
+sint8 WiFiSocketClass::connect(SOCKET sock, struct sockaddr *pstrAddr, uint8 u8AddrLen, uint16 timeout)
 {
 	if (::connect(sock, pstrAddr, u8AddrLen) < 0) {
 		return 0;
@@ -142,7 +142,7 @@ sint8 WiFiSocketClass::connect(SOCKET sock, struct sockaddr *pstrAddr, uint8 u8A
 
 	unsigned long start = millis();
 
-	while (_info[sock].state == SOCKET_STATE_CONNECTING && millis() - start < 20000) {
+	while (_info[sock].state == SOCKET_STATE_CONNECTING && millis() - start < timeout) {
 		m2m_wifi_handle_events(NULL);
 	}
 

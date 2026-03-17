@@ -58,8 +58,11 @@ public:
 	virtual IPAddress remoteIP();
 	virtual uint16_t remotePort();
 
+	void setConnectionTimeout(uint16_t timeout) { _timeout = timeout; }
+
 private:
 	SOCKET _socket;
+	uint16_t _timeout;
 
 	int connect(const char* host, uint16_t port, uint8_t opt);
 	int connect(IPAddress ip, uint16_t port, uint8_t opt, const uint8_t *hostname);
