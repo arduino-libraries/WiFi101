@@ -59,16 +59,13 @@
 
 
 
-#ifdef ARDUINO
-#define TIMEOUT						(2000)
-#else
-#define TIMEOUT						(0xfffffffful)
-#endif
+#define TIMEOUT				(2000)
 #define WAKUP_TRAILS_TIMEOUT		(4)
 
 sint8 chip_apply_conf(uint32 u32Conf)
 {
 	sint8 ret = M2M_SUCCESS;
+	uint16 retries = TIMEOUT;
 	uint32 val32 = u32Conf;
 	
 #if (defined __ENABLE_PMU__) || (defined CONF_WINC_INT_PMU)
@@ -102,9 +99,9 @@ sint8 chip_apply_conf(uint32 u32Conf)
 		} else {
 			break;
 		}
-	} while(1);
+	} while(--retries);
 
-	return M2M_SUCCESS;
+	return retries ? M2M_SUCCESS : M2M_ERR_TIME_OUT;
 }
 void chip_idle(void)
 {
@@ -404,6 +401,7 @@ sint8 chip_reset(void)
 sint8 wait_for_bootrom(uint8 arg)
 {
 	sint8 ret = M2M_SUCCESS;
+	uint16 retries = TIMEOUT;
 	uint32 reg = 0, cnt = 0;
 	uint32 u32GpReg1 = 0;
 	uint32 u32DriverVerInfo = M2M_MAKE_VERSION_INFO(M2M_RELEASE_VERSION_MAJOR_NO,\
@@ -413,13 +411,19 @@ sint8 wait_for_bootrom(uint8 arg)
 
 
 	reg = 0;
-	while(1) {
+	while(--retries) {
 		reg = nm_read_reg(0x1014);	/* wait for efuse loading done */
 		if (reg & 0x80000000) {
 			break;
 		}
 		nm_bsp_sleep(1); /* TODO: Why bus error if this delay is not here. */
 	}
+
+	/* communication with device failed */
+	if(retries == 0) {
+		return M2M_ERR_INIT;
+	}
+
 	reg = nm_read_reg(M2M_WAIT_FOR_HOST_REG);
 	reg &= 0x1;
 
