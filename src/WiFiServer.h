@@ -30,13 +30,15 @@ class WiFiServer : public Server {
 private:
 	SOCKET _socket;
 	uint16_t _port;
-	uint8_t begin(uint8_t opt);
+	uint8_t beginOpt(uint8_t opt);
 
 public:
-	WiFiServer(uint16_t);
+	WiFiServer(uint16_t port = 80);
 	WiFiClient available(uint8_t* status = NULL);
 	void begin();
 	uint8_t beginSSL();
+	void begin(uint16_t port);
+	uint8_t beginSSL(uint16_t port);
 	virtual size_t write(uint8_t);
 	virtual size_t write(const uint8_t *buf, size_t size);
 	uint8_t status();
