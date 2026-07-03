@@ -21,6 +21,7 @@ connect	KEYWORD2
 connectSSL	KEYWORD2
 write	KEYWORD2
 available	KEYWORD2
+accept	KEYWORD2
 read	KEYWORD2
 flush	KEYWORD2
 stop	KEYWORD2

@@ -35,6 +35,7 @@ private:
 public:
 	WiFiServer(uint16_t);
 	WiFiClient available(uint8_t* status = NULL);
+	WiFiClient accept();
 	void begin();
 	uint8_t beginSSL();
 	virtual size_t write(uint8_t);
