@@ -68,15 +68,29 @@ uint8_t WiFiUDP::begin(uint16_t port)
 	return 1;
 }
 
-uint8_t WiFiUDP::beginMulticast(IPAddress ip, uint16_t port)
+uint8_t WiFiUDP::mcastGroupJoin(IPAddress ip)
 {
 	uint32_t multiIp = ip;
 
+	return setsockopt(_socket, SOL_SOCKET, IP_ADD_MEMBERSHIP, &multiIp, sizeof(multiIp));
+}
+
+uint8_t WiFiUDP::mcastGroupLeave(IPAddress ip)
+{
+	uint32_t multiIp = ip;
+
+	return setsockopt(_socket, SOL_SOCKET, IP_DROP_MEMBERSHIP, &multiIp, sizeof(multiIp));
+}
+
+uint8_t WiFiUDP::beginMulticast(IPAddress ip, uint16_t port)
+{
 	if (!begin(port)) {
 		return 0;
 	}
 
-	setsockopt(_socket, SOL_SOCKET, IP_ADD_MEMBERSHIP, &multiIp, sizeof(multiIp));
+	if (mcastGroupJoin(ip) != SOCK_ERR_NO_ERROR) {
+		return 0;
+	}
 
 	return 1;
 }
