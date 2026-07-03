@@ -88,6 +88,8 @@ public:
   // Return the port of the host who sent the current incoming packet
   virtual uint16_t remotePort();
 
+  // Return the IP address of the destination host. Useful when beginPacket(const char *host, uint16_t port) method is used.
+  virtual IPAddress destinationIP();
 };
 
 #endif /* WIFIUDP_H */
