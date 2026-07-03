@@ -74,6 +74,21 @@ uint8_t WiFiServer::begin(uint8_t opt)
 	return 1;
 }
 
+void WiFiServer::end()
+{
+	if (_socket != -1) {
+		for (SOCKET s = 0; s < TCP_SOCK_MAX; s++) {
+			if (WiFiSocket.hasParent(_socket, s)) {
+				WiFiSocket.close(s);
+			}
+		}
+		if (WiFiSocket.listening(_socket)) {
+			WiFiSocket.close(_socket);
+			_socket = -1;
+		}
+	}
+}
+
 WiFiClient WiFiServer::available(uint8_t* status)
 {
 	if (status != NULL) {
