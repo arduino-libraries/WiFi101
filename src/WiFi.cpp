@@ -381,14 +381,14 @@ uint8_t WiFiClass::begin()
 	for (unsigned long start = millis(); millis() - start < _timeout;)
 	{
 		m2m_wifi_handle_events(NULL);
-		if ((_status & WL_CONNECTED) || (_status & WL_DISCONNECTED)) {
+		if ((_status == WL_CONNECTED) || (_status == WL_DISCONNECTED)) {
 			break;
 		}
 	}
 
 	memset(_ssid, 0, M2M_MAX_SSID_LEN);
 
-	if (!(_status & WL_CONNECTED)) {
+	if (!(_status == WL_CONNECTED)) {
 		_mode = WL_RESET_MODE;
 	} else {
 		m2m_wifi_get_connection_info();
@@ -443,11 +443,11 @@ uint8_t WiFiClass::startConnect(const char *ssid, uint8_t u8SecType, const void 
 	for (unsigned long start = millis(); millis() - start < _timeout;)
 	{
 		m2m_wifi_handle_events(NULL);
-		if ((_status & WL_CONNECTED) || (_status & WL_DISCONNECTED)) {
+		if ((_status == WL_CONNECTED) || (_status == WL_DISCONNECTED)) {
 			break;
 		}
 	}
-	if (!(_status & WL_CONNECTED)) {
+	if (_status != WL_CONNECTED) {
 		_mode = WL_RESET_MODE;
 	}
 
@@ -853,7 +853,7 @@ int8_t WiFiClass::scanNetworks()
 	// Wait for scan result or timeout:
 	_status = WL_IDLE_STATUS;
 	unsigned long start = millis();
-	while (!(_status & WL_SCAN_COMPLETED) && millis() - start < 5000) {
+	while ((_status != WL_SCAN_COMPLETED) && millis() - start < 5000) {
 		m2m_wifi_handle_events(NULL);
 	}
 	_status = tmp;
@@ -873,7 +873,7 @@ char* WiFiClass::SSID(uint8_t pos)
 	// Wait for connection or timeout:
 	_status = WL_IDLE_STATUS;
 	unsigned long start = millis();
-	while (!(_status & WL_SCAN_COMPLETED) && millis() - start < 2000) {
+	while ((_status != WL_SCAN_COMPLETED) && millis() - start < 2000) {
 		m2m_wifi_handle_events(NULL);
 	}
 
@@ -895,7 +895,7 @@ int32_t WiFiClass::RSSI(uint8_t pos)
 	// Wait for connection or timeout:
 	_status = WL_IDLE_STATUS;
 	unsigned long start = millis();
-	while (!(_status & WL_SCAN_COMPLETED) && millis() - start < 2000) {
+	while ((_status != WL_SCAN_COMPLETED) && millis() - start < 2000) {
 		m2m_wifi_handle_events(NULL);
 	}
 
@@ -934,7 +934,7 @@ uint8_t WiFiClass::encryptionType(uint8_t pos)
 	// Wait for connection or timeout:
 	_status = WL_IDLE_STATUS;
 	unsigned long start = millis();
-	while (!(_status & WL_SCAN_COMPLETED) && millis() - start < 2000) {
+	while ((_status != WL_SCAN_COMPLETED) && millis() - start < 2000) {
 		m2m_wifi_handle_events(NULL);
 	}
 
@@ -958,7 +958,7 @@ uint8_t* WiFiClass::BSSID(uint8_t pos, uint8_t* bssid)
 	// Wait for connection or timeout:
 	_status = WL_IDLE_STATUS;
 	unsigned long start = millis();
-	while (!(_status & WL_SCAN_COMPLETED) && millis() - start < 2000) {
+	while ((_status != WL_SCAN_COMPLETED) && millis() - start < 2000) {
 		m2m_wifi_handle_events(NULL);
 	}
 
