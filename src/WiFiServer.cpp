@@ -85,11 +85,7 @@ WiFiClient WiFiServer::available(uint8_t* status)
 	}
 
 	if (_socket != -1) {
-		SOCKET child = WiFiSocket.accepted(_socket);
-
-		if (child > -1) {
-			return WiFiClient(child);
-		}
+		WiFiSocket.accepted(_socket);
 
 		for (SOCKET s = 0; s < TCP_SOCK_MAX; s++) {
 			if (WiFiSocket.hasParent(_socket, s) && WiFiSocket.available(s)) {
