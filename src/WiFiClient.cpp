@@ -18,6 +18,7 @@
 */
 
 #include "utility/WiFiSocket.h"
+#include "utility/tcp_states.h"
 
 #include "WiFi101.h"
 #include "WiFiClient.h"
@@ -190,8 +191,9 @@ uint8_t WiFiClient::connected()
 
 uint8_t WiFiClient::status()
 {
-	// Deprecated.
-	return 0;
+	if (_socket != -1 && WiFiSocket.connected(_socket))
+		return ESTABLISHED;
+	return CLOSED;
 }
 
 WiFiClient::operator bool()
