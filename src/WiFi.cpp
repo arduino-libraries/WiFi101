@@ -643,17 +643,26 @@ uint32_t WiFiClass::provisioned()
 
 void WiFiClass::config(IPAddress local_ip)
 {
-	config(local_ip, (uint32_t)0);
+	// Assume the DNS server will be the machine on the same network as the local IP
+	// but with last octet being '1'
+	IPAddress dns = local_ip;
+	dns[3] = 1;
+	config(local_ip, dns);
 }
 
 void WiFiClass::config(IPAddress local_ip, IPAddress dns_server)
 {
-	config(local_ip, dns_server, (uint32_t)0);
+	// Assume the gateway will be the machine on the same network as the local IP
+	// but with last octet being '1'
+	IPAddress gateway = local_ip;
+	gateway[3] = 1;
+	config(local_ip, dns_server, gateway);
 }
 
 void WiFiClass::config(IPAddress local_ip, IPAddress dns_server, IPAddress gateway)
 {
-	config(local_ip, dns_server, gateway, (uint32_t)0);
+	IPAddress subnet(255, 255, 255, 0);
+	config(local_ip, dns_server, gateway, subnet);
 }
 
 void WiFiClass::config(IPAddress local_ip, IPAddress dns_server, IPAddress gateway, IPAddress subnet)
